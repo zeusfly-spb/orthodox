@@ -1,0 +1,98 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+// Auth
+import Login from '@/views/auth/Login.vue'
+import Register from '@/views/auth/Register.vue'
+import ForgotPassword from '@/views/auth/ForgotPassword.vue'
+import ResetPassword from '@/views/auth/ResetPassword.vue'
+// Dashboard
+// import Dashboard from '@/views/dashboard/Dashboard.vue'
+// import DefaultView from '@/views/dashboard/DefaultView.vue'
+// import TourList from '@/views/dashboard/views/tours/TourList.vue'
+// import CustomerList from '@/views/dashboard/views/customers/CustomerList.vue'
+// import BookingList from '@/views/dashboard/views/bookings/BookingList.vue'
+
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: Login,
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login,
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/auth/Register.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/auth/ForgotPassword.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/auth/ResetPassword.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/dashboard/Dashboard.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'dashboard-home',
+        component: () => import('@/views/dashboard/DefaultView.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'tours',
+        name: 'tours-list',
+        component: () => import('@/views/dashboard/views/tours/TourList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'reservations',
+        name: 'tours-reservations-list',
+        component: () => import('@/views/dashboard/views/bookings/BookingList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'customers',
+        name: 'customers-list',
+        component: () => import('@/views/dashboard/views/customers/CustomerList.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+})
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: 'login' })
+  } else if (to.meta.guestOnly && authStore.isAuthenticated) {
+    next({ name: 'dashboard' })
+  } else {
+    next()
+  }
+})
+
+export default router

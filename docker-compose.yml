@@ -1,0 +1,28 @@
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    container_name: frontend-dev
+    restart: unless-stopped
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./app:/${APP_DIR:-/app}
+      - /app/node_modules
+      - /app/.vite
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    ports:
+      - "5173:5173"
+      - "24678:24678"
+    networks:
+      - app-network
