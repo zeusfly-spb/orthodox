@@ -46,7 +46,7 @@ const props = defineProps<{
       <TableRow v-for="item in collection" :key="item.id">
         <TableCell>{{ item.id }}</TableCell>
         <TableCell class="font-medium">
-          {{ item?.title }}
+          {{ item?.tour.title }}
         </TableCell>
         <TableCell>{{ item?.customer.firstname }}</TableCell>
         <TableCell>{{ item?.customer.lastname }}</TableCell>
