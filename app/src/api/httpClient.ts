@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 const DEFAULT_TIMEOUT = import.meta.env.VITE_REQUEST_TIMEOUT || 20000
 
 let retryCount = 0
-let maxRetries = 5
+let maxRetries = 3
 let isRefreshing = false
 
 const handleRetry = (config, token) => {
@@ -82,7 +82,11 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response.status === 401 || error.response.status === 429) {
+    if (
+      error.response.status === 401 ||
+      error.response.status === 403 ||
+      error.response.status === 429
+    ) {
       const authStore = useAuthStore()
       const accessToken = authStore.accessToken
 

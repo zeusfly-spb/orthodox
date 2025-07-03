@@ -17,7 +17,7 @@ export const useCrudActions = <T>(
   const showForm = ref(false)
   const handledItemId = ref<string | number | null>(null)
 
-  const { getAll, getOneById, store, update, destroy, items, currentItem, pagination } =
+  const { getAll, getOneById, store, update, destroy, items, currentItem, pagination, error } =
     useEntity(apiClient)
 
   const loadCollection = async (params?: Record<string, unknown>) => {
@@ -82,6 +82,11 @@ export const useCrudActions = <T>(
   }
 
   const handleError = async (error) => {
+    if (error.response.status === 422) {
+      let errors = Object.values(error.response.data?.errors || {}).join('\n')
+      toast.error(errors)
+      throw error
+    }
     toast.error('Ошибка сетевого соединения')
     throw error
   }
