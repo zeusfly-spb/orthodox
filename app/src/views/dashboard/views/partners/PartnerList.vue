@@ -69,7 +69,7 @@ const applyFilters = () => {
               class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
               @click="showForm = true"
             >
-              Добавить заявку
+              Добавить контрагента
             </Button>
           </div>
         </div>
