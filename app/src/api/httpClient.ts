@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 const DEFAULT_TIMEOUT = import.meta.env.VITE_REQUEST_TIMEOUT || 20000
 
 let retryCount = 0
-let maxRetries = 3
+let maxRetries = 2
 let isRefreshing = false
 
 const handleRetry = (config, token) => {

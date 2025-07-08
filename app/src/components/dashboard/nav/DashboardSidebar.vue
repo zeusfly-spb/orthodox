@@ -46,7 +46,7 @@ const data = {
         },
         {
           title: 'Мои заявки',
-          url: '/dashboard/reservations',
+          url: '/dashboard/bookings',
           icon: Database,
         },
         {
@@ -56,7 +56,7 @@ const data = {
         },
         {
           title: 'Мои контрагенты',
-          url: '#',
+          url: '/dashboard/partners',
           icon: BadgeCheck,
         },
         {

@@ -63,8 +63,8 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'reservations',
-        name: 'tours-reservations-list',
+        path: 'bookings',
+        name: 'tours-bookings-list',
         component: () => import('@/views/dashboard/views/bookings/BookingList.vue'),
         meta: { requiresAuth: true },
       },
@@ -72,6 +72,12 @@ const routes = [
         path: 'customers',
         name: 'customers-list',
         component: () => import('@/views/dashboard/views/customers/CustomerList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'partners',
+        name: 'partners-list',
+        component: () => import('@/views/dashboard/views/partners/PartnerList.vue'),
         meta: { requiresAuth: true },
       },
     ],
