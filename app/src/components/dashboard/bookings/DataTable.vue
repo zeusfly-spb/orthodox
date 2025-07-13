@@ -48,8 +48,8 @@ const props = defineProps<{
         <TableCell class="font-medium">
           {{ item?.tour.title }}
         </TableCell>
-        <TableCell>{{ item?.customer.firstname }}</TableCell>
-        <TableCell>{{ item?.customer.lastname }}</TableCell>
+        <TableCell>{{ item?.customers[0].firstname }}</TableCell>
+        <TableCell>{{ item?.customers[0].lastname }}</TableCell>
         <TableCell>{{ item.status }}</TableCell>
         <TableCell>
           {{ item.created_at }}
