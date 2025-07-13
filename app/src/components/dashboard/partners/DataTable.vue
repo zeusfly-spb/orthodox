@@ -32,10 +32,10 @@ const props = defineProps<{
     <TableHeader>
       <TableRow>
         <TableHead class="w-[50px]"> ID </TableHead>
-        <TableHead>Тур</TableHead>
-        <TableHead>Фамилия</TableHead>
-        <TableHead>Имя</TableHead>
-        <TableHead>Статус</TableHead>
+        <TableHead>Название</TableHead>
+        <TableHead>Телефон</TableHead>
+        <TableHead>Email</TableHead>
+        <TableHead>ИНН</TableHead>
         <TableHead>Дата</TableHead>
         <TableHead class="w-[50px] text-right px-4">
           <MoreHorizontal class="h-4 w-4" />
@@ -48,9 +48,9 @@ const props = defineProps<{
         <TableCell class="font-medium">
           {{ item?.name }}
         </TableCell>
-        <TableCell>{{ item?.email }}</TableCell>
         <TableCell>{{ item?.phone }}</TableCell>
-        <TableCell>{{ item?.description }}</TableCell>
+        <TableCell>{{ item?.email }}</TableCell>
+        <TableCell>{{ item?.requisite.inn }}</TableCell>
         <TableCell>
           {{ item.created_at }}
         </TableCell>

@@ -13,47 +13,32 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
+import AppDatePicker from '@/components/app/AppDatePicker.vue'
 
-interface Customer {
-  firstname: string
-  lastname: string
-  patronymic?: string
-  email: string
-  phone: string
-  passport_serial_number: string
-  passport_series: string
-  passport_number: string
-  passport_issue_date?: string
-  passport_birth_date?: string
-}
-
-interface BookingForm {
-  tour_id: number | null
-  status: string
-  description: string
-  customers: Customer[]
+interface Requisite {
+  id?: number
+  title: string
+  type: string | null
+  description: string | null
+  legal_name: string
+  opf_short: string | null
+  inn: string
+  ogrn: string
+  ogrn_date: string | null
+  kpp: string
+  okpo: string
+  legal_address: string
+  real_address: string
+  postal_address: string | null
+  email: string | null
+  phone: string | null
 }
 
 const props = withDefaults(
   defineProps<{
     open: boolean
-    tours: Array<{ id: number; title: string }>
-    booking?: {
-      id?: number
-      tour_id: number
-      status: string
-      description: string
-      customers: Customer[]
-    }
+    requisite?: Requisite
     createTitle?: string
     editTitle?: string
     description?: string
@@ -61,8 +46,8 @@ const props = withDefaults(
     cancelText?: string
   }>(),
   {
-    createTitle: 'Создать бронирование',
-    editTitle: 'Редактировать бронирование',
+    createTitle: 'Создать реквизиты',
+    editTitle: 'Редактировать реквизиты',
     description: '',
     submitText: 'Сохранить',
     cancelText: 'Отмена',
@@ -71,55 +56,51 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', booking: BookingForm): void
+  (e: 'submit', requisite: Requisite): void
   (e: 'dismiss'): void
 }>()
 
-const customerTemplate: Customer = {
-  firstname: '',
-  lastname: '',
-  patronymic: '',
-  email: '',
-  phone: '',
-  passport_serial_number: '',
-  passport_series: '',
-  passport_number: '',
-}
-
-const form = reactive<BookingForm>({
-  tour_id: null,
-  status: 'pending',
-  description: '',
-  customers: [{ ...customerTemplate }],
+const form = reactive<Requisite>({
+  title: '',
+  type: null,
+  description: null,
+  legal_name: '',
+  opf_short: null,
+  inn: '',
+  ogrn: '',
+  ogrn_date: null,
+  kpp: '',
+  okpo: '',
+  legal_address: '',
+  real_address: '',
+  postal_address: null,
+  email: null,
+  phone: null,
 })
 
-const addCustomer = () => {
-  form.customers.push({ ...customerTemplate })
-}
-
-const removeCustomer = (index: number) => {
-  if (form.customers.length > 1) {
-    form.customers.splice(index, 1)
-  } else {
-    toast.error('Должен быть хотя бы один клиент')
-  }
-}
-
 const resetForm = () => {
-  form.tour_id = null
-  form.status = 'pending'
-  form.description = ''
-  form.customers = [{ ...customerTemplate }]
+  form.title = ''
+  form.type = null
+  form.description = null
+  form.legal_name = ''
+  form.opf_short = null
+  form.inn = ''
+  form.ogrn = ''
+  form.ogrn_date = null
+  form.kpp = ''
+  form.okpo = ''
+  form.legal_address = ''
+  form.real_address = ''
+  form.postal_address = null
+  form.email = null
+  form.phone = null
 }
 
 watch(
-  () => props.booking,
-  (booking) => {
-    if (booking) {
-      form.tour_id = booking.tour_id
-      form.status = booking.status
-      form.description = booking.description
-      form.customers = booking.customers.map((c) => ({ ...customerTemplate, ...c }))
+  () => props.requisite,
+  (requisite) => {
+    if (requisite) {
+      Object.assign(form, requisite)
     } else {
       resetForm()
     }
@@ -140,26 +121,40 @@ watch(
 )
 
 const validateForm = (): boolean => {
-  if (!form.tour_id) {
-    toast.error('Выберите тур')
+  if (!form.title) {
+    toast.error('Введите название')
     return false
   }
 
-  for (const [index, customer] of form.customers.entries()) {
-    if (!customer.firstname || !customer.lastname || !customer.email || !customer.phone) {
-      toast.error(`Заполните обязательные поля для клиента ${index + 1}`)
-      return false
-    }
-
-    if (
-      !customer.passport_serial_number ||
-      !customer.passport_series ||
-      !customer.passport_number
-    ) {
-      toast.error(`Заполните паспортные данные для клиента ${index + 1}`)
-      return false
-    }
+  if (!form.legal_name) {
+    toast.error('Введите полное наименование организации')
+    return false
   }
+
+  // if (!form.inn) {
+  //   toast.error('Введите ИНН')
+  //   return false
+  // }
+  //
+  // if (!form.ogrn) {
+  //   toast.error('Введите ОГРН')
+  //   return false
+  // }
+  //
+  // if (!form.kpp) {
+  //   toast.error('Введите КПП')
+  //   return false
+  // }
+  //
+  // if (!form.legal_address) {
+  //   toast.error('Введите юридический адрес')
+  //   return false
+  // }
+  //
+  // if (!form.real_address) {
+  //   toast.error('Введите фактический адрес')
+  //   return false
+  // }
 
   return true
 }
@@ -173,10 +168,10 @@ const onSubmit = () => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[900px]">
+    <DialogContent class="sm:max-w-[700px]">
       <DialogHeader data-autofocus>
         <DialogTitle>
-          {{ booking?.id ? props.editTitle : props.createTitle }}
+          {{ requisite?.id ? props.editTitle : props.createTitle }}
         </DialogTitle>
         <DialogDescription>
           {{ props.description }}
@@ -185,173 +180,111 @@ const onSubmit = () => {
 
       <form @submit.prevent="onSubmit">
         <div class="grid gap-6 py-4">
-          <!-- Tour and Status Selection -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label required>Тур</Label>
-              <Select v-model="form.tour_id">
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите тур" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="tour in tours" :key="tour.id" :value="tour.id">
-                    {{ tour.title }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          <!-- Основная информация -->
+          <div class="space-y-4">
+            <h3 class="text-lg font-medium">Основная информация</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label required>Название</Label>
+                <Input v-model="form.title" />
+              </div>
+              <div class="space-y-2">
+                <Label>Тип</Label>
+                <Input v-model="form.type" />
+              </div>
             </div>
             <div class="space-y-2">
-              <Label>Статус</Label>
-              <Select v-model="form.status">
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Ожидание</SelectItem>
-                  <SelectItem value="confirmed">Подтверждено</SelectItem>
-                  <SelectItem value="cancelled">Отменено</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Описание</Label>
+              <Input v-model="form.description" />
             </div>
           </div>
 
-          <div class="space-y-2">
-            <Label for="description">Примечание</Label>
-            <Input id="description" v-model="form.description" />
+          <!-- Реквизиты -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Реквизиты</h3>
+            <div class="space-y-2">
+              <Label required>Полное наименование</Label>
+              <Input v-model="form.legal_name" />
+            </div>
+            <div class="space-y-2">
+              <Label>ОПФ (сокращенно)</Label>
+              <Input v-model="form.opf_short" />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="space-y-2">
+                <Label required>ИНН</Label>
+                <Input v-model="form.inn" />
+              </div>
+              <div class="space-y-2">
+                <Label required>ОГРН</Label>
+                <Input v-model="form.ogrn" />
+              </div>
+              <div class="space-y-2">
+                <Label>Дата ОГРН</Label>
+                <div class="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button variant="outline" class="w-full justify-start text-left font-normal">
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        <span>{{ form.ogrn_date || 'Выберите дату' }}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0">
+                      <AppDatePicker v-model="form.ogrn_date" />
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    v-if="form.ogrn_date"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="form.ogrn_date = null"
+                  >
+                    <Trash2 class="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label required>КПП</Label>
+                <Input v-model="form.kpp" />
+              </div>
+              <div class="space-y-2">
+                <Label>ОКПО</Label>
+                <Input v-model="form.okpo" />
+              </div>
+            </div>
           </div>
 
-          <!-- Customers Section -->
-          <div class="border-t pt-4">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-medium">Клиенты</h3>
-              <Button type="button" variant="outline" @click="addCustomer">
-                Добавить клиента
-              </Button>
+          <!-- Адреса -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Адреса</h3>
+            <div class="space-y-2">
+              <Label required>Юридический адрес</Label>
+              <Input v-model="form.legal_address" />
             </div>
+            <div class="space-y-2">
+              <Label required>Фактический адрес</Label>
+              <Input v-model="form.real_address" />
+            </div>
+            <div class="space-y-2">
+              <Label>Почтовый адрес</Label>
+              <Input v-model="form.postal_address" />
+            </div>
+          </div>
 
-            <div
-              v-for="(customer, index) in form.customers"
-              :key="index"
-              class="mb-6 border-b pb-6"
-            >
-              <div class="flex justify-between items-center mb-4">
-                <h4 class="font-medium">Клиент {{ index + 1 }}</h4>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  @click="removeCustomer(index)"
-                  :disabled="form.customers.length <= 1"
-                >
-                  Удалить
-                </Button>
+          <!-- Контакты -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Контакты</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label>Email</Label>
+                <Input v-model="form.email" type="email" />
               </div>
-
-              <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`lastname-${index}`" required>Фамилия</Label>
-                  <Input :id="`lastname-${index}`" v-model="customer.lastname" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`firstname-${index}`" required>Имя</Label>
-                  <Input :id="`firstname-${index}`" v-model="customer.firstname" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`patronymic-${index}`">Отчество</Label>
-                  <Input :id="`patronymic-${index}`" v-model="customer.patronymic" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`email-${index}`" required>Email</Label>
-                  <Input :id="`email-${index}`" v-model="customer.email" type="email" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`phone-${index}`" required>Телефон</Label>
-                  <Input
-                    :id="`phone-${index}`"
-                    v-model="customer.phone"
-                    placeholder="+7 (XXX) XXX-XX-XX"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`passport_serial_number-${index}`" required>Серия и номер</Label>
-                  <Input
-                    :id="`passport_serial_number-${index}`"
-                    v-model="customer.passport_serial_number"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_series-${index}`" required>Серия</Label>
-                  <Input :id="`passport_series-${index}`" v-model="customer.passport_series" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_number-${index}`" required>Номер</Label>
-                  <Input :id="`passport_number-${index}`" v-model="customer.passport_number" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <Label :for="`passport_issue_date-${index}`">Дата выдачи</Label>
-                  <div class="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger as-child>
-                        <Button
-                          variant="outline"
-                          class="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon class="mr-2 h-4 w-4" />
-                          <span>{{ customer.passport_issue_date || 'Выберите дату' }}</span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent class="w-auto p-0">
-                        <AppDatePicker v-model="customer.passport_issue_date" />
-                      </PopoverContent>
-                    </Popover>
-                    <Button
-                      v-if="customer.passport_issue_date"
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      @click="customer.passport_issue_date = ''"
-                    >
-                      <Trash2 class="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_birth_date-${index}`">Дата рождения</Label>
-                  <div class="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger as-child>
-                        <Button
-                          variant="outline"
-                          class="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon class="mr-2 h-4 w-4" />
-                          <span>{{ customer.passport_birth_date || 'Выберите дату' }}</span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent class="w-auto p-0">
-                        <AppDatePicker v-model="customer.passport_birth_date" />
-                      </PopoverContent>
-                    </Popover>
-                    <Button
-                      v-if="customer.passport_birth_date"
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      @click="customer.passport_birth_date = ''"
-                    >
-                      <Trash2 class="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
+              <div class="space-y-2">
+                <Label>Телефон</Label>
+                <Input v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
               </div>
             </div>
           </div>
