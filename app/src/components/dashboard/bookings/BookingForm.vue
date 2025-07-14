@@ -193,6 +193,15 @@ const onSubmit = () => {
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
     <DialogContent class="sm:max-w-[900px]" @openAutoFocus.prevent>
+      <DialogHeader>
+        <DialogTitle>
+          {{ item?.id ? props.editTitle : props.createTitle }}
+        </DialogTitle>
+        <DialogDescription>
+          {{ props.description }}
+        </DialogDescription>
+      </DialogHeader>
+
       <form @submit.prevent="onSubmit">
         <div class="grid gap-6 py-4">
           <!-- Tour and Status Selection -->
