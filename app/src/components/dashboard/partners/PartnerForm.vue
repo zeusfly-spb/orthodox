@@ -147,6 +147,21 @@ const onSubmit = () => {
             </div>
           </div>
 
+          <!-- Контакты -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Контакты</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label>Email</Label>
+                <Input v-model="form.email" type="email" />
+              </div>
+              <div class="space-y-2">
+                <Label>Телефон</Label>
+                <Input v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
+              </div>
+            </div>
+          </div>
+
           <!-- Реквизиты -->
           <div class="space-y-4 border-t pt-4">
             <h3 class="text-lg font-medium">Реквизиты</h3>
@@ -219,21 +234,6 @@ const onSubmit = () => {
             <div class="space-y-2">
               <Label>Почтовый адрес</Label>
               <Input v-model="form.postal_address" />
-            </div>
-          </div>
-
-          <!-- Контакты -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Контакты</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label>Email</Label>
-                <Input v-model="form.email" type="email" />
-              </div>
-              <div class="space-y-2">
-                <Label>Телефон</Label>
-                <Input v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
-              </div>
             </div>
           </div>
         </div>
