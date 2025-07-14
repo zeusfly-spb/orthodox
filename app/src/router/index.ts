@@ -80,6 +80,12 @@ const routes = [
         component: () => import('@/views/dashboard/views/partners/PartnerList.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: 'operator',
+        name: 'operator-view',
+        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 ]

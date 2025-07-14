@@ -61,7 +61,7 @@ const data = {
         },
         {
           title: 'Профиль ПС',
-          url: '#',
+          url: '/dashboard/operator',
           icon: House,
         },
       ],
@@ -176,7 +176,7 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavCollapsible :items="data.navCollapsible" />
+      <!--      <NavCollapsible :items="data.navCollapsible" />-->
     </SidebarContent>
     <SidebarFooter></SidebarFooter>
     <SidebarRail />
