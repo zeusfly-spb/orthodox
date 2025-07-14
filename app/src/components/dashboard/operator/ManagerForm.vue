@@ -13,41 +13,69 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { toast } from 'vue-sonner'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
+import { toast } from 'vue-sonner'
+import { useEntityForm } from '@/composables/useEntityForm'
 
-interface Requisite {
-  id?: number
-  title: string
-  type: string | null
-  description: string | null
-  legal_name: string
-  opf_short: string | null
-  inn: string
-  ogrn: string
-  ogrn_date: string | null
-  kpp: string
-  okpo: string
-  legal_address: string
-  real_address: string
-  postal_address: string | null
-  email: string | null
-  phone: string | null
+interface FormFields {
+  firstname: string
+  lastname: string
+  patronymic?: string
+  email: string
+  phone: string
+  passport_series: string
+  passport_number: string
+  passport_issue_date?: string
+  passport_unit_name?: string
+  passport_unit_code?: string
+  passport_birth_date?: string
+  passport_birth_place?: string
+  passport_address?: string
 }
+
+const formTemplate: FormFields = {
+  firstname: '',
+  lastname: '',
+  patronymic: '',
+  email: '',
+  phone: '',
+  passport_series: '',
+  passport_number: '',
+  passport_issue_date: '',
+  passport_unit_name: '',
+  passport_unit_code: '',
+  passport_birth_date: '',
+  passport_birth_place: '',
+  passport_address: '',
+}
+
+const requiredFields: Array<keyof FormFields> = [
+  'firstname',
+  'lastname',
+  'email',
+  'phone',
+  'passport_series',
+  'passport_number',
+]
+
+const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
+  formTemplate,
+  requiredFields,
+)
 
 const props = withDefaults(
   defineProps<{
     open: boolean
-    requisite?: Requisite
     createTitle?: string
     editTitle?: string
     description?: string
     submitText?: string
     cancelText?: string
+    item?: FormFields
   }>(),
   {
-    createTitle: 'Создать реквизиты',
-    editTitle: 'Редактировать реквизиты',
+    createTitle: 'Добавить данные',
+    editTitle: 'Редактировать данные',
     description: '',
     submitText: 'Сохранить',
     cancelText: 'Отмена',
@@ -56,122 +84,43 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', requisite: Requisite): void
+  (e: 'submit', item: FormFields): void
   (e: 'dismiss'): void
 }>()
 
-const form = reactive<Requisite>({
-  title: '',
-  type: null,
-  description: null,
-  legal_name: '',
-  opf_short: null,
-  inn: '',
-  ogrn: '',
-  ogrn_date: null,
-  kpp: '',
-  okpo: '',
-  legal_address: '',
-  real_address: '',
-  postal_address: null,
-  email: null,
-  phone: null,
-})
-
-const resetForm = () => {
-  form.title = ''
-  form.type = null
-  form.description = null
-  form.legal_name = ''
-  form.opf_short = null
-  form.inn = ''
-  form.ogrn = ''
-  form.ogrn_date = null
-  form.kpp = ''
-  form.okpo = ''
-  form.legal_address = ''
-  form.real_address = ''
-  form.postal_address = null
-  form.email = null
-  form.phone = null
-}
-
-watch(
-  () => props.requisite,
-  (requisite) => {
-    if (requisite) {
-      Object.assign(form, requisite)
-    } else {
-      resetForm()
-    }
-  },
-  { immediate: true },
-)
+watch(() => props.item, fillForm, { immediate: true })
 
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
     if (!isOpen) {
-      nextTick(() => {
-        resetForm()
-        emit('dismiss')
-      })
+      await nextTick()
+      resetForm()
+      emit('dismiss')
     }
   },
 )
-
-const validateForm = (): boolean => {
-  if (!form.title) {
-    toast.error('Введите название')
-    return false
-  }
-
-  if (!form.legal_name) {
-    toast.error('Введите полное наименование организации')
-    return false
-  }
-
-  // if (!form.inn) {
-  //   toast.error('Введите ИНН')
-  //   return false
-  // }
-  //
-  // if (!form.ogrn) {
-  //   toast.error('Введите ОГРН')
-  //   return false
-  // }
-  //
-  // if (!form.kpp) {
-  //   toast.error('Введите КПП')
-  //   return false
-  // }
-  //
-  // if (!form.legal_address) {
-  //   toast.error('Введите юридический адрес')
-  //   return false
-  // }
-  //
-  // if (!form.real_address) {
-  //   toast.error('Введите фактический адрес')
-  //   return false
-  // }
-
-  return true
-}
 
 const onSubmit = () => {
   if (!validateForm()) return
   emit('submit', { ...form })
   emit('update:open', false)
 }
+
+const addDate = (field: 'passport_issue_date' | 'passport_birth_date') => {
+  if (!form[field]) {
+    toast.error('Выберите дату')
+    return
+  }
+}
 </script>
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[700px]">
+    <DialogContent class="sm:max-w-[800px]" @openAutoFocus.prevent>
       <DialogHeader data-autofocus>
         <DialogTitle>
-          {{ requisite?.id ? props.editTitle : props.createTitle }}
+          {{ item ? props.editTitle : props.createTitle }}
         </DialogTitle>
         <DialogDescription>
           {{ props.description }}
@@ -179,113 +128,119 @@ const onSubmit = () => {
       </DialogHeader>
 
       <form @submit.prevent="onSubmit">
-        <div class="grid gap-6 py-4">
-          <!-- Основная информация -->
-          <div class="space-y-4">
-            <h3 class="text-lg font-medium">Основная информация</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label required>Название</Label>
-                <Input v-model="form.title" />
-              </div>
-              <div class="space-y-2">
-                <Label>Тип</Label>
-                <Input v-model="form.type" />
-              </div>
+        <div class="grid gap-4 py-4">
+          <div class="grid grid-cols-3 gap-4">
+            <div class="space-y-2">
+              <Label for="lastname" required>Фамилия</Label>
+              <Input id="lastname" v-model="form.lastname" />
             </div>
             <div class="space-y-2">
-              <Label>Описание</Label>
-              <Input v-model="form.description" />
+              <Label for="firstname" required>Имя</Label>
+              <Input id="firstname" v-model="form.firstname" />
+            </div>
+            <div class="space-y-2">
+              <Label for="patronymic">Отчество</Label>
+              <Input id="patronymic" v-model="form.patronymic" />
             </div>
           </div>
 
-          <!-- Реквизиты -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Реквизиты</h3>
+          <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label required>Полное наименование</Label>
-              <Input v-model="form.legal_name" />
+              <Label for="email" required>Email</Label>
+              <Input id="email" v-model="form.email" type="email" />
             </div>
             <div class="space-y-2">
-              <Label>ОПФ (сокращенно)</Label>
-              <Input v-model="form.opf_short" />
+              <Label for="phone" required>Телефон</Label>
+              <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
             </div>
-            <div class="grid grid-cols-3 gap-4">
+          </div>
+
+          <div class="border-t pt-4 mt-4">
+            <h3 class="text-lg font-medium mb-4">Паспортные данные</h3>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
               <div class="space-y-2">
-                <Label required>ИНН</Label>
-                <Input v-model="form.inn" />
+                <Label for="passport_series" required>Серия</Label>
+                <Input id="passport_series" v-model="form.passport_series" />
               </div>
               <div class="space-y-2">
-                <Label required>ОГРН</Label>
-                <Input v-model="form.ogrn" />
+                <Label for="passport_number" required>Номер</Label>
+                <Input id="passport_number" v-model="form.passport_number" />
               </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
               <div class="space-y-2">
-                <Label>Дата ОГРН</Label>
+                <Label for="passport_issue_date">Дата выдачи</Label>
                 <div class="flex gap-2">
                   <Popover>
                     <PopoverTrigger as-child>
                       <Button variant="outline" class="w-full justify-start text-left font-normal">
                         <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.ogrn_date || 'Выберите дату' }}</span>
+                        <span>{{ form.passport_issue_date || 'Выберите дату' }}</span>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.ogrn_date" />
+                      <AppDatePicker v-model="form.passport_issue_date" />
                     </PopoverContent>
                   </Popover>
                   <Button
-                    v-if="form.ogrn_date"
+                    v-if="form.passport_issue_date"
                     type="button"
                     variant="ghost"
                     size="sm"
-                    @click="form.ogrn_date = null"
+                    @click="form.passport_issue_date = ''"
+                  >
+                    <Trash2 class="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <Label for="passport_birth_date">Дата рождения</Label>
+                <div class="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button variant="outline" class="w-full justify-start text-left font-normal">
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        <span>{{ form.passport_birth_date || 'Выберите дату' }}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0">
+                      <AppDatePicker v-model="form.passport_birth_date" />
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    v-if="form.passport_birth_date"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="form.passport_birth_date = ''"
                   >
                     <Trash2 class="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label required>КПП</Label>
-                <Input v-model="form.kpp" />
-              </div>
-              <div class="space-y-2">
-                <Label>ОКПО</Label>
-                <Input v-model="form.okpo" />
-              </div>
-            </div>
-          </div>
 
-          <!-- Адреса -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Адреса</h3>
-            <div class="space-y-2">
-              <Label required>Юридический адрес</Label>
-              <Input v-model="form.legal_address" />
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="space-y-2">
+                <Label for="passport_unit_name">Кем выдан</Label>
+                <Input id="passport_unit_name" v-model="form.passport_unit_name" />
+              </div>
+              <div class="space-y-2">
+                <Label for="passport_unit_code">Код подразделения</Label>
+                <Input id="passport_unit_code" v-model="form.passport_unit_code" />
+              </div>
             </div>
-            <div class="space-y-2">
-              <Label required>Фактический адрес</Label>
-              <Input v-model="form.real_address" />
-            </div>
-            <div class="space-y-2">
-              <Label>Почтовый адрес</Label>
-              <Input v-model="form.postal_address" />
-            </div>
-          </div>
 
-          <!-- Контакты -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Контакты</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label>Email</Label>
-                <Input v-model="form.email" type="email" />
-              </div>
-              <div class="space-y-2">
-                <Label>Телефон</Label>
-                <Input v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
-              </div>
+            <div class="space-y-2 mb-4">
+              <Label for="passport_birth_place">Место рождения</Label>
+              <Input id="passport_birth_place" v-model="form.passport_birth_place" />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="passport_address">Адрес регистрации</Label>
+              <Input id="passport_address" v-model="form.passport_address" />
             </div>
           </div>
         </div>

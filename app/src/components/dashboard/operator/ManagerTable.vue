@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreVertical, Mail, Lock, Pencil, Trash2 } from 'lucide-vue-next'
+import { MoreHorizontal, Mail, Lock, Pencil, Trash2 } from 'lucide-vue-next'
 
 interface User {
   id: string
@@ -28,6 +27,7 @@ interface User {
 }
 
 const props = defineProps<{
+  isLoading: boolean
   collection: User[]
 }>()
 
@@ -115,17 +115,21 @@ const getRoleLabel = (role: User['role']) => {
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="ghost" class="h-8 w-8 p-0">
-                  <MoreVertical class="h-4 w-4" />
+                  <MoreHorizontal class="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Pencil class="mr-2 h-4 w-4" />
-                  Edit
+              <DropdownMenuContent side="right">
+                <DropdownMenuItem @click="() => $emit('edit', user.id)">
+                  <div class="flex items-center justify-between gap-4 w-full">
+                    <span>Редактировать</span>
+                    <Pencil class="ml-2 h-4 w-4" />
+                  </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem class="text-destructive">
-                  <Trash2 class="mr-2 h-4 w-4" />
-                  Delete
+                <DropdownMenuItem @click="() => $emit('delete', user.id)">
+                  <div class="flex items-center justify-between w-full">
+                    <span>Удалить</span>
+                    <Trash2 class="ml-2 h-4 w-4" />
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
