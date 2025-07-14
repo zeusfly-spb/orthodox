@@ -52,12 +52,6 @@ const applyFilters = () => {
     ...filters.value,
   })
 }
-
-//
-const tours = ref([
-  { id: 1, title: 'Тур по Золотому кольцу' },
-  { id: 2, title: 'Горный поход' },
-])
 </script>
 
 <template>
@@ -108,7 +102,6 @@ const tours = ref([
       submit-text="Сохранить"
       cancel-text="Отмена"
       :item="currentItem"
-      :tours="tours"
       @dismiss="onCancel"
       @submit="handleSubmit"
     />

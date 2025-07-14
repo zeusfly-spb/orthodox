@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, reactive, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,30 +15,79 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'vue-sonner'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
+import { useEntityForm } from '@/composables/useEntityForm'
+import { Textarea } from '@/components/ui/textarea'
 
-interface Requisite {
+interface Operator {
   id?: number
-  title: string
+  name: string
   type: string | null
-  description: string | null
-  legal_name: string
-  opf_short: string | null
-  inn: string
-  ogrn: string
-  ogrn_date: string | null
-  kpp: string
-  okpo: string
-  legal_address: string
-  real_address: string
-  postal_address: string | null
   email: string | null
   phone: string | null
+  description: string | null
+  // json_attributes: {
+  //   date?: string
+  //   name?: string
+  //   number?: string
+  //   number_date?: string
+  // }
+  requisite: {
+    id?: number
+    title: string
+    type: string | null
+    description: string | null
+    legal_name: string
+    opf_short: string | null
+    inn: string | null
+    ogrn: string | null
+    ogrn_date: string | null
+    kpp: string | null
+    okpo: string | null
+    legal_address: string | null
+    real_address: string | null
+    postal_address: string | null
+    email: string | null
+    phone: string | null
+  }
 }
+
+const formTemplate: Operator = {
+  name: '',
+  type: null,
+  email: null,
+  phone: null,
+  description: null,
+  // json_attributes: {},
+  requisite: {
+    title: '',
+    type: null,
+    description: null,
+    legal_name: '',
+    opf_short: null,
+    inn: null,
+    ogrn: null,
+    ogrn_date: null,
+    kpp: null,
+    okpo: null,
+    legal_address: null,
+    real_address: null,
+    postal_address: null,
+    email: null,
+    phone: null,
+  },
+}
+
+const requiredFields: Array<keyof Operator> = ['name', 'requisite.legal_name']
+
+const { form, resetForm, fillForm, validateForm } = useEntityForm<Operator>(
+  formTemplate,
+  requiredFields,
+)
 
 const props = withDefaults(
   defineProps<{
     open: boolean
-    requisite?: Requisite
+    item?: Operator
     createTitle?: string
     editTitle?: string
     description?: string
@@ -46,8 +95,8 @@ const props = withDefaults(
     cancelText?: string
   }>(),
   {
-    createTitle: 'Создать реквизиты',
-    editTitle: 'Редактировать реквизиты',
+    createTitle: 'Добавить оператора',
+    editTitle: 'Редактировать оператора',
     description: '',
     submitText: 'Сохранить',
     cancelText: 'Отмена',
@@ -56,112 +105,53 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', requisite: Requisite): void
+  (e: 'submit', item: Operator): void
   (e: 'dismiss'): void
 }>()
 
-const form = reactive<Requisite>({
-  title: '',
-  type: null,
-  description: null,
-  legal_name: '',
-  opf_short: null,
-  inn: '',
-  ogrn: '',
-  ogrn_date: null,
-  kpp: '',
-  okpo: '',
-  legal_address: '',
-  real_address: '',
-  postal_address: null,
-  email: null,
-  phone: null,
-})
-
-const resetForm = () => {
-  form.title = ''
-  form.type = null
-  form.description = null
-  form.legal_name = ''
-  form.opf_short = null
-  form.inn = ''
-  form.ogrn = ''
-  form.ogrn_date = null
-  form.kpp = ''
-  form.okpo = ''
-  form.legal_address = ''
-  form.real_address = ''
-  form.postal_address = null
-  form.email = null
-  form.phone = null
-}
-
 watch(
-  () => props.requisite,
-  (requisite) => {
-    if (requisite) {
-      Object.assign(form, requisite)
-    } else {
-      resetForm()
+  () => props.item,
+  (newItem) => {
+    if (newItem) {
+      // Преобразуем данные из API в структуру формы
+      const formData = {
+        ...newItem,
+        // json_attributes: newItem.json_attributes || {},
+        requisite: newItem.requisite || formTemplate.requisite,
+      }
+      fillForm(formData)
     }
   },
   { immediate: true },
 )
 
+const firstInput = ref<HTMLInputElement | null>(null)
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
+    await nextTick()
+    if (firstInput.value) {
+      firstInput.value.blur() // Убираем фокус
+    }
+
     if (!isOpen) {
-      nextTick(() => {
-        resetForm()
-        emit('dismiss')
-      })
+      await nextTick()
+      // resetForm()
+      emit('dismiss')
     }
   },
 )
 
-const validateForm = (): boolean => {
-  if (!form.title) {
-    toast.error('Введите название')
-    return false
-  }
-
-  if (!form.legal_name) {
-    toast.error('Введите полное наименование организации')
-    return false
-  }
-
-  // if (!form.inn) {
-  //   toast.error('Введите ИНН')
-  //   return false
-  // }
-  //
-  // if (!form.ogrn) {
-  //   toast.error('Введите ОГРН')
-  //   return false
-  // }
-  //
-  // if (!form.kpp) {
-  //   toast.error('Введите КПП')
-  //   return false
-  // }
-  //
-  // if (!form.legal_address) {
-  //   toast.error('Введите юридический адрес')
-  //   return false
-  // }
-  //
-  // if (!form.real_address) {
-  //   toast.error('Введите фактический адрес')
-  //   return false
-  // }
-
-  return true
-}
-
 const onSubmit = () => {
   if (!validateForm()) return
-  emit('submit', { ...form })
+
+  // Подготавливаем данные для отправки
+  const submitData = {
+    ...form,
+    // Дополнительные преобразования если нужно
+  }
+
+  emit('submit', submitData)
   emit('update:open', false)
 }
 </script>
@@ -171,7 +161,7 @@ const onSubmit = () => {
     <DialogContent class="sm:max-w-[700px]" @openAutoFocus.prevent>
       <DialogHeader data-autofocus>
         <DialogTitle>
-          {{ requisite?.id ? props.editTitle : props.createTitle }}
+          {{ item?.id ? props.editTitle : props.createTitle }}
         </DialogTitle>
         <DialogDescription>
           {{ props.description }}
@@ -183,94 +173,13 @@ const onSubmit = () => {
           <!-- Основная информация -->
           <div class="space-y-4">
             <h3 class="text-lg font-medium">Основная информация</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label required>Название</Label>
-                <Input v-model="form.title" />
-              </div>
-              <div class="space-y-2">
-                <Label>Тип</Label>
-                <Input v-model="form.type" />
-              </div>
+            <div class="space-y-2">
+              <Label for="title" required>Название</Label>
+              <Input id="title" v-model="form.name" />
             </div>
             <div class="space-y-2">
               <Label>Описание</Label>
-              <Input v-model="form.description" />
-            </div>
-          </div>
-
-          <!-- Реквизиты -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Реквизиты</h3>
-            <div class="space-y-2">
-              <Label required>Полное наименование</Label>
-              <Input v-model="form.legal_name" />
-            </div>
-            <div class="space-y-2">
-              <Label>ОПФ (сокращенно)</Label>
-              <Input v-model="form.opf_short" />
-            </div>
-            <div class="grid grid-cols-3 gap-4">
-              <div class="space-y-2">
-                <Label required>ИНН</Label>
-                <Input v-model="form.inn" />
-              </div>
-              <div class="space-y-2">
-                <Label required>ОГРН</Label>
-                <Input v-model="form.ogrn" />
-              </div>
-              <div class="space-y-2">
-                <Label>Дата ОГРН</Label>
-                <div class="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="w-full justify-start text-left font-normal">
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.ogrn_date || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.ogrn_date" />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    v-if="form.ogrn_date"
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    @click="form.ogrn_date = null"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label required>КПП</Label>
-                <Input v-model="form.kpp" />
-              </div>
-              <div class="space-y-2">
-                <Label>ОКПО</Label>
-                <Input v-model="form.okpo" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Адреса -->
-          <div class="space-y-4 border-t pt-4">
-            <h3 class="text-lg font-medium">Адреса</h3>
-            <div class="space-y-2">
-              <Label required>Юридический адрес</Label>
-              <Input v-model="form.legal_address" />
-            </div>
-            <div class="space-y-2">
-              <Label required>Фактический адрес</Label>
-              <Input v-model="form.real_address" />
-            </div>
-            <div class="space-y-2">
-              <Label>Почтовый адрес</Label>
-              <Input v-model="form.postal_address" />
+              <Textarea v-model="form.description" />
             </div>
           </div>
 
@@ -286,6 +195,81 @@ const onSubmit = () => {
                 <Label>Телефон</Label>
                 <Input v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
               </div>
+            </div>
+          </div>
+
+          <!-- Реквизиты -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Реквизиты</h3>
+            <div class="space-y-2">
+              <Label required>Полное наименование</Label>
+              <Input v-model="form.requisite.legal_name" />
+            </div>
+            <div class="space-y-2">
+              <Label>ОПФ (сокращенно)</Label>
+              <Input v-model="form.requisite.opf_short" />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="space-y-2">
+                <Label>ИНН</Label>
+                <Input v-model="form.requisite.inn" />
+              </div>
+              <div class="space-y-2">
+                <Label>ОГРН</Label>
+                <Input v-model="form.requisite.ogrn" />
+              </div>
+              <div class="space-y-2">
+                <Label>Дата ОГРН</Label>
+                <div class="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button variant="outline" class="w-full justify-start text-left font-normal">
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        <span>{{ form.requisite.ogrn_date || 'Выберите дату' }}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0">
+                      <AppDatePicker v-model="form.requisite.ogrn_date" />
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    v-if="form.requisite.ogrn_date"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="form.requisite.ogrn_date = null"
+                  >
+                    <Trash2 class="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label>КПП</Label>
+                <Input v-model="form.requisite.kpp" />
+              </div>
+              <div class="space-y-2">
+                <Label>ОКПО</Label>
+                <Input v-model="form.requisite.okpo" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Адреса -->
+          <div class="space-y-4 border-t pt-4">
+            <h3 class="text-lg font-medium">Адреса</h3>
+            <div class="space-y-2">
+              <Label>Юридический адрес</Label>
+              <Input v-model="form.requisite.legal_address" />
+            </div>
+            <div class="space-y-2">
+              <Label>Фактический адрес</Label>
+              <Input v-model="form.requisite.real_address" />
+            </div>
+            <div class="space-y-2">
+              <Label>Почтовый адрес</Label>
+              <Input v-model="form.requisite.postal_address" />
             </div>
           </div>
         </div>

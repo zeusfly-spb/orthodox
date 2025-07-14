@@ -101,7 +101,7 @@ const applyFilters = () => {
       description="Данные"
       submit-text="Сохранить"
       cancel-text="Отмена"
-      :item="currentItem"
+      :item="currentItem?.requisite"
       @dismiss="onCancel"
       @submit="handleSubmit"
     />

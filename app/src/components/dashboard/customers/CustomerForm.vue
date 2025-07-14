@@ -117,7 +117,7 @@ const addDate = (field: 'passport_issue_date' | 'passport_birth_date') => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[800px]">
+    <DialogContent class="sm:max-w-[800px]" @openAutoFocus.prevent>
       <DialogHeader data-autofocus>
         <DialogTitle>
           {{ item ? props.editTitle : props.createTitle }}

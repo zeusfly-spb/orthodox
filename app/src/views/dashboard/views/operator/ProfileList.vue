@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
 
 import ManagerTable from '@/components/dashboard/operator/ManagerTable.vue'
-import PartnerForm from '@/components/dashboard/partners/PartnerForm.vue'
 import { profileApi } from '@/api/profile'
 import { useCrudActions } from '@/composables/useCrudActions'
 import Pagination from '@/components/app/Pagination.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import IconHome from '@/components/icons/IconHome.vue'
 import { Skeleton } from '@/components/ui/skeleton'
+import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
 
 const {
   isLoading,
@@ -131,14 +131,14 @@ const applyFilters = () => {
         />
       </CardFooter>
     </Card>
-    <PartnerForm
+    <OperatorForm
       v-model:open="showForm"
-      createTitle="Добавить менеджера"
+      createTitle="Редактировать данные"
       editTitle="Редактировать данные"
       description="Данные"
       submit-text="Сохранить"
       cancel-text="Отмена"
-      :item="currentItem"
+      :item="items"
       @dismiss="onCancel"
       @submit="handleSubmit"
     />

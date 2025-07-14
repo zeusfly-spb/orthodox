@@ -24,36 +24,45 @@ import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
 
 interface Customer {
+  id?: number
   firstname: string
   lastname: string
-  patronymic?: string
+  patronymic?: string | null
   email: string
   phone: string
-  passport_serial_number: string
-  passport_series: string
-  passport_number: string
-  passport_issue_date?: string
-  passport_birth_date?: string
+  passport_series: string | null
+  passport_number: string | null
+  passport_issue_date?: string | null
+  passport_unit_name?: string | null
+  passport_unit_code?: string | null
+  passport_birth_date?: string | null
+  passport_birth_place?: string | null
+  passport_address?: string | null
+  gender?: string | null
+  snils?: string | null
+}
+
+interface Tour {
+  id: number
+  title: string
+  route: string | null
+  price: number
+  duration: number
+  description: string | null
 }
 
 interface BookingForm {
-  tour_id: number | null
+  id?: number
   status: string
-  description: string
+  description: string | null
   customers: Customer[]
+  tour: Tour | null
 }
 
 const props = withDefaults(
   defineProps<{
     open: boolean
-    tours: Array<{ id: number; title: string }>
-    booking?: {
-      id?: number
-      tour_id: number
-      status: string
-      description: string
-      customers: Customer[]
-    }
+    item?: BookingForm | null
     createTitle?: string
     editTitle?: string
     description?: string
@@ -66,31 +75,40 @@ const props = withDefaults(
     description: '',
     submitText: 'Сохранить',
     cancelText: 'Отмена',
+    item: null,
   },
 )
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', booking: BookingForm): void
+  (e: 'submit', item: BookingForm): void
   (e: 'dismiss'): void
 }>()
 
 const customerTemplate: Customer = {
   firstname: '',
   lastname: '',
-  patronymic: '',
+  patronymic: null,
   email: '',
   phone: '',
-  passport_serial_number: '',
-  passport_series: '',
-  passport_number: '',
+  passport_series: null,
+  passport_number: null,
+  passport_issue_date: null,
+  passport_unit_name: null,
+  passport_unit_code: null,
+  passport_birth_date: null,
+  passport_birth_place: null,
+  passport_address: null,
+  gender: null,
+  snils: null,
 }
 
 const form = reactive<BookingForm>({
-  tour_id: null,
+  id: undefined,
   status: 'pending',
-  description: '',
+  description: null,
   customers: [{ ...customerTemplate }],
+  tour: null,
 })
 
 const addCustomer = () => {
@@ -106,25 +124,30 @@ const removeCustomer = (index: number) => {
 }
 
 const resetForm = () => {
-  form.tour_id = null
+  form.id = undefined
   form.status = 'pending'
-  form.description = ''
+  form.description = null
   form.customers = [{ ...customerTemplate }]
+  form.tour = null
 }
 
 watch(
-  () => props.booking,
-  (booking) => {
-    if (booking) {
-      form.tour_id = booking.tour_id
-      form.status = booking.status
-      form.description = booking.description
-      form.customers = booking.customers.map((c) => ({ ...customerTemplate, ...c }))
+  () => props.item,
+  (item) => {
+    if (item) {
+      form.id = item.id
+      form.status = item.status
+      form.description = item.description
+      form.customers = item.customers.map((customer) => ({
+        ...customerTemplate,
+        ...customer,
+      }))
+      form.tour = item.tour ? { ...item.tour } : null
     } else {
       resetForm()
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 watch(
@@ -140,8 +163,8 @@ watch(
 )
 
 const validateForm = (): boolean => {
-  if (!form.tour_id) {
-    toast.error('Выберите тур')
+  if (!form.tour) {
+    toast.error('Тур не выбран')
     return false
   }
 
@@ -151,11 +174,7 @@ const validateForm = (): boolean => {
       return false
     }
 
-    if (
-      !customer.passport_serial_number ||
-      !customer.passport_series ||
-      !customer.passport_number
-    ) {
+    if (!customer.passport_series || !customer.passport_number) {
       toast.error(`Заполните паспортные данные для клиента ${index + 1}`)
       return false
     }
@@ -173,32 +192,14 @@ const onSubmit = () => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[900px]">
-      <DialogHeader data-autofocus>
-        <DialogTitle>
-          {{ booking?.id ? props.editTitle : props.createTitle }}
-        </DialogTitle>
-        <DialogDescription>
-          {{ props.description }}
-        </DialogDescription>
-      </DialogHeader>
-
+    <DialogContent class="sm:max-w-[900px]" @openAutoFocus.prevent>
       <form @submit.prevent="onSubmit">
         <div class="grid gap-6 py-4">
           <!-- Tour and Status Selection -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-4 items-center">
             <div class="space-y-2">
-              <Label required>Тур</Label>
-              <Select v-model="form.tour_id">
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите тур" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="tour in tours" :key="tour.id" :value="tour.id">
-                    {{ tour.title }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Тур</Label>
+              <h4 class="py-1 font-medium text-muted-foreground">{{ form.tour?.title || '' }}</h4>
             </div>
             <div class="space-y-2">
               <Label>Статус</Label>
@@ -277,20 +278,13 @@ const onSubmit = () => {
                 </div>
               </div>
 
-              <div class="grid grid-cols-3 gap-4 mb-4">
+              <div class="grid grid-cols-2 gap-4 mb-4">
                 <div class="space-y-2">
-                  <Label :for="`passport_serial_number-${index}`" required>Серия и номер</Label>
-                  <Input
-                    :id="`passport_serial_number-${index}`"
-                    v-model="customer.passport_serial_number"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_series-${index}`" required>Серия</Label>
+                  <Label :for="`passport_series-${index}`" required>Серия паспорта</Label>
                   <Input :id="`passport_series-${index}`" v-model="customer.passport_series" />
                 </div>
                 <div class="space-y-2">
-                  <Label :for="`passport_number-${index}`" required>Номер</Label>
+                  <Label :for="`passport_number-${index}`" required>Номер паспорта</Label>
                   <Input :id="`passport_number-${index}`" v-model="customer.passport_number" />
                 </div>
               </div>
@@ -318,7 +312,7 @@ const onSubmit = () => {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      @click="customer.passport_issue_date = ''"
+                      @click="customer.passport_issue_date = null"
                     >
                       <Trash2 class="h-4 w-4 text-destructive" />
                     </Button>
@@ -346,12 +340,17 @@ const onSubmit = () => {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      @click="customer.passport_birth_date = ''"
+                      @click="customer.passport_birth_date = null"
                     >
                       <Trash2 class="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </div>
+              </div>
+
+              <div class="space-y-2">
+                <Label :for="`passport_unit_name-${index}`">Кем выдан</Label>
+                <Input :id="`passport_unit_name-${index}`" v-model="customer.passport_unit_name" />
               </div>
             </div>
           </div>

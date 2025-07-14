@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, reactive, nextTick } from 'vue'
+import { watch, nextTick } from 'vue'
 import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'vue-sonner'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
+import { useEntityForm } from '@/composables/useEntityForm'
 
 interface Requisite {
   id?: number
@@ -35,10 +36,43 @@ interface Requisite {
   phone: string | null
 }
 
+const formTemplate: Requisite = {
+  title: '',
+  type: null,
+  description: null,
+  legal_name: '',
+  opf_short: null,
+  inn: '',
+  ogrn: '',
+  ogrn_date: null,
+  kpp: '',
+  okpo: '',
+  legal_address: '',
+  real_address: '',
+  postal_address: null,
+  email: null,
+  phone: null,
+}
+
+const requiredFields: Array<keyof Requisite> = [
+  'title',
+  'legal_name',
+  'inn',
+  'ogrn',
+  'kpp',
+  'legal_address',
+  'real_address',
+]
+
+const { form, resetForm, fillForm, validateForm } = useEntityForm<Requisite>(
+  formTemplate,
+  requiredFields,
+)
+
 const props = withDefaults(
   defineProps<{
     open: boolean
-    requisite?: Requisite
+    item?: Requisite
     createTitle?: string
     editTitle?: string
     description?: string
@@ -56,108 +90,22 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', requisite: Requisite): void
+  (e: 'submit', item: Requisite): void
   (e: 'dismiss'): void
 }>()
 
-const form = reactive<Requisite>({
-  title: '',
-  type: null,
-  description: null,
-  legal_name: '',
-  opf_short: null,
-  inn: '',
-  ogrn: '',
-  ogrn_date: null,
-  kpp: '',
-  okpo: '',
-  legal_address: '',
-  real_address: '',
-  postal_address: null,
-  email: null,
-  phone: null,
-})
-
-const resetForm = () => {
-  form.title = ''
-  form.type = null
-  form.description = null
-  form.legal_name = ''
-  form.opf_short = null
-  form.inn = ''
-  form.ogrn = ''
-  form.ogrn_date = null
-  form.kpp = ''
-  form.okpo = ''
-  form.legal_address = ''
-  form.real_address = ''
-  form.postal_address = null
-  form.email = null
-  form.phone = null
-}
-
-watch(
-  () => props.requisite,
-  (requisite) => {
-    if (requisite) {
-      Object.assign(form, requisite)
-    } else {
-      resetForm()
-    }
-  },
-  { immediate: true },
-)
+watch(() => props.item, fillForm, { immediate: true })
 
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
     if (!isOpen) {
-      nextTick(() => {
-        resetForm()
-        emit('dismiss')
-      })
+      await nextTick()
+      resetForm()
+      emit('dismiss')
     }
   },
 )
-
-const validateForm = (): boolean => {
-  if (!form.title) {
-    toast.error('Введите название')
-    return false
-  }
-
-  if (!form.legal_name) {
-    toast.error('Введите полное наименование организации')
-    return false
-  }
-
-  // if (!form.inn) {
-  //   toast.error('Введите ИНН')
-  //   return false
-  // }
-  //
-  // if (!form.ogrn) {
-  //   toast.error('Введите ОГРН')
-  //   return false
-  // }
-  //
-  // if (!form.kpp) {
-  //   toast.error('Введите КПП')
-  //   return false
-  // }
-  //
-  // if (!form.legal_address) {
-  //   toast.error('Введите юридический адрес')
-  //   return false
-  // }
-  //
-  // if (!form.real_address) {
-  //   toast.error('Введите фактический адрес')
-  //   return false
-  // }
-
-  return true
-}
 
 const onSubmit = () => {
   if (!validateForm()) return
@@ -168,10 +116,10 @@ const onSubmit = () => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[700px]">
+    <DialogContent class="sm:max-w-[700px]" @openAutoFocus.prevent>
       <DialogHeader data-autofocus>
         <DialogTitle>
-          {{ requisite?.id ? props.editTitle : props.createTitle }}
+          {{ item?.id ? props.editTitle : props.createTitle }}
         </DialogTitle>
         <DialogDescription>
           {{ props.description }}
