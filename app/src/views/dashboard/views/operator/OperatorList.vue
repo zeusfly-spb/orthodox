@@ -3,10 +3,10 @@ import { ref } from 'vue'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
-
 import ManagerTable from '@/components/dashboard/operator/ManagerTable.vue'
 import { profileApi } from '@/api/profile'
 import { useCrudActions } from '@/composables/useCrudActions'
+import { useManagerActions } from '@/composables/useManagerActions'
 import Pagination from '@/components/app/Pagination.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import IconHome from '@/components/icons/IconHome.vue'
@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
 import ManagerForm from '@/components/dashboard/operator/ManagerForm.vue'
 
+// Оператор
 const {
   isLoading,
   showConfirm,
@@ -33,8 +34,26 @@ const {
   deleteMessage: 'Данные удалены',
 })
 
-// Load API data
+// Менеджеры
+const {
+  isLoading: isLoadingManagers,
+  showConfirm: showConfirmManager,
+  showForm: showManagerForm,
+  handledItemId: handledManagerId,
+  items: managers,
+  currentItem: currentManager,
+  pagination: paginationManagers,
+  loadCollection: loadManagers,
+  handleSubmit: handleSubmitManager,
+  handleEdit: handleEditManager,
+  handleDelete: handleDeleteManager,
+  onDeleteConfirm: onDeleteConfirmManager,
+  onCancel: onCancelManager,
+} = useManagerActions()
+
+// Load initial data
 loadCollection()
+//loadManagers()
 
 // Filters
 const filters = ref({
@@ -50,22 +69,19 @@ const handlePageChange = (page: number) => {
 }
 
 const applyFilters = () => {
-  // Сбрасываем на первую страницу при применении фильтров
   loadCollection({
     page: 1,
     ...filters.value,
   })
 }
-
-const showManagerForm = ref(false)
 </script>
 
 <template>
   <div>
+    <!-- Оператор -->
     <Card class="mb-8">
       <CardContent>
         <div class="flex shrink-0 items-center justify-between gap-2">
-          <!-- Левая часть -->
           <div class="flex items-center gap-4 pl-4">
             <template v-if="isLoading">
               <Skeleton class="h-20 w-20 rounded-full" />
@@ -86,7 +102,6 @@ const showManagerForm = ref(false)
               </div>
             </template>
           </div>
-          <!-- Правая часть -->
           <div class="flex items-center gap-4 pr-4">
             <Button
               class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
@@ -98,15 +113,15 @@ const showManagerForm = ref(false)
         </div>
       </CardContent>
     </Card>
+
+    <!-- Менеджеры -->
     <Card class="mb-8 gap-0">
       <CardContent>
         <div class="mb-8">
           <div class="flex shrink-0 items-center justify-between gap-2">
-            <!-- Левая часть -->
             <div class="flex items-center gap-4 pl-4">
               <h1 class="text-lg font-bold text-muted-foreground">Менеджеры</h1>
             </div>
-            <!-- Правая часть -->
             <div class="flex items-center gap-4 pr-4">
               <Button
                 class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
@@ -118,22 +133,27 @@ const showManagerForm = ref(false)
           </div>
         </div>
         <ManagerTable
-          :isLoading="isLoading"
-          :collection="items.managers || []"
-          @edit="handleEdit"
-          @delete="handleDelete"
+          :isLoading="isLoadingManagers"
+          :collection="items.managers"
+          @edit-manager="handleEditManager"
+          @delete-manager="handleDeleteManager"
         />
       </CardContent>
-      <CardFooter class="muted border-t" v-if="pagination.currentPage && pagination.lastPage > 1">
+      <CardFooter
+        class="muted border-t"
+        v-if="paginationManagers.currentPage && paginationManagers.lastPage > 1"
+      >
         <Pagination
-          :current-page="pagination.currentPage"
-          :per-page="pagination.perPage"
-          :total="pagination.total"
-          :last-page="pagination.lastPage"
-          @update:current-page="handlePageChange"
+          :current-page="paginationManagers.currentPage"
+          :per-page="paginationManagers.perPage"
+          :total="paginationManagers.total"
+          :last-page="paginationManagers.lastPage"
+          @update:current-page="(page) => loadManagers({ page })"
         />
       </CardFooter>
     </Card>
+
+    <!-- Формы -->
     <OperatorForm
       v-model:open="showForm"
       createTitle="Редактировать данные"
@@ -145,24 +165,26 @@ const showManagerForm = ref(false)
       @dismiss="onCancel"
       @submit="handleSubmit"
     />
-    <ConfirmDialog
-      v-model:show="showConfirm"
-      title="Удалить запись?"
-      description="Вы уверены что хотите удалить эту запись? Это действие нельзя отменить."
-      confirm-text="Удалить"
-      @dismiss="onCancel"
-      @confirm="onDeleteConfirm"
-    />
+
     <ManagerForm
       v-model:open="showManagerForm"
-      createTitle="Редактировать данные"
-      editTitle="Редактировать данные"
-      description="Данные"
+      createTitle="Добавить менеджера"
+      editTitle="Редактировать менеджера"
+      description="Данные менеджера"
       submit-text="Сохранить"
       cancel-text="Отмена"
-      :item="item"
-      @dismiss="onCancel"
-      @submit="handleSubmit"
+      :item="currentManager"
+      @dismiss="onCancelManager"
+      @submit="handleSubmitManager"
+    />
+
+    <ConfirmDialog
+      v-model:show="showConfirmManager"
+      title="Удалить менеджера?"
+      description="Вы уверены что хотите удалить этого менеджера? Это действие нельзя отменить."
+      confirm-text="Удалить"
+      @dismiss="onCancelManager"
+      @confirm="onDeleteConfirmManager"
     />
   </div>
 </template>

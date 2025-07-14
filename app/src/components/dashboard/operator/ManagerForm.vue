@@ -20,36 +20,20 @@ import { useEntityForm } from '@/composables/useEntityForm'
 interface FormFields {
   firstname: string
   lastname: string
-  patronymic?: string
+  avatar: string
   email: string
   phone: string
-  passport_series: string
-  passport_number: string
-  passport_issue_date?: string
-  passport_unit_name?: string
-  passport_unit_code?: string
-  passport_birth_date?: string
-  passport_birth_place?: string
-  passport_address?: string
 }
 
 const formTemplate: FormFields = {
   firstname: '',
   lastname: '',
-  patronymic: '',
   email: '',
   phone: '',
-  passport_series: '',
-  passport_number: '',
-  passport_issue_date: '',
-  passport_unit_name: '',
-  passport_unit_code: '',
-  passport_birth_date: '',
-  passport_birth_place: '',
-  passport_address: '',
+  avatar: '',
 }
 
-const requiredFields: Array<keyof FormFields> = ['firstname', 'lastname', 'email']
+const requiredFields: Array<keyof FormFields> = ['firstname', 'lastname']
 
 const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
   formTemplate,
@@ -139,101 +123,12 @@ const addDate = (field: 'passport_issue_date' | 'passport_birth_date') => {
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label for="email" required>Email</Label>
-              <Input id="email" v-model="form.email" type="email" />
-            </div>
-            <div class="space-y-2">
-              <Label for="phone" required>Телефон</Label>
+              <Label for="phone">Телефон</Label>
               <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
             </div>
-          </div>
-
-          <div class="border-t pt-4 mt-4">
-            <h3 class="text-lg font-medium mb-4">Паспортные данные</h3>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_series" required>Серия</Label>
-                <Input id="passport_series" v-model="form.passport_series" />
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_number" required>Номер</Label>
-                <Input id="passport_number" v-model="form.passport_number" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_issue_date">Дата выдачи</Label>
-                <div class="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="w-full justify-start text-left font-normal">
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.passport_issue_date || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.passport_issue_date" />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    v-if="form.passport_issue_date"
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    @click="form.passport_issue_date = ''"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_birth_date">Дата рождения</Label>
-                <div class="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="w-full justify-start text-left font-normal">
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.passport_birth_date || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.passport_birth_date" />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    v-if="form.passport_birth_date"
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    @click="form.passport_birth_date = ''"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_unit_name">Кем выдан</Label>
-                <Input id="passport_unit_name" v-model="form.passport_unit_name" />
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_unit_code">Код подразделения</Label>
-                <Input id="passport_unit_code" v-model="form.passport_unit_code" />
-              </div>
-            </div>
-
-            <div class="space-y-2 mb-4">
-              <Label for="passport_birth_place">Место рождения</Label>
-              <Input id="passport_birth_place" v-model="form.passport_birth_place" />
-            </div>
-
             <div class="space-y-2">
-              <Label for="passport_address">Адрес регистрации</Label>
-              <Input id="passport_address" v-model="form.passport_address" />
+              <Label for="email">Email</Label>
+              <Input id="email" v-model="form.email" type="email" disabled />
             </div>
           </div>
         </div>
