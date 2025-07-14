@@ -31,6 +31,11 @@ const props = defineProps<{
   collection: User[]
 }>()
 
+const emit = defineEmits<{
+  (e: 'edit-manager', id: string): void
+  (e: 'delete-manager', id: string): void
+}>()
+
 const getInitials = (name: string) => {
   return name
     .split(' ')

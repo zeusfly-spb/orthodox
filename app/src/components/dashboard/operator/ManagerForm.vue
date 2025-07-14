@@ -49,14 +49,7 @@ const formTemplate: FormFields = {
   passport_address: '',
 }
 
-const requiredFields: Array<keyof FormFields> = [
-  'firstname',
-  'lastname',
-  'email',
-  'phone',
-  'passport_series',
-  'passport_number',
-]
+const requiredFields: Array<keyof FormFields> = ['firstname', 'lastname', 'email']
 
 const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
   formTemplate,
