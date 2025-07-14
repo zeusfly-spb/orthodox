@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import IconHome from '@/components/icons/IconHome.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
+import ManagerForm from '@/components/dashboard/operator/ManagerForm.vue'
 
 const {
   isLoading,
@@ -55,6 +56,8 @@ const applyFilters = () => {
     ...filters.value,
   })
 }
+
+const showManagerForm = ref(false)
 </script>
 
 <template>
@@ -107,7 +110,7 @@ const applyFilters = () => {
             <div class="flex items-center gap-4 pr-4">
               <Button
                 class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-                @click="showForm = true"
+                @click="showManagerForm = true"
               >
                 Добавить менеджера
               </Button>
@@ -149,6 +152,17 @@ const applyFilters = () => {
       confirm-text="Удалить"
       @dismiss="onCancel"
       @confirm="onDeleteConfirm"
+    />
+    <ManagerForm
+      v-model:open="showManagerForm"
+      createTitle="Редактировать данные"
+      editTitle="Редактировать данные"
+      description="Данные"
+      submit-text="Сохранить"
+      cancel-text="Отмена"
+      :item="item"
+      @dismiss="onCancel"
+      @submit="handleSubmit"
     />
   </div>
 </template>

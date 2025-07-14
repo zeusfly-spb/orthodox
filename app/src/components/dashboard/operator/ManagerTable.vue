@@ -39,32 +39,6 @@ const getInitials = (name: string) => {
     .toUpperCase()
 }
 
-const getStatusColor = (status: User['status']) => {
-  switch (status) {
-    case 'active':
-      return 'bg-green-500'
-    case 'pending':
-      return 'bg-yellow-500'
-    case 'suspended':
-      return 'bg-red-500'
-    default:
-      return 'bg-gray-500'
-  }
-}
-
-const getRoleVariant = (role: User['role']) => {
-  switch (role) {
-    case 'tour_admin':
-      return 'destructive'
-    case 'tour_manager':
-      return 'secondary'
-    case 'user':
-      return 'outline'
-    default:
-      return 'default'
-  }
-}
-
 const getRoleLabel = (role: User['role']) => {
   switch (role) {
     case 'tour_admin':
@@ -119,13 +93,13 @@ const getRoleLabel = (role: User['role']) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right">
-                <DropdownMenuItem @click="() => $emit('edit', user.id)">
+                <DropdownMenuItem @click="() => $emit('edit-manager', user.id)">
                   <div class="flex items-center justify-between gap-4 w-full">
                     <span>Редактировать</span>
                     <Pencil class="ml-2 h-4 w-4" />
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="() => $emit('delete', user.id)">
+                <DropdownMenuItem @click="() => $emit('delete-manager', user.id)">
                   <div class="flex items-center justify-between w-full">
                     <span>Удалить</span>
                     <Trash2 class="ml-2 h-4 w-4" />
