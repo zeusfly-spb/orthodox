@@ -28,6 +28,28 @@ export const resetPassword = async (data: any): Promise<void> => {
   await api.post('/auth/reset-password', data)
 }
 
+// export const verifyEmail = (data: { id: string; hash: string }) => {
+//   return api.get(`/email/verify/${data.id}/${data.hash}`)
+// }
+
+export const verifyEmail = (data: {
+  id: string
+  hash: string
+  signature: string
+  expires: string
+}) => {
+  return api.get(`/email/verify/${data.id}/${data.hash}`, {
+    params: {
+      signature: data.signature,
+      expires: data.expires,
+    },
+  })
+}
+
+export const resendVerificationEmail = (data: { email: string }) => {
+  return api.post('/email/resend', data)
+}
+
 export const fetchOperators = async (): Promise<AxiosResponse> => {
   return api.get('/operators')
 }

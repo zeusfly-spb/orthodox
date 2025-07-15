@@ -45,6 +45,18 @@ const routes = [
     meta: { guestOnly: true },
   },
   {
+    path: '/email/verify/:id/:hash',
+    name: 'email-verify',
+    component: () => import('@/views/auth/EmailVerification.vue'),
+    props: (route) => ({
+      id: route.params.id,
+      hash: route.params.hash,
+      signature: route.query.signature,
+      expires: route.query.expires,
+    }),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/dashboard/Dashboard.vue'),
