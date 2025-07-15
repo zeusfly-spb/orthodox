@@ -92,13 +92,18 @@ const handleSubmit = async () => {
                 </div>
               </ComboboxAnchor>
 
-              <ComboboxList class="w-full max-w-md">
+              <ComboboxList class="w-full max-w-md max-h-100 overflow-y-auto">
                 <ComboboxEmpty>
                   <div class="w-full max-w-md px-6">Нет доступных операторов</div>
                 </ComboboxEmpty>
 
                 <ComboboxGroup>
-                  <ComboboxItem v-for="(name, id) in operators" :key="id" :value="id">
+                  <ComboboxItem
+                    v-for="(name, id) in operators"
+                    :key="id"
+                    :value="id"
+                    class="cursor-pointer"
+                  >
                     {{ name }}
 
                     <ComboboxItemIndicator>
