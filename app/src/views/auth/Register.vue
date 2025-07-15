@@ -1,12 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Check, Search } from 'lucide-vue-next'
+import {
+  Combobox,
+  ComboboxAnchor,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxList,
+} from '@/components/ui/combobox'
 import { toast } from 'vue-sonner'
-import type { RegisterData, AuthError } from '@/types/auth'
+import type { AuthError, RegisterData } from '@/types/auth'
+import { cn } from '@/lib/utils'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -16,10 +28,24 @@ const form = ref<RegisterData>({
   email: '',
   password: '',
   password_confirmation: '',
+  tour_operator_id: '',
+})
+
+const operators = ref<{ value: string; label: string }[]>([])
+
+onMounted(async () => {
+  try {
+    const { data } = await authStore.loadOperators()
+    operators.value = data
+  } catch (error) {
+    console.error('Error loading operators:', error)
+    toast.error('Ошибка загрузки списка операторов')
+  }
 })
 
 const handleSubmit = async () => {
   try {
+    // form.value = { ...form.value, tour_operator_id: form.value.tour_operator_id?.value }
     await authStore.register(form.value)
     router.push({ name: 'dashboard' })
   } catch (error: unknown) {
@@ -47,10 +73,43 @@ const handleSubmit = async () => {
     <Card class="w-full max-w-md">
       <CardHeader>
         <CardTitle class="text-3xl mb-2">Регистрация</CardTitle>
-        <CardDescription class="text-gray-800"> Регистрация на портале </CardDescription>
+        <CardDescription class="text-gray-800">Регистрация на портале</CardDescription>
       </CardHeader>
       <CardContent>
         <form @submit.prevent="handleSubmit" class="space-y-6">
+          <div>
+            <Combobox v-model="form.tour_operator_id" by="id">
+              <ComboboxAnchor class="w-full">
+                <div class="relative w-full max-w-sm items-center">
+                  <ComboboxInput
+                    class="pl-2"
+                    :display-value="(id) => operators[id] || ''"
+                    placeholder="Выберите оператора..."
+                  />
+                  <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
+                    <Search class="size-4 text-muted-foreground" />
+                  </span>
+                </div>
+              </ComboboxAnchor>
+
+              <ComboboxList class="w-full max-w-md">
+                <ComboboxEmpty>
+                  <div class="w-full max-w-md px-6">Нет доступных операторов</div>
+                </ComboboxEmpty>
+
+                <ComboboxGroup>
+                  <ComboboxItem v-for="(name, id) in operators" :key="id" :value="id">
+                    {{ name }}
+
+                    <ComboboxItemIndicator>
+                      <Check :class="cn('ml-auto h-4 w-4')" />
+                    </ComboboxItemIndicator>
+                  </ComboboxItem>
+                </ComboboxGroup>
+              </ComboboxList>
+            </Combobox>
+          </div>
+
           <div>
             <Input
               id="name"
@@ -100,8 +159,9 @@ const handleSubmit = async () => {
               type="submit"
               class="w-full py-6 bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
               :disabled="authStore.isLoading"
-              >Зарегистрироваться</Button
             >
+              Зарегистрироваться
+            </Button>
           </div>
         </form>
 

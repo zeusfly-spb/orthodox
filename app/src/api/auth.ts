@@ -27,3 +27,7 @@ export const forgotPassword = async (data: any): Promise<void> => {
 export const resetPassword = async (data: any): Promise<void> => {
   await api.post('/auth/reset-password', data)
 }
+
+export const fetchOperators = async (): Promise<AxiosResponse> => {
+  return api.get('/operators')
+}

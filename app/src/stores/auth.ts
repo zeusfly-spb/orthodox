@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { fetchUser, loginUser, logoutUser, registerUser } from '@/api/auth'
+import { fetchOperators, fetchUser, loginUser, logoutUser, registerUser } from '@/api/auth'
 import type { ApiUser, Credentials, RegisterData } from '@/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessTokenType = 'Bearer'
   const accessToken = ref<string | null>(localStorage.getItem(accessTokenName) || null)
   const user = ref<ApiUser | null>(null)
+  const operators = ref<[] | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -98,6 +99,20 @@ export const useAuthStore = defineStore('auth', () => {
     return accessToken.value
   }
 
+  async function loadOperators() {
+    try {
+      isLoading.value = true
+      const { data } = await fetchOperators()
+      operators.value = data?.data || data
+      return data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     user,
     accessToken,
@@ -105,10 +120,12 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     isAuthenticated,
+    operators,
     login,
     register,
     logout,
     loadUser,
     checkToken,
+    loadOperators,
   }
 })
