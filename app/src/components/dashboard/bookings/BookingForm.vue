@@ -20,6 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
 
@@ -231,7 +237,7 @@ const onSubmit = () => {
           </div>
 
           <!-- Customers Section -->
-          <div class="border-t pt-4">
+          <div class="border-t pt-4 mb-4">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-medium">Клиенты</h3>
               <Button type="button" variant="outline" @click="addCustomer">
@@ -239,129 +245,158 @@ const onSubmit = () => {
               </Button>
             </div>
 
-            <div
-              v-for="(customer, index) in form.customers"
-              :key="index"
-              class="mb-6 border-b pb-6"
-            >
-              <div class="flex justify-between items-center mb-4">
-                <h4 class="font-medium">Клиент {{ index + 1 }}</h4>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  @click="removeCustomer(index)"
-                  :disabled="form.customers.length <= 1"
-                >
-                  Удалить
-                </Button>
-              </div>
+            <Accordion type="multiple" class="w-full space-y-2">
+              <AccordionItem
+                v-for="(customer, index) in form.customers"
+                :key="index"
+                :value="`item-${index}`"
+                class="border rounded-lg px-4 mb-2 data-[state=open]:bg-muted/10"
+              >
+                <div class="flex justify-between items-center">
+                  <AccordionTrigger class="hover:no-underline py-4 w-full">
+                    <div class="flex grow items-center gap-4">
+                      <div class="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                        {{ index + 1 }}
+                      </div>
+                      <div class="text-left">
+                        <h4 class="font-medium">
+                          {{ customer.lastname || 'Новый клиент' }} {{ customer.firstname }}
+                          {{ customer.patronymic }}
+                        </h4>
+                        <p class="text-sm text-muted-foreground">
+                          {{ customer.phone || 'Телефон не указан' }}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    class="text-destructive hover:text-destructive"
+                    @click.stop="removeCustomer(index)"
+                    :disabled="form.customers.length <= 1"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </Button>
+                </div>
 
-              <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`lastname-${index}`" required>Фамилия</Label>
-                  <Input :id="`lastname-${index}`" v-model="customer.lastname" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`firstname-${index}`" required>Имя</Label>
-                  <Input :id="`firstname-${index}`" v-model="customer.firstname" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`patronymic-${index}`">Отчество</Label>
-                  <Input :id="`patronymic-${index}`" v-model="customer.patronymic" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`email-${index}`" required>Email</Label>
-                  <Input :id="`email-${index}`" v-model="customer.email" type="email" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`phone-${index}`" required>Телефон</Label>
-                  <Input
-                    :id="`phone-${index}`"
-                    v-model="customer.phone"
-                    placeholder="+7 (XXX) XXX-XX-XX"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="space-y-2">
-                  <Label :for="`passport_series-${index}`" required>Серия паспорта</Label>
-                  <Input :id="`passport_series-${index}`" v-model="customer.passport_series" />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_number-${index}`" required>Номер паспорта</Label>
-                  <Input :id="`passport_number-${index}`" v-model="customer.passport_number" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <Label :for="`passport_issue_date-${index}`">Дата выдачи</Label>
-                  <div class="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger as-child>
-                        <Button
-                          variant="outline"
-                          class="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon class="mr-2 h-4 w-4" />
-                          <span>{{ customer.passport_issue_date || 'Выберите дату' }}</span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent class="w-auto p-0">
-                        <AppDatePicker v-model="customer.passport_issue_date" />
-                      </PopoverContent>
-                    </Popover>
-                    <Button
-                      v-if="customer.passport_issue_date"
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      @click="customer.passport_issue_date = null"
-                    >
-                      <Trash2 class="h-4 w-4 text-destructive" />
-                    </Button>
+                <AccordionContent class="pb-6 pt-2 space-y-4">
+                  <!-- Основные данные -->
+                  <div class="grid grid-cols-3 gap-4">
+                    <div class="space-y-2">
+                      <Label :for="`lastname-${index}`" required>Фамилия</Label>
+                      <Input :id="`lastname-${index}`" v-model="customer.lastname" />
+                    </div>
+                    <div class="space-y-2">
+                      <Label :for="`firstname-${index}`" required>Имя</Label>
+                      <Input :id="`firstname-${index}`" v-model="customer.firstname" />
+                    </div>
+                    <div class="space-y-2">
+                      <Label :for="`patronymic-${index}`">Отчество</Label>
+                      <Input :id="`patronymic-${index}`" v-model="customer.patronymic" />
+                    </div>
                   </div>
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`passport_birth_date-${index}`">Дата рождения</Label>
-                  <div class="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger as-child>
-                        <Button
-                          variant="outline"
-                          class="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon class="mr-2 h-4 w-4" />
-                          <span>{{ customer.passport_birth_date || 'Выберите дату' }}</span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent class="w-auto p-0">
-                        <AppDatePicker v-model="customer.passport_birth_date" />
-                      </PopoverContent>
-                    </Popover>
-                    <Button
-                      v-if="customer.passport_birth_date"
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      @click="customer.passport_birth_date = null"
-                    >
-                      <Trash2 class="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
 
-              <div class="space-y-2">
-                <Label :for="`passport_unit_name-${index}`">Кем выдан</Label>
-                <Input :id="`passport_unit_name-${index}`" v-model="customer.passport_unit_name" />
-              </div>
-            </div>
+                  <!-- Контактные данные -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <Label :for="`email-${index}`" required>Email</Label>
+                      <Input :id="`email-${index}`" v-model="customer.email" type="email" />
+                    </div>
+                    <div class="space-y-2">
+                      <Label :for="`phone-${index}`" required>Телефон</Label>
+                      <Input
+                        :id="`phone-${index}`"
+                        v-model="customer.phone"
+                        placeholder="+7 (XXX) XXX-XX-XX"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Паспортные данные -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <Label :for="`passport_series-${index}`" required>Серия паспорта</Label>
+                      <Input :id="`passport_series-${index}`" v-model="customer.passport_series" />
+                    </div>
+                    <div class="space-y-2">
+                      <Label :for="`passport_number-${index}`" required>Номер паспорта</Label>
+                      <Input :id="`passport_number-${index}`" v-model="customer.passport_number" />
+                    </div>
+                  </div>
+
+                  <!-- Даты -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <Label :for="`passport_issue_date-${index}`">Дата выдачи</Label>
+                      <div class="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger as-child>
+                            <Button
+                              variant="outline"
+                              class="w-full justify-start text-left font-normal"
+                            >
+                              <CalendarIcon class="mr-2 h-4 w-4" />
+                              <span>{{ customer.passport_issue_date || 'Выберите дату' }}</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent class="w-auto p-0">
+                            <AppDatePicker v-model="customer.passport_issue_date" />
+                          </PopoverContent>
+                        </Popover>
+                        <Button
+                          v-if="customer.passport_issue_date"
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          @click="customer.passport_issue_date = null"
+                        >
+                          <Trash2 class="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <Label :for="`passport_birth_date-${index}`">Дата рождения</Label>
+                      <div class="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger as-child>
+                            <Button
+                              variant="outline"
+                              class="w-full justify-start text-left font-normal"
+                            >
+                              <CalendarIcon class="mr-2 h-4 w-4" />
+                              <span>{{ customer.passport_birth_date || 'Выберите дату' }}</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent class="w-auto p-0">
+                            <AppDatePicker v-model="customer.passport_birth_date" />
+                          </PopoverContent>
+                        </Popover>
+                        <Button
+                          v-if="customer.passport_birth_date"
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          @click="customer.passport_birth_date = null"
+                        >
+                          <Trash2 class="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Дополнительные поля -->
+                  <div class="space-y-2">
+                    <Label :for="`passport_unit_name-${index}`">Кем выдан</Label>
+                    <Input
+                      :id="`passport_unit_name-${index}`"
+                      v-model="customer.passport_unit_name"
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
 
