@@ -202,7 +202,7 @@ const onSubmit = () => {
           <div class="space-y-4 border-t pt-4">
             <h3 class="text-lg font-medium">Реквизиты</h3>
             <div class="space-y-2">
-              <Label required>Полное наименование</Label>
+              <Label required>Юридическое наименование</Label>
               <Input v-model="form.requisite.legal_name" />
             </div>
             <div class="space-y-2">
