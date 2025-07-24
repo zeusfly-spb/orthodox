@@ -100,6 +100,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('@/views/errors/NotFound.vue'),
+  },
 ]
 
 const router = createRouter({
