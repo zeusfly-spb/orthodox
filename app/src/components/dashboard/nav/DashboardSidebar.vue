@@ -22,7 +22,7 @@ import {
   BadgeCheck,
 } from 'lucide-vue-next'
 
-import logo from '@/assets/images/app-logo.png'
+import logo from '@/assets/images/logo.png'
 import NavMain from '@/components/dashboard/nav/NavMain.vue'
 import NavCollapsible from '@/components/dashboard/nav/NavCollapsible.vue'
 import { RouterLink } from 'vue-router'
