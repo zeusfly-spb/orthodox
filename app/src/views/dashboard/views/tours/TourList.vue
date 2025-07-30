@@ -83,25 +83,23 @@ watch(
 
 <template>
   <div>
-    <Card class="mb-8">
-      <CardContent>
-        <div class="flex shrink-0 items-center justify-between gap-2">
-          <!-- Левая часть -->
-          <div class="flex items-center gap-4 pl-4">
-            <h1 class="text-lg font-bold text-muted-foreground">Мои туры</h1>
-          </div>
-          <!-- Правая часть -->
-          <div class="flex items-center gap-4 pr-4">
-            <Button
-              class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-              @click="showForm = true"
-            >
-              Добавить тур
-            </Button>
-          </div>
+    <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+      <div class="flex shrink-0 items-center justify-between gap-2">
+        <!-- Левая часть -->
+        <div class="flex items-center gap-4 pl-4">
+          <h1 class="text-lg font-bold text-muted-foreground">Мои туры</h1>
         </div>
-      </CardContent>
-    </Card>
+        <!-- Правая часть -->
+        <div class="flex items-center gap-4 pr-4">
+          <Button
+            class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
+            @click="showForm = true"
+          >
+            Добавить тур
+          </Button>
+        </div>
+      </div>
+    </div>
     <Card class="mb-8 gap-0">
       <CardContent>
         <DataTable

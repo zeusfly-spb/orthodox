@@ -13,6 +13,7 @@ import IconHome from '@/components/icons/IconHome.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
 import ManagerForm from '@/components/dashboard/operator/ManagerForm.vue'
+import logoOperator from '@/assets/images/logo-prof.svg'
 
 // Оператор
 const {
@@ -79,40 +80,66 @@ const applyFilters = () => {
 <template>
   <div>
     <!-- Оператор -->
-    <Card class="mb-8">
-      <CardContent>
-        <div class="flex shrink-0 items-center justify-between gap-2">
-          <div class="flex items-center gap-4 pl-4">
-            <template v-if="isLoading">
-              <Skeleton class="h-20 w-20 rounded-full" />
-              <Skeleton class="h-4 w-96" />
-            </template>
-            <template v-else>
-              <Avatar class="h-20 w-20">
-                <AvatarImage :src="items?.avatar || ''" :alt="items.name" />
-                <AvatarFallback>
-                  <IconHome />
-                </AvatarFallback>
-              </Avatar>
-              <div class="flex-column items-center">
-                <h1 class="text-lg font-bold text-muted-foreground">{{ items.name }}</h1>
-                <div class="text-md text-muted-foreground">
-                  {{ items?.json_attributes?.number_date || '' }}
-                </div>
+    <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+      <div class="flex shrink-0 items-center justify-between gap-2">
+        <div class="flex items-center gap-4 pl-4">
+          <template v-if="isLoading">
+            <Skeleton class="h-20 w-20 rounded-full" />
+            <Skeleton class="h-4 w-96" />
+          </template>
+          <template v-else>
+            <Avatar class="h-20 w-20">
+              <AvatarImage :src="items?.avatar || logoOperator" :alt="items.name" />
+              <AvatarFallback>
+                <IconHome />
+              </AvatarFallback>
+            </Avatar>
+            <div class="flex-column items-center">
+              <h1 class="text-lg font-bold text-muted-foreground">{{ items.name }}</h1>
+              <div class="text-md text-muted-foreground">
+                {{ items?.json_attributes?.number_date || '' }}
               </div>
-            </template>
-          </div>
-          <div class="flex items-center gap-4 pr-4">
-            <Button
-              class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-              @click="showForm = true"
-            >
-              Редактировать
-            </Button>
-          </div>
+            </div>
+          </template>
         </div>
-      </CardContent>
-    </Card>
+        <div class="flex items-center gap-4 pr-4">
+          <Button
+            class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
+            @click="showForm = true"
+          >
+            Редактировать
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-bread-proc flex rounded-xl py-6 mb-8 gap-4 items-center">
+      <div class="circular-progress">
+        <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48">
+          <circle
+            class="progress-ring-circle-bg"
+            cx="24"
+            cy="24"
+            r="18"
+            stroke-width="6"
+            fill="transparent"
+          ></circle>
+          <circle
+            class="progress-ring-circle"
+            cx="24"
+            cy="24"
+            r="18"
+            stroke-width="6"
+            fill="transparent"
+            stroke-dasharray="113.1"
+            stroke-dashoffset="30.5"
+          ></circle>
+        </svg>
+      </div>
+      <div class="progress-description">
+        <h3 class="font-medium">Профиль Паломнической службы заполнен на 73%</h3>
+      </div>
+    </div>
 
     <!-- Менеджеры -->
     <Card class="mb-8 gap-0">
@@ -124,7 +151,7 @@ const applyFilters = () => {
             </div>
             <div class="flex items-center gap-4 pr-4">
               <Button
-                class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
+                class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
                 @click="showManagerForm = true"
               >
                 Добавить менеджера

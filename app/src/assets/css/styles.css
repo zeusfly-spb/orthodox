@@ -1,0 +1,45 @@
+.circular-progress {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.bg-bread-proc {
+  background: #f9f9fa;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.progress-circle {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.progress-ring {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle-bg {
+  stroke: #f1f1f4;
+  stroke-width: 6;
+  fill: transparent;
+  r: 18;
+  cx: 24;
+  cy: 24;
+}
+
+.progress-ring-circle {
+  stroke: #10b981;
+  stroke-width: 6;
+  fill: transparent;
+  r: 18;
+  cx: 24;
+  cy: 24;
+  stroke-dasharray: 113.1;
+  stroke-dashoffset: 30.5;
+}
