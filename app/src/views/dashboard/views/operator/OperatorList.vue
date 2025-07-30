@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
 import ManagerForm from '@/components/dashboard/operator/ManagerForm.vue'
 import logoOperator from '@/assets/images/logo-prof.svg'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 // Оператор
 const {
@@ -89,7 +90,7 @@ const applyFilters = () => {
           </template>
           <template v-else>
             <Avatar class="h-20 w-20">
-              <AvatarImage :src="items?.avatar || logoOperator" :alt="items.name" />
+              <AvatarImage :src="logoOperator" :alt="items.name" />
               <AvatarFallback>
                 <IconHome />
               </AvatarFallback>
@@ -139,6 +140,38 @@ const applyFilters = () => {
       <div class="progress-description">
         <h3 class="font-medium">Профиль Паломнической службы заполнен на 73%</h3>
       </div>
+    </div>
+
+    <div class="relative w-full overflow-auto">
+      <Tabs default-value="full-data" class="w-full">
+        <TabsList>
+          <TabsTrigger value="full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
+          <TabsTrigger value="requisite"> РЕКВИЗИТЫ </TabsTrigger>
+          <TabsTrigger value="files"> ФАЙЛЫ </TabsTrigger>
+          <TabsTrigger value="faq"> FAQ </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="full-data">
+          <!-- Содержимое вкладки -->
+          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
+            ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ
+          </div>
+        </TabsContent>
+
+        <TabsContent value="requisite">
+          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
+            РЕКВИЗИТЫ
+          </div>
+        </TabsContent>
+
+        <TabsContent value="files">
+          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">ФАЙЛЫ</div>
+        </TabsContent>
+
+        <TabsContent value="faq">
+          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">FAQ</div>
+        </TabsContent>
+      </Tabs>
     </div>
 
     <!-- Менеджеры -->
