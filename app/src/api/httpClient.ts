@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 const DEFAULT_TIMEOUT = import.meta.env.VITE_REQUEST_TIMEOUT || 20000
 
 let retryCount = 0
-let maxRetries = 2
+const maxRetries = 2
 let isRefreshing = false
 
 const handleRetry = (config, token) => {
@@ -14,7 +14,8 @@ const handleRetry = (config, token) => {
 
 const handleExit = (itemName) => {
   localStorage.removeItem(itemName)
-  window.location.assign('/')
+  const authStore = useAuthStore()
+  authStore.logout()
 }
 
 const api = axios.create({

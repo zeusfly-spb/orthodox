@@ -33,7 +33,7 @@ const router = useRouter()
 const lastPage = computed(() => props.lastPage || Math.ceil(props.total / props.perPage))
 
 const shouldShowPage = (page) => {
-  return Math.abs(page - props.currentPage) < 3 || page === 1 || page === lastPage
+  return Math.abs(page - props.currentPage) < 3 || page === 1 || page === lastPage.value
 }
 
 const handlePageChange = (page: number) => {

@@ -83,7 +83,7 @@ export const useCrudActions = <T>(
 
   const handleError = async (error) => {
     if (error.response.status === 422) {
-      let errors = Object.values(error.response.data?.errors || {}).join('\n')
+      const errors = Object.values(error.response.data?.errors || {}).join('\n')
       toast.error(errors)
       throw error
     }

@@ -22,7 +22,7 @@ const handleSubmit = async () => {
     await authStore.login(form.value)
     router.push({ name: 'dashboard-home' })
   } catch (error: unknown) {
-    let errorMessage = 'Неверные логин или пароль'
+    const errorMessage = 'Неверные логин или пароль'
     toast.error(errorMessage)
     console.error(error)
     form.value.password = ''
