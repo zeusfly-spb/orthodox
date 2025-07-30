@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'vue-sonner'
 import type { AuthError, ForgotPasswordData } from '@/types/auth'
+import { Mail } from 'lucide-vue-next'
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -44,15 +45,18 @@ const handleSubmit = async () => {
       </CardHeader>
       <CardContent>
         <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div>
-            <Input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              class="mt-1 px-5 py-6 block w-full"
-              placeholder="E-mail"
-            />
+          <div class="space-y-2">
+            <div class="relative">
+              <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="email"
+                v-model="form.email"
+                type="email"
+                placeholder="E-mail"
+                required
+                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+              />
+            </div>
           </div>
 
           <div class="flex gap-2">

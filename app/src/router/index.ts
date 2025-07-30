@@ -65,7 +65,7 @@ const routes = [
       {
         path: '',
         name: 'dashboard-home',
-        component: () => import('@/views/dashboard/DefaultView.vue'),
+        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
         meta: { requiresAuth: true },
       },
       {

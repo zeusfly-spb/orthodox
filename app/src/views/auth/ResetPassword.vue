@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'vue-sonner'
 import type { AuthError, ResetPasswordData } from '@/types/auth'
+import { Lock } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,26 +73,32 @@ const handleSubmit = async () => {
       </CardHeader>
       <CardContent>
         <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div>
-            <Input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              class="mt-1 px-5 py-6 block w-full"
-              placeholder="Пароль"
-            />
+          <div class="space-y-2">
+            <div class="relative">
+              <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="password"
+                v-model="form.password"
+                type="password"
+                required
+                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+                placeholder="Пароль"
+              />
+            </div>
           </div>
 
-          <div>
-            <Input
-              id="password_confirmation"
-              v-model="form.password_confirmation"
-              type="password"
-              required
-              class="mt-1 px-5 py-6 block w-full"
-              placeholder="Подтвердите пароль"
-            />
+          <div class="space-y-2">
+            <div class="relative">
+              <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="password_confirmation"
+                v-model="form.password_confirmation"
+                type="password"
+                required
+                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+                placeholder="Подтвердите пароль"
+              />
+            </div>
           </div>
 
           <div class="flex gap-2">
