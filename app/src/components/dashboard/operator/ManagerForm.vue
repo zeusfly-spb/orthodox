@@ -20,6 +20,7 @@ import { useEntityForm } from '@/composables/useEntityForm'
 interface FormFields {
   firstname: string
   lastname: string
+  patronymic: string
   avatar: string
   email: string
   phone: string
@@ -28,6 +29,7 @@ interface FormFields {
 const formTemplate: FormFields = {
   firstname: '',
   lastname: '',
+  patronymic: '',
   email: '',
   phone: '',
   avatar: '',
