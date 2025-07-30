@@ -59,7 +59,7 @@ const getRoleLabel = (role: User['role']) => {
 </script>
 
 <template>
-  <div class="rounded-md border">
+  <div class="rounded-md">
     <Table class="border-0">
       <TableHeader class="bg-muted/50">
         <TableRow>
