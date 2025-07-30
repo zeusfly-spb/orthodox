@@ -29,7 +29,7 @@ const props = defineProps<{
     <TableSkeleton />
   </div>
   <Table v-else>
-    <TableHeader>
+    <TableHeader class="bg-muted/50">
       <TableRow>
         <TableHead class="w-[50px]"> ID </TableHead>
         <TableHead>Тур</TableHead>
@@ -43,7 +43,7 @@ const props = defineProps<{
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="item in collection" :key="item.id">
+      <TableRow v-for="item in collection" :key="item.id" class="hover:bg-green-50/50">
         <TableCell>{{ item.id }}</TableCell>
         <TableCell class="font-medium">
           {{ item?.tour.title }}

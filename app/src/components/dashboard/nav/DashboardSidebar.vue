@@ -8,6 +8,7 @@ import {
   SidebarHeader,
   SidebarRail,
   type SidebarProps,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import {
   BookOpen,
@@ -22,7 +23,8 @@ import {
   BadgeCheck,
 } from 'lucide-vue-next'
 
-import logo from '@/assets/images/logo.png'
+import logoFull from '@/assets/images/logo-full.png'
+import logoIcon from '@/assets/images/logo-icon.png'
 import NavMain from '@/components/dashboard/nav/NavMain.vue'
 import NavCollapsible from '@/components/dashboard/nav/NavCollapsible.vue'
 import { RouterLink } from 'vue-router'
@@ -31,6 +33,8 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
   class: 'bg-white',
 })
+
+const { state, isMobile } = useSidebar()
 
 // This is sample data.
 const data = {
@@ -165,8 +169,13 @@ const data = {
           <div class="flex justify-center mt-1 mb-3 transition-transform duration-400">
             <RouterLink to="/dashboard">
               <img
-                :src="logo"
+                :src="state === 'collapsed' ? logoIcon : logoFull"
                 class="aspect-auto object-contain transition-transform duration-400"
+                :class="{
+                  'w-10': state === 'collapsed',
+                  'w-full': state === 'expanded',
+                  hidden: isMobile && !openMobile,
+                }"
                 alt="АНО Паломнический центр"
               />
             </RouterLink>

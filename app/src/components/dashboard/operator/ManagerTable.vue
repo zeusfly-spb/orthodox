@@ -69,7 +69,7 @@ const getRoleLabel = (role: User['role']) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow v-for="user in collection" :key="user.id">
+        <TableRow v-for="user in collection" :key="user.id" class="hover:bg-green-50/50">
           <TableCell class="font-medium">
             <div class="flex items-center gap-3">
               <Avatar class="h-12 w-12 rounded-lg">
