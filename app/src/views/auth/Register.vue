@@ -77,7 +77,7 @@ const handleSubmit = async () => {
       </CardHeader>
       <CardContent>
         <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div>
+          <div class="relative">
             <Combobox v-model="form.tour_operator_id" by="id">
               <ComboboxAnchor class="w-full">
                 <div class="relative w-full max-w-sm items-center">
@@ -92,7 +92,9 @@ const handleSubmit = async () => {
                 </div>
               </ComboboxAnchor>
 
-              <ComboboxList class="w-full max-w-md max-h-100 overflow-y-auto">
+              <ComboboxList
+                class="w-full max-w-md max-h-60 overflow-y-auto overscroll-contain relative scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400 scrollbar-thumb-rounded-md hover:scrollbar-thumb-gray-500"
+              >
                 <ComboboxEmpty>
                   <div class="w-full max-w-md px-6">Нет доступных операторов</div>
                 </ComboboxEmpty>

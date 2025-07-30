@@ -43,3 +43,11 @@
   stroke-dasharray: 113.1;
   stroke-dashoffset: 30.5;
 }
+
+.shadow-custom {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.border-bottom-gray {
+  border-bottom: 1px solid #e2e8f0;
+}

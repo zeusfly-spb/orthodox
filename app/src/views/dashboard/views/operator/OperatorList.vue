@@ -81,7 +81,7 @@ const applyFilters = () => {
 <template>
   <div>
     <!-- Оператор -->
-    <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+    <div class="flex flex-col gap-6 py-6 mb-8 bg-white">
       <div class="flex shrink-0 items-center justify-between gap-2">
         <div class="flex items-center gap-4 pl-4">
           <template v-if="isLoading">
@@ -112,77 +112,77 @@ const applyFilters = () => {
           </Button>
         </div>
       </div>
-    </div>
 
-    <div class="bg-bread-proc flex rounded-xl py-6 mb-8 gap-4 items-center">
-      <div class="circular-progress">
-        <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48">
-          <circle
-            class="progress-ring-circle-bg"
-            cx="24"
-            cy="24"
-            r="18"
-            stroke-width="6"
-            fill="transparent"
-          ></circle>
-          <circle
-            class="progress-ring-circle"
-            cx="24"
-            cy="24"
-            r="18"
-            stroke-width="6"
-            fill="transparent"
-            stroke-dasharray="113.1"
-            stroke-dashoffset="30.5"
-          ></circle>
-        </svg>
+      <div class="bg-bread-proc flex rounded-xl py-4 mb-8 mx-4 gap-4 items-center">
+        <div class="circular-progress">
+          <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48">
+            <circle
+              class="progress-ring-circle-bg"
+              cx="24"
+              cy="24"
+              r="18"
+              stroke-width="6"
+              fill="transparent"
+            ></circle>
+            <circle
+              class="progress-ring-circle"
+              cx="24"
+              cy="24"
+              r="18"
+              stroke-width="6"
+              fill="transparent"
+              stroke-dasharray="113.1"
+              stroke-dashoffset="30.5"
+            ></circle>
+          </svg>
+        </div>
+        <div class="progress-description">
+          <h3 class="font-medium">Профиль Паломнической службы заполнен на 73%</h3>
+        </div>
       </div>
-      <div class="progress-description">
-        <h3 class="font-medium">Профиль Паломнической службы заполнен на 73%</h3>
+
+      <div class="relative w-full overflow-auto">
+        <Tabs default-value="tab-full-data" class="w-full p-4">
+          <TabsList>
+            <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
+            <TabsTrigger value="tab-requisite"> РЕКВИЗИТЫ </TabsTrigger>
+            <TabsTrigger value="tab-files"> ФАЙЛЫ </TabsTrigger>
+            <TabsTrigger value="tab-faq"> FAQ </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="tab-full-data">
+            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
+              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+                ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ
+              </h3>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tab-requisite">
+            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
+              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+                РЕКВИЗИТЫ
+              </h3>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tab-files">
+            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
+              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">ФАЙЛЫ</h3>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tab-faq">
+            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
+              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">FAQ</h3>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
-
-    <div class="relative w-full overflow-auto">
-      <Tabs default-value="tab-full-data" class="w-full">
-        <TabsList>
-          <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
-          <TabsTrigger value="tab-requisite"> РЕКВИЗИТЫ </TabsTrigger>
-          <TabsTrigger value="tab-files"> ФАЙЛЫ </TabsTrigger>
-          <TabsTrigger value="tab-faq"> FAQ </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="tab-full-data">
-          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
-            <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-              ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ
-            </h3>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="tab-requisite">
-          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
-            <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-              РЕКВИЗИТЫ
-            </h3>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="tab-files">
-          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
-            <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">ФАЙЛЫ</h3>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="tab-faq">
-          <div class="flex flex-col gap-6 rounded-xl py-6 px-4 mb-8 border shadow-sm">
-            <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">FAQ</h3>
-          </div>
-        </TabsContent>
-      </Tabs>
     </div>
 
     <!-- Менеджеры -->
-    <Card class="mb-8 gap-0">
+    <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div class="mb-8">
           <div class="flex shrink-0 items-center justify-between gap-2">

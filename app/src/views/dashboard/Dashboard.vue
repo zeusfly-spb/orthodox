@@ -11,7 +11,7 @@ import DashboardHeader from '@/components/dashboard/nav/DashboardHeader.vue'
     <SidebarInset>
       <DashboardHeader />
       <!-- Контент -->
-      <article class="flex flex-1 flex-col gap-4 md:p-4 lg:p-8">
+      <article class="flex flex-1 flex-col gap-4 md:p-4 lg:p-8 bg-gray-50">
         <RouterView />
       </article>
     </SidebarInset>
