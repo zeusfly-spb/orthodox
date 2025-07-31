@@ -55,18 +55,17 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const handleAddTour = () => {
-  router.push({ name: 'tour-create' }) // Переход на страницу создания тура
+  router.push({ name: 'tour-create' })
 }
 
 const handleEditTour = (id: string | number) => {
-  console.log('Navigating to edit page with id:', id) // Логируем id
   router
     .push({
       name: 'tour-edit',
-      params: { id: String(id) }, // Приводим id к строке на всякий случай
+      params: { id: String(id) },
     })
     .catch((err) => {
-      console.error('Navigation error:', err) // Логируем ошибки навигации
+      console.error('Navigation error:', err)
     })
 }
 

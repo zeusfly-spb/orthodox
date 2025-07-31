@@ -31,13 +31,12 @@ const handleSubmit = async (formData: any) => {
   try {
     if (id.value) {
       await tourApi.patchData(id.value, formData)
-      console.log('Navigating:', formData) // Логируем id
       toast.success('Тур успешно обновлен')
     } else {
       await tourApi.storeData(formData)
       toast.success('Тур успешно создан')
     }
-    router.push({ name: 'tours-list' })
+    // router.push({ name: 'tours-list' })
   } catch (error) {
     toast.error('Ошибка сохранения данных')
   }
@@ -53,7 +52,7 @@ const handleCancel = () => {
     :item="currentItem"
     :create-title="'Создание нового тура'"
     :edit-title="'Редактирование тура'"
-    :description="'Данные о туре'"
+    :description="'Данные о паломническом туре'"
     :submit-text="'Сохранить'"
     :cancel-text="'Отмена'"
     @submit="handleSubmit"
