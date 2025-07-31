@@ -138,6 +138,10 @@ const applyFilters = () => {
         </div>
         <div class="progress-description">
           <h3 class="font-medium">Профиль Паломнической службы заполнен на 73%</h3>
+          <div>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+            incididunt ut labore et dolore magna aliqua.
+          </div>
         </div>
       </div>
 

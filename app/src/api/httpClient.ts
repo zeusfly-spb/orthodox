@@ -13,7 +13,7 @@ const handleRetry = (config, token) => {
 }
 
 const handleExit = (itemName) => {
-  localStorage.removeItem(itemName)
+  // localStorage.removeItem(itemName)
   const authStore = useAuthStore()
   authStore.logout()
 }
