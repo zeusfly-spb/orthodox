@@ -57,6 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     if (!accessToken.value) {
+      user.value = null
       localStorage.removeItem(accessTokenName)
       // window.location.assign('/')
     }
