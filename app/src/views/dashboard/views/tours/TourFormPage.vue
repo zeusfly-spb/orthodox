@@ -36,7 +36,7 @@ const handleSubmit = async (formData: any) => {
       await tourApi.storeData(formData)
       toast.success('Тур успешно создан')
     }
-    // router.push({ name: 'tours-list' })
+    router.push({ name: 'tours-list' })
   } catch (error) {
     toast.error('Ошибка сохранения данных')
   }
