@@ -81,7 +81,7 @@ const applyFilters = () => {
 <template>
   <div>
     <!-- Оператор -->
-    <div class="flex flex-col gap-6 py-6 mb-8 bg-white">
+    <div class="flex flex-col gap-6 py-6 bg-white">
       <div class="flex shrink-0 items-center justify-between gap-2">
         <div class="flex items-center gap-4 pl-4">
           <template v-if="isLoading">
@@ -144,45 +144,63 @@ const applyFilters = () => {
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="relative w-full overflow-auto">
-        <Tabs default-value="tab-full-data" class="w-full p-4">
-          <TabsList>
-            <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
-            <TabsTrigger value="tab-requisite"> РЕКВИЗИТЫ </TabsTrigger>
-            <TabsTrigger value="tab-files"> ФАЙЛЫ </TabsTrigger>
-            <TabsTrigger value="tab-faq"> FAQ </TabsTrigger>
-          </TabsList>
+    <div class="relative w-full overflow-auto">
+      <Tabs default-value="tab-full-data">
+        <TabsList class="bg-white px-4 pb-8 mb-6">
+          <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
+          <TabsTrigger value="tab-requisite"> РЕКВИЗИТЫ </TabsTrigger>
+          <TabsTrigger value="tab-files"> ФАЙЛЫ </TabsTrigger>
+          <TabsTrigger value="tab-faq"> FAQ </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="tab-full-data">
-            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
-              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-                ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ
-              </h3>
-            </div>
-          </TabsContent>
+        <TabsContent value="tab-full-data">
+          <Card class="mb-8 gap-0 border-none shadow-custom">
+            <CardContent>
+              <div class="flex flex-col gap-6 py-6 px-4">
+                <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+                  ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="tab-requisite">
-            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
-              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-                РЕКВИЗИТЫ
-              </h3>
-            </div>
-          </TabsContent>
+        <TabsContent value="tab-requisite">
+          <Card class="mb-8 gap-0 border-none shadow-custom">
+            <CardContent>
+              <div class="flex flex-col gap-6 py-6 px-4">
+                <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+                  РЕКВИЗИТЫ
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="tab-files">
-            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
-              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">ФАЙЛЫ</h3>
-            </div>
-          </TabsContent>
+        <TabsContent value="tab-files">
+          <Card class="mb-8 gap-0 border-none shadow-custom">
+            <CardContent>
+              <div class="flex flex-col gap-6 py-6 px-4">
+                <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+                  ФАЙЛЫ
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="tab-faq">
-            <div class="flex flex-col gap-6 py-6 px-4 mb-8">
-              <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">FAQ</h3>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent value="tab-faq">
+          <Card class="mb-8 gap-0 border-none shadow-custom">
+            <CardContent>
+              <div class="flex flex-col gap-6 py-6 px-4">
+                <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">FAQ</h3>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
 
     <!-- Менеджеры -->
