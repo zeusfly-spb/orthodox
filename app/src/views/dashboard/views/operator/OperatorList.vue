@@ -146,7 +146,7 @@ const applyFilters = () => {
       </div>
     </div>
 
-    <div class="relative w-full overflow-auto">
+    <div class="relative w-full">
       <Tabs default-value="tab-full-data">
         <TabsList class="bg-white px-4 pb-8 mb-6">
           <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
@@ -223,7 +223,7 @@ const applyFilters = () => {
         </div>
         <ManagerTable
           :isLoading="isLoadingManagers"
-          :collection="items.managers"
+          :collection="items.managers || []"
           @edit-manager="handleEditManager"
           @delete-manager="handleDeleteManager"
         />
