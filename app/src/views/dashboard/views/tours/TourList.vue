@@ -27,14 +27,12 @@ const { filters, complexFilters, applyFilters, resetFilters, handlePageChange, c
 const {
   isLoading,
   showConfirm,
-  showForm,
   handledItemId,
   items,
   currentItem,
   pagination,
   loadCollection,
   handleSubmit,
-  handleEdit,
   handleDelete,
   onDeleteConfirm,
   onCancel,
@@ -51,6 +49,26 @@ watch(
   },
   { immediate: true },
 )
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const handleAddTour = () => {
+  router.push({ name: 'tour-create' }) // Переход на страницу создания тура
+}
+
+const handleEditTour = (id: string | number) => {
+  console.log('Navigating to edit page with id:', id) // Логируем id
+  router
+    .push({
+      name: 'tour-edit',
+      params: { id: String(id) }, // Приводим id к строке на всякий случай
+    })
+    .catch((err) => {
+      console.error('Navigation error:', err) // Логируем ошибки навигации
+    })
+}
 
 // const getCurrentPage = () => {
 //   return route.query?.page || 1
@@ -93,7 +111,7 @@ watch(
         <div class="flex items-center gap-4 pr-4">
           <Button
             class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
-            @click="showForm = true"
+            @click="handleAddTour"
           >
             Добавить тур
           </Button>
@@ -105,7 +123,7 @@ watch(
         <DataTable
           :isLoading="isLoading"
           :collection="items"
-          @edit="handleEdit"
+          @edit="handleEditTour"
           @delete="handleDelete"
         />
       </CardContent>
@@ -119,17 +137,6 @@ watch(
         />
       </CardFooter>
     </Card>
-    <TourForm
-      v-model:open="showForm"
-      :item="currentItem"
-      createTitle="Создание нового тура"
-      editTitle="Редактирование тура"
-      description="Данные о туре"
-      submit-text="Сохранить"
-      cancel-text="Отмена"
-      @dismiss="onCancel"
-      @submit="handleSubmit"
-    />
     <ConfirmDialog
       v-model:show="showConfirm"
       title="Удалить запись?"
