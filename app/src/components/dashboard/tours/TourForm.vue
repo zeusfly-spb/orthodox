@@ -112,7 +112,7 @@ const onSubmit = () => {
   <form @submit.prevent="onSubmit">
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
-        <div class="container mx-auto">
+        <div>
           <h2 class="text-2xl font-bold mb-6">
             {{ props.item ? props.editTitle : props.createTitle }}
           </h2>
@@ -156,7 +156,7 @@ const onSubmit = () => {
 
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
-        <div class="container mx-auto">
+        <div>
           <TourDatesForm v-model="form.dates" />
         </div>
       </CardContent>
@@ -164,7 +164,7 @@ const onSubmit = () => {
 
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
-        <div class="container mx-auto">
+        <div>
           <TourDaysForm v-model="form.days" />
         </div>
       </CardContent>
