@@ -120,22 +120,22 @@ const onSubmit = () => {
 
           <div class="grid gap-4 py-4">
             <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
+              <div class="space-y-3">
                 <Label for="title" required>Название тура</Label>
                 <Input id="title" v-model="form.title" />
               </div>
-              <div class="space-y-2">
+              <div class="space-y-3">
                 <Label for="route" required>Маршрут</Label>
                 <Input id="route" v-model="form.route" />
               </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
-              <div class="space-y-2">
+              <div class="space-y-3">
                 <Label for="price" required>Цена (₽)</Label>
                 <Input id="price" v-model.number="form.price" type="number" min="0" />
               </div>
-              <div class="space-y-2">
+              <div class="space-y-3">
                 <Label for="duration" required>Длительность (дни)</Label>
                 <Input id="duration" v-model.number="form.duration" type="number" min="1" />
               </div>
@@ -144,12 +144,16 @@ const onSubmit = () => {
                 <Label for="is_active">Активный тур</Label>
               </div>
             </div>
-
-            <div class="space-y-2">
-              <Label for="description">Описание тура</Label>
-              <Textarea id="description" v-model="form.description" rows="3" />
-            </div>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardContent>
+        <div class="space-y-3">
+          <Label for="description">Описание тура</Label>
+          <Textarea id="description" v-model="form.description" rows="3" />
         </div>
       </CardContent>
     </Card>

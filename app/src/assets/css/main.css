@@ -143,3 +143,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .bg-primary {
+    background-color: var(--color-emerald-500) !important;
+  }
+  .text-primary-foreground {
+    color: white;
+  }
+}
