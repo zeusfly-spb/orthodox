@@ -27,22 +27,23 @@ const emit = defineEmits<{
   'update:modelValue': [value: Props['modelValue']]
 }>()
 
-const localValue = ref<Record<string, string>>({})
+const localValue = ref<Record<string, string>>({ ...props.modelValue })
 
 watch(
-  () => [props.modelValue, props.parametersData],
-  ([newVal, parameters]) => {
+  () => props.parametersData,
+  (parameters) => {
     if (parameters && parameters.length) {
-      // Создаем объект со всеми возможными полями
-      const initialValue: Record<string, string> = {}
+      const newValue: Record<string, string> = { ...localValue.value }
       parameters.forEach((param) => {
         const key = param.type.replace('tour', '').toLowerCase()
-        initialValue[key] = newVal?.[key] || ''
+        if (!(key in newValue)) {
+          newValue[key] = ''
+        }
       })
-      localValue.value = initialValue
+      localValue.value = newValue
     }
   },
-  { immediate: true, deep: true },
+  { immediate: true },
 )
 
 watch(
@@ -65,9 +66,14 @@ const displayParameters = computed(() => {
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div v-for="param in displayParameters" :key="param.type" class="space-y-3">
+    <div v-for="param in displayParameters" :key="param.type" class="space-y-2">
       <Label required>{{ param.title }}</Label>
-      <Select v-model="localValue[param.type.replace('tour', '').toLowerCase()]">
+      <Select
+        v-model="localValue[param.type.replace('tour', '').toLowerCase()]"
+        @update:modelValue="
+          (val) => (localValue[param.type.replace('tour', '').toLowerCase()] = val)
+        "
+      >
         <SelectTrigger class="w-full">
           <SelectValue :placeholder="`Выберите ${param.title.toLowerCase()}`" />
         </SelectTrigger>
