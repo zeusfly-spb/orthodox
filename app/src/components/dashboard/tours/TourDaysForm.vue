@@ -51,7 +51,7 @@ const removeDay = (index: number) => {
   <div class="space-y-4">
     <Label>Программа по дням</Label>
 
-    <Card class="p-4 mb-4">
+    <Card class="p-4 mb-4 shadow-none">
       <div class="grid grid-cols-1 gap-4">
         <div class="space-y-2">
           <Label for="day-title">Название дня</Label>
@@ -79,7 +79,7 @@ const removeDay = (index: number) => {
     </Card>
 
     <div v-if="modelValue.length" class="space-y-4">
-      <Card v-for="(day, index) in modelValue" :key="index" class="p-4 relative group">
+      <Card v-for="(day, index) in modelValue" :key="index" class="p-4 relative group shadow-none">
         <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             type="button"
