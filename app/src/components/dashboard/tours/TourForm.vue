@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,8 @@ import { toast } from 'vue-sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue'
 import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
+import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
+import { tourApi } from '@/api/tours.ts'
 
 interface DayItem {
   title: string
@@ -25,7 +27,24 @@ interface FormFields {
   is_active: boolean
   dates: string[]
   days: DayItem[]
+  parameters: Record<string, string>
 }
+
+const parametersData = ref<any>([])
+
+const fetchParameters = async () => {
+  try {
+    const response = await tourApi.getData('parameters')
+    parametersData.value = response.data
+  } catch (error) {
+    toast.error('Ошибка при загрузке параметров')
+    console.error(error)
+  }
+}
+
+onMounted(() => {
+  fetchParameters()
+})
 
 const props = withDefaults(
   defineProps<{
@@ -59,6 +78,7 @@ const form = reactive<Omit<FormFields, 'id'>>({
   is_active: true,
   dates: [],
   days: [],
+  parameters: {},
 })
 
 watch(
@@ -74,6 +94,7 @@ watch(
         is_active: newTour.is_active,
         dates: [...newTour.dates.map((item) => item.date)],
         days: [...newTour.days],
+        parameters: newTour.parameters || {},
       })
     }
   },
@@ -146,6 +167,12 @@ const onSubmit = () => {
             </div>
           </div>
         </div>
+      </CardContent>
+    </Card>
+
+    <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardContent>
+        <TourParameters v-model="form.parameters" :parameters-data="parametersData" />
       </CardContent>
     </Card>
 

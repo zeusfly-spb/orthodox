@@ -22,7 +22,7 @@ const loadItem = async () => {
     const response = await tourApi.getData(id.value!)
     currentItem.value = response.data
   } catch (error) {
-    toast.error('Ошибка загрузки данных тура')
+    toast.error('Ошибка загрузки данных')
     router.push({ name: 'tours-list' })
   }
 }
