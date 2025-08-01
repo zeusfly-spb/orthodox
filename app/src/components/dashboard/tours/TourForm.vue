@@ -85,6 +85,13 @@ watch(
   () => props.item,
   (newTour) => {
     if (newTour) {
+      const parameters = {
+        tourType: newTour.tourType?.id,
+        tourCategory: newTour.tourCategory?.id,
+        tourTransport: newTour.tourTransport?.id,
+        tourStatus: newTour.tourStatus?.id,
+      }
+
       Object.assign(form, {
         title: newTour.title,
         route: newTour.route,
@@ -92,9 +99,11 @@ watch(
         duration: newTour.duration,
         description: newTour.description,
         is_active: newTour.is_active,
-        dates: [...newTour.dates.map((item) => item.date)],
-        days: [...newTour.days],
-        parameters: newTour.parameters || {},
+        dates: Array.isArray(newTour.dates)
+          ? newTour.dates.map((item) => (typeof item === 'object' ? item.date : item))
+          : [],
+        days: Array.isArray(newTour.days) ? [...newTour.days] : [],
+        parameters,
       })
     }
   },
@@ -117,11 +126,6 @@ const resetForm = () => {
 const onSubmit = () => {
   if (!form.title || !form.route || form.price <= 0 || form.duration <= 0) {
     toast.error('Заполните обязательные поля')
-    return
-  }
-
-  if (form.dates.length === 0) {
-    toast.error('Добавьте хотя бы одну дату проведения тура')
     return
   }
 

@@ -14,12 +14,18 @@ interface ParameterItem {
   title: string
   slug: string
   type: string
-  children?: ParameterItem[]
+  [key: string]: any
 }
 
 interface Props {
-  modelValue: Record<string, string>
-  parametersData: ParameterItem[]
+  modelValue: Record<string, number | string> // { tourType: 17, tourCategory: 20, ... }
+  parametersData: {
+    id: number | string
+    title: string
+    slug: string
+    type: string
+    children?: ParameterItem[]
+  }[]
 }
 
 const props = defineProps<Props>()
@@ -27,32 +33,49 @@ const emit = defineEmits<{
   'update:modelValue': [value: Props['modelValue']]
 }>()
 
-const localValue = ref<Record<string, string>>({ ...props.modelValue })
+const displayValues = ref<Record<string, string>>({})
 
+// Инициализация при получении данных
 watch(
-  () => props.parametersData,
-  (parameters) => {
+  () => [props.parametersData, props.modelValue],
+  ([parameters, modelValue]) => {
     if (parameters && parameters.length) {
-      const newValue: Record<string, string> = { ...localValue.value }
+      const newDisplayValues: Record<string, string> = {}
       parameters.forEach((param) => {
-        const key = param.type.replace('tour', '').toLowerCase()
-        if (!(key in newValue)) {
-          newValue[key] = ''
+        const currentId = modelValue?.[param.type]
+        if (currentId) {
+          const item = param.children?.find((child) => child.id === currentId)
+          if (item) {
+            newDisplayValues[param.type] = item.slug
+          }
+        } else {
+          newDisplayValues[param.type] = ''
         }
       })
-      localValue.value = newValue
+      displayValues.value = newDisplayValues
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
-watch(
-  localValue,
-  (newVal) => {
-    emit('update:modelValue', newVal)
-  },
-  { deep: true },
-)
+// Обработчик изменения значения
+const handleChange = (paramType: string, slug: string) => {
+  const category = props.parametersData.find((p) => p.type === paramType)
+  const selectedItem = category?.children?.find((child) => child.slug === slug)
+
+  if (selectedItem) {
+    const newValue = {
+      ...props.modelValue,
+      [paramType]: selectedItem.id, // Сохраняем как paramType: id
+    }
+    emit('update:modelValue', newValue)
+
+    displayValues.value = {
+      ...displayValues.value,
+      [paramType]: selectedItem.slug,
+    }
+  }
+}
 
 const displayParameters = computed(() => {
   return props.parametersData.map((param) => ({
@@ -69,10 +92,8 @@ const displayParameters = computed(() => {
     <div v-for="param in displayParameters" :key="param.type" class="space-y-2">
       <Label required>{{ param.title }}</Label>
       <Select
-        v-model="localValue[param.type.replace('tour', '').toLowerCase()]"
-        @update:modelValue="
-          (val) => (localValue[param.type.replace('tour', '').toLowerCase()] = val)
-        "
+        :modelValue="displayValues[param.type]"
+        @update:modelValue="(slug) => handleChange(param.type, slug)"
       >
         <SelectTrigger class="w-full">
           <SelectValue :placeholder="`Выберите ${param.title.toLowerCase()}`" />
