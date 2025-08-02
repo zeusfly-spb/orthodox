@@ -79,7 +79,7 @@ const data = {
       items: [
         {
           title: 'Объекты',
-          url: '/dashboard/tours',
+          url: '/dashboard/entities',
         },
       ],
     },

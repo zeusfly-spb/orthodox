@@ -112,6 +112,12 @@ const routes = [
         component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: 'entities',
+        name: 'entities-view',
+        component: () => import('@/views/dashboard/views/entities/EntityList.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
   {
