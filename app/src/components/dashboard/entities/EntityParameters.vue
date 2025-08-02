@@ -80,7 +80,7 @@ const handleChange = (paramType: string, slug: string) => {
 const displayParameters = computed(() => {
   return props.parametersData.map((param) => ({
     type: param.type,
-    title: param.title, // param.title.replace(' туров', '').replace('ы ', ' '),
+    title: param.title, // param.title.replace(' инфраструктуры', '').replace('ы ', ' '),
     slug: param.slug,
     options: param.children || [],
   }))

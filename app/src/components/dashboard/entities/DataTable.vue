@@ -51,7 +51,7 @@ const props = defineProps<{
         <TableCell>
           {{ item.email }}
         </TableCell>
-        <TableCell>{{ item?.entityType[0]?.title }}</TableCell>
+        <TableCell>{{ item?.entityType?.title }}</TableCell>
         <TableCell>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>

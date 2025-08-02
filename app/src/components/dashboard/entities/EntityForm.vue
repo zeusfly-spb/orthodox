@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, nextTick } from 'vue'
+import { watch, nextTick, ref, onMounted, reactive } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,28 +12,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { useEntityForm } from '@/composables/useEntityForm'
-
-interface FormFields {
-  title: string
-  description: string
-  email: string
-  phone: string
-}
-
-const formTemplate: FormFields = {
-  title: '',
-  description: '',
-  email: '',
-  phone: '',
-}
-
-const requiredFields: Array<keyof FormFields> = ['title', 'description']
-
-const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
-  formTemplate,
-  requiredFields,
-)
+import { toast } from 'vue-sonner'
+import { entityApi } from '@/api/entities.ts'
+import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
+import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -60,7 +42,74 @@ const emit = defineEmits<{
   (e: 'dismiss'): void
 }>()
 
-watch(() => props.item, fillForm, { immediate: true })
+interface FormFields {
+  title: string
+  description: string
+  email: string
+  phone: string
+}
+
+const formTemplate: FormFields = {
+  title: '',
+  description: '',
+  email: '',
+  phone: '',
+}
+
+const requiredFields: Array<keyof FormFields> = ['title', 'description']
+
+const parametersData = ref<any>([])
+
+const fetchParameters = async () => {
+  try {
+    const response = await entityApi.getData('parameters')
+    parametersData.value = response.data
+  } catch (error) {
+    toast.error('Ошибка при загрузке параметров')
+    console.error(error)
+  }
+}
+
+onMounted(() => {
+  fetchParameters()
+})
+
+const form = reactive<Omit<FormFields, 'id'>>({
+  title: '',
+  description: '',
+  phone: '',
+  email: '',
+  parameters: {},
+})
+
+const resetForm = () => {
+  Object.assign(form, {
+    title: '',
+    description: '',
+    phone: '',
+    email: '',
+  })
+}
+
+watch(
+  () => props.item,
+  (newEntity) => {
+    if (newEntity) {
+      const parameters = {
+        entityType: newEntity.entityType?.id,
+      }
+
+      Object.assign(form, {
+        title: newEntity.title,
+        description: newEntity.description,
+        phone: newEntity.phone,
+        email: newEntity.email,
+        parameters,
+      })
+    }
+  },
+  { immediate: true },
+)
 
 watch(
   () => props.open,
@@ -74,7 +123,6 @@ watch(
 )
 
 const onSubmit = () => {
-  if (!validateForm()) return
   emit('submit', { ...form })
   emit('update:open', false)
 }
@@ -95,6 +143,9 @@ const onSubmit = () => {
       <form @submit.prevent="onSubmit">
         <div class="grid gap-4 py-4">
           <div class="grid gap-4">
+            <div class="space-y-2">
+              <EntityParameters v-model="form.parameters" :parameters-data="parametersData" />
+            </div>
             <div class="space-y-2">
               <Label for="title" required>Название</Label>
               <Input id="title" v-model="form.title" />

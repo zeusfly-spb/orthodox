@@ -33,10 +33,13 @@ const props = defineProps<{
       <TableRow>
         <TableHead class="w-[50px]"> ID </TableHead>
         <TableHead>Название</TableHead>
-        <TableHead>Маршрут</TableHead>
         <TableHead>Дней</TableHead>
-        <TableHead>Статус</TableHead>
         <TableHead>Цена</TableHead>
+        <TableHead>Маршрут</TableHead>
+        <TableHead>Тип</TableHead>
+        <TableHead>Категория</TableHead>
+        <TableHead>Транспорт</TableHead>
+        <TableHead>Статус</TableHead>
         <TableHead class="w-[50px] text-right px-4 pl-6">
           <MoreHorizontal class="h-4 w-4" />
         </TableHead>
@@ -48,12 +51,15 @@ const props = defineProps<{
         <TableCell class="font-medium">
           {{ item.title }}
         </TableCell>
-        <TableCell>{{ item.route }}</TableCell>
         <TableCell>{{ item.duration }}</TableCell>
-        <TableCell>{{ item.is_active }}</TableCell>
         <TableCell>
           {{ item.price }}
         </TableCell>
+        <TableCell>{{ item.route }}</TableCell>
+        <TableCell>{{ item?.tourType?.title }}</TableCell>
+        <TableCell>{{ item?.tourCategory?.title }}</TableCell>
+        <TableCell>{{ item?.tourTransport?.title }}</TableCell>
+        <TableCell>{{ item?.tourStatus?.title }}</TableCell>
         <TableCell>
           <TableCell>
             <DropdownMenu>
