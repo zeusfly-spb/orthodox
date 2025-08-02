@@ -22,12 +22,13 @@ import {
   Database,
   BadgeCheck,
 } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
 
 import logoFull from '@/assets/images/logo-full.png'
 import logoIcon from '@/assets/images/logo-icon.png'
 import NavMain from '@/components/dashboard/nav/NavMain.vue'
+import NavSecondary from '@/components/dashboard/nav/NavSecondary.vue'
 import NavCollapsible from '@/components/dashboard/nav/NavCollapsible.vue'
-import { RouterLink } from 'vue-router'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -67,6 +68,18 @@ const data = {
           title: 'Профиль ПС',
           url: '/dashboard/operator',
           icon: House,
+        },
+      ],
+    },
+  ],
+  navSecondary: [
+    {
+      title: 'Справочники',
+      url: '#',
+      items: [
+        {
+          title: 'Объекты',
+          url: '/dashboard/tours',
         },
       ],
     },
@@ -170,7 +183,7 @@ const data = {
             <RouterLink to="/dashboard">
               <img
                 :src="state === 'collapsed' ? logoIcon : logoFull"
-                class="aspect-auto object-contain transition-transform duration-400"
+                class="aspect-auto object-contain md:object-cover transition-transform duration-400"
                 :class="{
                   'w-10': state === 'collapsed',
                   'w-full': state === 'expanded',
@@ -185,6 +198,7 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
+      <NavSecondary :items="data.navSecondary" />
       <!--      <NavCollapsible :items="data.navCollapsible" />-->
     </SidebarContent>
     <SidebarFooter></SidebarFooter>
