@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue'
 import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
 import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
+import TourPointsForm from '@/components/dashboard/tours/TourPointsForm.vue'
 import { tourApi } from '@/api/tours.ts'
 
 interface DayItem {
@@ -27,6 +28,7 @@ interface FormFields {
   is_active: boolean
   dates: string[]
   days: DayItem[]
+  points: PointItem[]
   parameters: Record<string, string>
 }
 
@@ -78,6 +80,7 @@ const form = reactive<Omit<FormFields, 'id'>>({
   is_active: true,
   dates: [],
   days: [],
+  points: [],
   parameters: {},
 })
 
@@ -103,6 +106,7 @@ watch(
           ? newTour.dates.map((item) => (typeof item === 'object' ? item.date : item))
           : [],
         days: Array.isArray(newTour.days) ? [...newTour.days] : [],
+        points: Array.isArray(newTour.points) ? [...newTour.points] : [],
         parameters,
       })
     }
@@ -120,6 +124,7 @@ const resetForm = () => {
     is_active: true,
     dates: [],
     days: [],
+    points: [],
   })
 }
 
@@ -135,6 +140,23 @@ const onSubmit = () => {
 
 <template>
   <form @submit.prevent="onSubmit">
+    <div class="flex justify-end-safe gap-4 mb-8">
+      <Button
+        variant="outline"
+        type="button"
+        class="px-8 py-6 border-emerald-500 text-emerald-500 hover:text-emerald-600"
+        @click="emit('cancel')"
+      >
+        {{ props.cancelText }}
+      </Button>
+      <Button
+        type="submit"
+        class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
+      >
+        {{ props.submitText }}
+      </Button>
+    </div>
+
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
@@ -192,7 +214,7 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <TourDatesForm v-model="form.dates" />
+          <TourDaysForm v-model="form.days" />
         </div>
       </CardContent>
     </Card>
@@ -200,26 +222,17 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <TourDaysForm v-model="form.days" />
+          <TourPointsForm v-model="form.points" />
         </div>
       </CardContent>
     </Card>
 
-    <div class="flex justify-end-safe gap-4 mt-6">
-      <Button
-        variant="outline"
-        type="button"
-        class="px-8 py-6 border-emerald-500 text-emerald-500 hover:text-emerald-600"
-        @click="emit('cancel')"
-      >
-        {{ props.cancelText }}
-      </Button>
-      <Button
-        type="submit"
-        class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
-      >
-        {{ props.submitText }}
-      </Button>
-    </div>
+    <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardContent>
+        <div>
+          <TourDatesForm v-model="form.dates" />
+        </div>
+      </CardContent>
+    </Card>
   </form>
 </template>
