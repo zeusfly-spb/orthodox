@@ -88,6 +88,7 @@ const resetForm = () => {
     description: '',
     phone: '',
     email: '',
+    parameters: {},
   })
 }
 
