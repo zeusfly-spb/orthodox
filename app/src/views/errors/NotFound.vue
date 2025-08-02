@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-const homeLink = computed(() => (authStore.isAuthenticated ? 'dashboard' : 'home'))
+const homeLink = computed(() => (authStore.isAuthenticated ? 'dashboard-home' : 'home'))
 </script>
 
 <template>
