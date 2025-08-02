@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// Auth
+// Auth Views
 import Login from '@/views/auth/Login.vue'
-import Register from '@/views/auth/Register.vue'
-import ForgotPassword from '@/views/auth/ForgotPassword.vue'
-import ResetPassword from '@/views/auth/ResetPassword.vue'
-// Dashboard
+// import Register from '@/views/auth/Register.vue'
+// import ForgotPassword from '@/views/auth/ForgotPassword.vue'
+// import ResetPassword from '@/views/auth/ResetPassword.vue'
+
+// Dashboard Views
 // import Dashboard from '@/views/dashboard/Dashboard.vue'
 // import DefaultView from '@/views/dashboard/DefaultView.vue'
 // import TourList from '@/views/dashboard/views/tours/TourList.vue'
