@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import type { HTMLAttributes } from 'vue'
+import { reactiveOmit } from '@vueuse/core'
+import { TabsTrigger, type TabsTriggerProps, useForwardProps } from 'reka-ui'
+import { cn } from '@/lib/utils'
 
-const props = defineProps<{
-  value: string
-}>()
+const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>()
 
-const activeTab = inject<string>('activeTab')
-const setActiveTab = inject<(value: string) => void>('setActiveTab')
+const delegatedProps = reactiveOmit(props, 'class')
+
+const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <button
-    @click="() => setActiveTab?.(value)"
-    class="inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-base md:text-lg cursor-pointer ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative"
-    :class="{
-      'text-emerald-500': activeTab === value,
-      'text-muted-foreground hover:text-foreground': activeTab !== value,
-    }"
+  <TabsTrigger
+    data-slot="tabs-trigger"
+    v-bind="forwardedProps"
+    :class="
+      cn(
+        `data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+        props.class,
+      )
+    "
   >
     <slot />
-    <span
-      v-if="activeTab === value"
-      class="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full"
-    />
-  </button>
+  </TabsTrigger>
 </template>

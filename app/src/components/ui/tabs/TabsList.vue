@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import type { HTMLAttributes } from 'vue'
+import { reactiveOmit } from '@vueuse/core'
+import { TabsList, type TabsListProps } from 'reka-ui'
+import { cn } from '@/lib/utils'
 
-const activeTab = inject<string>('activeTab')
-const setActiveTab = inject<(value: string) => void>('setActiveTab')
+const props = defineProps<TabsListProps & { class?: HTMLAttributes['class'] }>()
+
+const delegatedProps = reactiveOmit(props, 'class')
 </script>
 
 <template>
-  <div
-    class="inline-flex items-center p-1 text-muted-foreground border-bottom-gray w-full overflow-x-auto"
+  <TabsList
+    data-slot="tabs-list"
+    v-bind="delegatedProps"
+    :class="
+      cn(
+        'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
+        props.class,
+      )
+    "
   >
-    <slot :activeTab="activeTab" :setActiveTab="setActiveTab" />
-  </div>
+    <slot />
+  </TabsList>
 </template>

@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import OperatorForm from '@/components/dashboard/operator/OperatorForm.vue'
 import ManagerForm from '@/components/dashboard/operator/ManagerForm.vue'
 import logoOperator from '@/assets/images/logo-prof.svg'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/app/ui/tabs'
 
 // Оператор
 const {
