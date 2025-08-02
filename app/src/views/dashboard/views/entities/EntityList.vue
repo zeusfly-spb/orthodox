@@ -4,9 +4,9 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
 
-import DataTable from '@/components/dashboard/customers/DataTable.vue'
-import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
-import { customerApi } from '@/api/customers'
+import DataTable from '@/components/dashboard/entities/DataTable.vue'
+import EntityForm from '@/components/dashboard/entities/EntityForm.vue'
+import { entityApi } from '@/api/entities.ts'
 import { useCrudActions } from '@/composables/useCrudActions'
 import Pagination from '@/components/app/Pagination.vue'
 
@@ -24,7 +24,7 @@ const {
   handleDelete,
   onDeleteConfirm,
   onCancel,
-} = useCrudActions(customerApi, {
+} = useCrudActions(entityApi, {
   successMessage: 'Данные сохранены',
   deleteMessage: 'Данные удалены',
 })
@@ -60,7 +60,7 @@ const applyFilters = () => {
       <div class="flex shrink-0 items-center justify-between gap-2">
         <!-- Левая часть -->
         <div class="flex items-center gap-4 pl-4">
-          <h1 class="text-lg font-bold text-muted-foreground">Мои паломники</h1>
+          <h1 class="text-lg font-bold text-muted-foreground">Объекты</h1>
         </div>
         <!-- Правая часть -->
         <div class="flex items-center gap-4 pr-4">
@@ -68,7 +68,7 @@ const applyFilters = () => {
             class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
             @click="showForm = true"
           >
-            Добавить туриста
+            Добавить объект
           </Button>
         </div>
       </div>
@@ -92,11 +92,11 @@ const applyFilters = () => {
         />
       </CardFooter>
     </Card>
-    <CustomerForm
+    <EntityForm
       v-model:open="showForm"
-      createTitle="Добавить туриста"
-      editTitle="Редактировать данные о туристе"
-      description="Данные о туристе"
+      createTitle="Добавить объект"
+      editTitle="Редактировать данные"
+      description="Данные объекта"
       submit-text="Сохранить"
       cancel-text="Отмена"
       :item="currentItem"
