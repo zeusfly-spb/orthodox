@@ -56,17 +56,14 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    if (!accessToken.value) {
-      user.value = null
-      localStorage.removeItem(accessTokenName)
-      // window.location.assign('/')
-    }
+    if (!accessToken.value) return
+
+    localStorage.removeItem(accessTokenName)
+    accessToken.value = null
+    user.value = null
 
     try {
       await logoutUser()
-      accessToken.value = null
-      user.value = null
-      localStorage.removeItem(accessTokenName)
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message
       throw err
@@ -75,8 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function getUser() {
     if (!accessToken.value) return
-    // Tiny delay
-    await new Promise((resolve) => setTimeout(resolve, 50))
+
     try {
       isLoading.value = true
       const { data } = await fetchUser()

@@ -12,10 +12,9 @@ const handleRetry = (config, token) => {
   return api.request(config)
 }
 
-const handleExit = (itemName) => {
-  // localStorage.removeItem(itemName)
+const handleExit = () => {
   const authStore = useAuthStore()
-  authStore.logout()
+  return authStore.logout()
 }
 
 const api = axios.create({
@@ -83,10 +82,13 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response.status === 401) {
+      return handleExit()
+    }
+
     if (
-      error.response.status === 401 ||
-      error.response.status === 403 ||
-      error.response.status === 429
+      error.response.status === 403
+      // || error.response.status === 429
     ) {
       const authStore = useAuthStore()
       const accessToken = authStore.accessToken
@@ -94,13 +96,11 @@ api.interceptors.response.use(
       if (retryCount < maxRetries) {
         try {
           return handleRetry(error.config, accessToken)
-        } catch (err) {
-          return handleExit(authStore.accessTokenName)
         } finally {
           retryCount++
         }
       } else {
-        return handleExit(authStore.accessTokenName)
+        return handleExit()
       }
     }
 
