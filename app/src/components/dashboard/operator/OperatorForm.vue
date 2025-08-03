@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { toast } from 'vue-sonner'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { useEntityForm } from '@/composables/useEntityForm'
 import { Textarea } from '@/components/ui/textarea'
@@ -145,10 +144,8 @@ watch(
 const onSubmit = () => {
   if (!validateForm()) return
 
-  // Подготавливаем данные для отправки
   const submitData = {
     ...form,
-    // Дополнительные преобразования если нужно
   }
 
   emit('submit', submitData)

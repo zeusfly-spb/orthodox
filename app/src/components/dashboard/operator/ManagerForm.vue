@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch, reactive, nextTick } from 'vue'
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,8 +11,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
 import { useEntityForm } from '@/composables/useEntityForm'
 

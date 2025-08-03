@@ -15,7 +15,13 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
-import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
+
+interface FormFields {
+  title: string
+  description: string
+  email: string
+  phone: string
+}
 
 const props = withDefaults(
   defineProps<{
@@ -41,13 +47,6 @@ const emit = defineEmits<{
   (e: 'submit', item: FormFields): void
   (e: 'dismiss'): void
 }>()
-
-interface FormFields {
-  title: string
-  description: string
-  email: string
-  phone: string
-}
 
 const formTemplate: FormFields = {
   title: '',

@@ -13,28 +13,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { toast } from 'vue-sonner'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { useEntityForm } from '@/composables/useEntityForm'
-
-interface Requisite {
-  id?: number
-  title: string
-  type: string | null
-  description: string | null
-  legal_name: string
-  opf_short: string | null
-  inn: string
-  ogrn: string
-  ogrn_date: string | null
-  kpp: string
-  okpo: string
-  legal_address: string
-  real_address: string
-  postal_address: string | null
-  email: string | null
-  phone: string | null
-}
+import type { Requisite } from '@/types/requisite.ts'
 
 const formTemplate: Requisite = {
   title: '',
