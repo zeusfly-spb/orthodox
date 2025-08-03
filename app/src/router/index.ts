@@ -9,7 +9,6 @@ import Login from '@/views/auth/Login.vue'
 
 // Dashboard Views
 // import Dashboard from '@/views/dashboard/Dashboard.vue'
-// import DefaultView from '@/views/dashboard/DefaultView.vue'
 // import TourList from '@/views/dashboard/views/tours/TourList.vue'
 // import CustomerList from '@/views/dashboard/views/customers/CustomerList.vue'
 // import BookingList from '@/views/dashboard/views/bookings/BookingList.vue'
