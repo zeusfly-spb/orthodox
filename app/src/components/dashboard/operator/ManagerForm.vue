@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
-import { useEntityForm } from '@/composables/useEntityForm'
+import { useCommonForm } from '@/composables/useCommonForm.ts'
 
 interface FormFields {
   firstname: string
@@ -34,7 +34,7 @@ const formTemplate: FormFields = {
 
 const requiredFields: Array<keyof FormFields> = ['firstname', 'lastname']
 
-const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
+const { form, resetForm, fillForm, validateForm } = useCommonForm<FormFields>(
   formTemplate,
   requiredFields,
 )

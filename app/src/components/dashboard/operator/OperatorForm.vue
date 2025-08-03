@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { useEntityForm } from '@/composables/useEntityForm'
+import { useCommonForm } from '@/composables/useCommonForm.ts'
 import { Textarea } from '@/components/ui/textarea'
 
 interface Operator {
@@ -78,7 +78,7 @@ const formTemplate: Operator = {
 
 const requiredFields: Array<keyof Operator> = ['name', 'requisite.legal_name']
 
-const { form, resetForm, fillForm, validateForm } = useEntityForm<Operator>(
+const { form, resetForm, fillForm, validateForm } = useCommonForm<Operator>(
   formTemplate,
   requiredFields,
 )

@@ -1,7 +1,7 @@
 import { reactive, watch, nextTick } from 'vue'
 import { toast } from 'vue-sonner'
 
-export const useEntityForm = <T extends Record<string, any>>(
+export const useCommonForm = <T extends Record<string, any>>(
   formTemplate: T,
   requiredFields: Array<keyof T> = [],
 ) => {

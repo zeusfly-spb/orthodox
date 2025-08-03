@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
-import { useEntityForm } from '@/composables/useEntityForm'
+import { useCommonForm } from '@/composables/useCommonForm.ts'
 
 interface FormFields {
   firstname: string
@@ -58,7 +58,7 @@ const requiredFields: Array<keyof FormFields> = [
   'passport_number',
 ]
 
-const { form, resetForm, fillForm, validateForm } = useEntityForm<FormFields>(
+const { form, resetForm, fillForm, validateForm } = useCommonForm<FormFields>(
   formTemplate,
   requiredFields,
 )

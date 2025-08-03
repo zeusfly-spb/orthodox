@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { useEntityForm } from '@/composables/useEntityForm'
+import { useCommonForm } from '@/composables/useCommonForm.ts'
 import type { Requisite } from '@/types/requisite.ts'
 
 const formTemplate: Requisite = {
@@ -45,7 +45,7 @@ const requiredFields: Array<keyof Requisite> = [
   'real_address',
 ]
 
-const { form, resetForm, fillForm, validateForm } = useEntityForm<Requisite>(
+const { form, resetForm, fillForm, validateForm } = useCommonForm<Requisite>(
   formTemplate,
   requiredFields,
 )
