@@ -81,9 +81,9 @@ const applyFilters = () => {
 <template>
   <div>
     <!-- Оператор -->
-    <div class="flex flex-col gap-6 py-6 bg-white">
-      <div class="flex shrink-0 items-center justify-between gap-2">
-        <div class="flex items-center gap-4 pl-4">
+    <div class="flex flex-col gap-6 p-6 bg-white">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-2">
+        <div class="flex items-center gap-4 mb-2 md:mb-0">
           <template v-if="isLoading">
             <Skeleton class="h-20 w-20 rounded-full" />
             <Skeleton class="h-4 w-96" />
@@ -103,7 +103,7 @@ const applyFilters = () => {
             </div>
           </template>
         </div>
-        <div class="flex items-center gap-4 pr-4">
+        <div class="flex items-center gap-4">
           <Button
             class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
             @click="showForm = true"
@@ -113,7 +113,7 @@ const applyFilters = () => {
         </div>
       </div>
 
-      <div class="bg-bread-proc flex rounded-xl py-4 mb-8 mx-4 gap-4 items-center">
+      <div class="bg-bread-proc flex rounded-xl gap-6 py-4 mb-8 items-center">
         <div class="circular-progress">
           <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48">
             <circle
@@ -148,7 +148,7 @@ const applyFilters = () => {
 
     <div class="relative w-full">
       <Tabs default-value="tab-full-data">
-        <TabsList class="bg-white px-4 pb-8 mb-6">
+        <TabsList class="bg-white px-6 pb-8 mb-6">
           <TabsTrigger value="tab-full-data"> ДАННЫЕ О ПАЛОМНИЧЕСКОЙ СЛУЖБЕ </TabsTrigger>
           <TabsTrigger value="tab-requisite"> РЕКВИЗИТЫ </TabsTrigger>
           <TabsTrigger value="tab-files"> ФАЙЛЫ </TabsTrigger>
@@ -208,10 +208,10 @@ const applyFilters = () => {
       <CardContent>
         <div class="mb-8">
           <div class="flex shrink-0 items-center justify-between gap-2">
-            <div class="flex items-center gap-4 pl-4">
+            <div class="flex items-center gap-4">
               <h1 class="text-lg font-bold text-muted-foreground">Менеджеры</h1>
             </div>
-            <div class="flex items-center gap-4 pr-4">
+            <div class="flex items-center gap-4">
               <Button
                 class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
                 @click="showManagerForm = true"
