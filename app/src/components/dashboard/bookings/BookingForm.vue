@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { watch, reactive, nextTick } from 'vue'
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
+import { watch, reactive, nextTick, ref } from 'vue'
+import { Calendar as CalendarIcon, Trash2, Search, Check } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -26,8 +26,23 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import {
+  Combobox,
+  ComboboxAnchor,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxList,
+} from '@/components/ui/combobox'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { toast } from 'vue-sonner'
+import { tourApi } from '@/api/tours'
+import { cn } from '@/lib/utils'
+
+const searchQuery = ref('')
+const tours = ref<Tour[]>([])
+const isLoadingTours = ref(false)
 
 interface Customer {
   id?: number
@@ -62,7 +77,7 @@ interface BookingForm {
   status: string
   description: string | null
   customers: Customer[]
-  tour: Tour | null
+  tour_id: number | null
 }
 
 const props = withDefaults(
@@ -117,6 +132,49 @@ const form = reactive<BookingForm>({
   tour: null,
 })
 
+const debounce = (fn: Function, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>
+  return function (...args: any[]) {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+
+const debouncedSearchTours = debounce(async (query: string) => {
+  if (query.length < 2) {
+    tours.value = []
+    return
+  }
+
+  try {
+    isLoadingTours.value = true
+    const response = await tourApi.fetchData({ 'filter[title]': query })
+    tours.value = response.data
+  } catch (error) {
+    toast.error('Ошибка поиска')
+    console.error(error)
+  } finally {
+    isLoadingTours.value = false
+  }
+}, 300)
+
+const handleInput = (event: Event) => {
+  const query = (event.target as HTMLInputElement).value
+  searchQuery.value = query
+  debouncedSearchTours(query)
+}
+
+const searchTours = () => {
+  debouncedSearchTours()
+}
+
+const selectTour = (tour: Tour) => {
+  form.tour = tour
+  form.tour_id = tour.id
+  searchQuery.value = tour.title
+  tours.value = []
+}
+
 const addCustomer = () => {
   form.customers.push({ ...customerTemplate })
 }
@@ -135,6 +193,9 @@ const resetForm = () => {
   form.description = null
   form.customers = [{ ...customerTemplate }]
   form.tour = null
+  form.tour_id = null
+  searchQuery.value = ''
+  tours.value = []
 }
 
 watch(
@@ -149,6 +210,10 @@ watch(
         ...customer,
       }))
       form.tour = item.tour ? { ...item.tour } : null
+      form.tour_id = item.tour?.id || null
+      if (item.tour) {
+        searchQuery.value = item.tour.title
+      }
     } else {
       resetForm()
     }
@@ -191,7 +256,15 @@ const validateForm = (): boolean => {
 
 const onSubmit = () => {
   if (!validateForm()) return
-  emit('submit', { ...form })
+
+  const formData = {
+    ...form,
+    tour_id: form.tour?.id || null,
+  }
+
+  delete formData.tour
+
+  emit('submit', formData)
   emit('update:open', false)
 }
 </script>
@@ -213,8 +286,59 @@ const onSubmit = () => {
           <!-- Tour and Status Selection -->
           <div class="grid grid-cols-2 gap-4 items-center">
             <div class="space-y-2">
-              <Label>Тур</Label>
-              <h4 class="py-1 font-medium text-muted-foreground">{{ form.tour?.title || '' }}</h4>
+              <Label required>Тур</Label>
+              <Combobox v-if="!item?.id" v-model="searchQuery">
+                <ComboboxAnchor class="w-full">
+                  <div class="relative w-full max-w-sm items-center">
+                    <ComboboxInput
+                      class="pl-2"
+                      placeholder="Поиск тура..."
+                      :model-value="searchQuery"
+                      @input="handleInput"
+                    />
+                    <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
+                      <Search class="size-4 text-muted-foreground" />
+                    </span>
+                  </div>
+                </ComboboxAnchor>
+
+                <ComboboxList
+                  v-if="tours.length > 0 || isLoadingTours"
+                  class="w-full max-w-md max-h-60 overflow-y-auto overscroll-contain relative scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400 scrollbar-thumb-rounded-md hover:scrollbar-thumb-gray-500"
+                >
+                  <ComboboxEmpty v-if="isLoadingTours">
+                    <div class="w-full max-w-md px-6">Загрузка...</div>
+                  </ComboboxEmpty>
+                  <ComboboxEmpty v-else-if="tours.length === 0 && searchQuery.length >= 2">
+                    <div class="w-full max-w-md px-6">Туры не найдены</div>
+                  </ComboboxEmpty>
+
+                  <ComboboxItem
+                    v-for="tour in tours"
+                    :key="tour.id"
+                    :value="tour.title"
+                    @click="selectTour(tour)"
+                    class="cursor-pointer"
+                  >
+                    <div class="flex flex-col">
+                      <span class="font-medium">{{ tour.title }}</span>
+                      <span class="text-sm text-muted-foreground">
+                        {{ tour.route }} • {{ tour.price }} ₽ • {{ tour.duration }} дн.
+                      </span>
+                    </div>
+
+                    <ComboboxItemIndicator>
+                      <Check :class="cn('ml-auto h-4 w-4')" />
+                    </ComboboxItemIndicator>
+                  </ComboboxItem>
+                </ComboboxList>
+              </Combobox>
+              <div v-else class="py-1 font-medium text-muted-foreground">
+                {{ form.tour?.title || 'Тур не выбран' }}
+                <p v-if="form.tour" class="text-sm text-muted-foreground">
+                  {{ form.tour.route }} • {{ form.tour.price }} ₽ • {{ form.tour.duration }} дн.
+                </p>
+              </div>
             </div>
             <div class="space-y-2">
               <Label>Статус</Label>
