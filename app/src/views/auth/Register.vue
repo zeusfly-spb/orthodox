@@ -87,7 +87,7 @@ const handleSubmit = async () => {
                     placeholder="Выберите оператора..."
                   />
                   <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
-                    <Search class="size-4 text-muted-foreground" />
+                    <Search class="size-4 text-gray-400" />
                   </span>
                 </div>
               </ComboboxAnchor>
