@@ -113,7 +113,7 @@ const applyFilters = () => {
         </div>
       </div>
 
-      <div class="bg-bread-proc flex rounded-xl gap-6 py-4 mb-8 items-center">
+      <div class="bg-gray-100/75 rounded-[16px] p-6 flex gap-6 py-4 mb-8 items-center">
         <div class="circular-progress">
           <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48">
             <circle

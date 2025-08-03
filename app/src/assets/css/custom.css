@@ -4,13 +4,6 @@
   gap: 24px;
 }
 
-.bg-bread-proc {
-  background: #f9f9fa;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
 .progress-circle {
   position: relative;
   width: 48px;
