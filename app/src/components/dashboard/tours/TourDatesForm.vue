@@ -66,8 +66,12 @@ const removeDate = (index: number) => {
         <PopoverAnchor />
       </Popover>
     </div>
-    <div v-if="modelValue.length" class="mt-2 space-y-1">
-      <div v-for="(date, index) in modelValue" :key="date" class="flex items-center gap-2">
+    <div v-if="modelValue.length" class="flex flex-wrap gap-4 mt-2 space-y-1">
+      <div
+        v-for="(date, index) in modelValue"
+        :key="date"
+        class="flex-item items-center justify-center"
+      >
         <span>{{ date }}</span>
         <Button type="button" variant="ghost" size="sm" @click="removeDate(index)">
           <Trash2 class="h-4 w-4 text-destructive" />
