@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { useEntity } from '@/composables/useEntity'
+import { useApiClient } from '@/composables/useApiClient.ts'
 import { createApiClient } from '@/api/generic'
 import { toast } from 'vue-sonner'
 
@@ -18,7 +18,7 @@ export const useCrudActions = <T>(
   const handledItemId = ref<string | number | null>(null)
 
   const { getAll, getOneById, store, update, destroy, items, currentItem, pagination, error } =
-    useEntity(apiClient)
+    useApiClient(apiClient)
 
   const loadCollection = async (params?: Record<string, unknown>) => {
     try {

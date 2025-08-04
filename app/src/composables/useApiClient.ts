@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import type { ApiError } from '@/types/shared'
 import { createApiClient } from '@/api/generic'
 
-export function useEntity<T>(apiClient: ReturnType<typeof createApiClient<T>>) {
+export function useApiClient<T>(apiClient: ReturnType<typeof createApiClient<T>>) {
   const response = ref<null>(null)
   const items = ref<T[]>([])
   const currentItem = ref<T | null>(null)
