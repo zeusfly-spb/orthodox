@@ -126,6 +126,8 @@ const onSubmit = () => {
   emit('submit', { ...form })
   emit('update:open', false)
 }
+
+import Map from '@/components/map/Map.vue'
 </script>
 
 <template>
@@ -165,6 +167,12 @@ const onSubmit = () => {
               <Label for="phone" required>Телефон</Label>
               <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
             </div>
+          </div>
+        </div>
+
+        <div class="grid gap-4">
+          <div class="space-y-2">
+            <Map :height="'400px'" :zoom="15" :marker-data="item?.location" />
           </div>
         </div>
 
