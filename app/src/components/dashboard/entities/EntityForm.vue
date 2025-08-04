@@ -16,6 +16,8 @@ import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
 
+import Map from '@/components/map/Map.vue'
+
 interface FormFields {
   title: string
   description: string
@@ -126,8 +128,6 @@ const onSubmit = () => {
   emit('submit', { ...form })
   emit('update:open', false)
 }
-
-import Map from '@/components/map/Map.vue'
 </script>
 
 <template>
@@ -171,8 +171,8 @@ import Map from '@/components/map/Map.vue'
         </div>
 
         <div class="grid gap-4">
-          <div class="space-y-2">
-            <Map :height="'400px'" :zoom="15" :marker-data="item?.location" />
+          <div class="flex flex-col size-full rounded-xl mb-4">
+            <Map :height="'480px'" :zoom="15" :marker-data="item?.location" />
           </div>
         </div>
 
