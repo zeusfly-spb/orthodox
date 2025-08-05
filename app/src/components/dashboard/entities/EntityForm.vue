@@ -170,10 +170,8 @@ const onSubmit = () => {
           </div>
         </div>
 
-        <div class="grid gap-4">
-          <div class="flex flex-col size-full rounded-xl mb-4">
-            <Map :height="'480px'" :zoom="15" :marker-data="item?.location" />
-          </div>
+        <div class="flex flex-col size-full rounded-xl my-4">
+          <Map :height="'480px'" :zoom="14" :marker-data="item?.location" />
         </div>
 
         <DialogFooter>

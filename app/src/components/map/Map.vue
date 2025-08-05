@@ -5,7 +5,7 @@ import { MglMap, MglNavigationControl, MglMarker } from '@indoorequal/vue-maplib
 const props = defineProps({
   mapStyle: {
     type: String,
-    default: 'https://api.maptiler.com/maps/streets-v2/style.json?key=NsurAnZJr5X7sGXqkUDS',
+    default: import.meta.env.VITE_MAP_STREETS_URL,
   },
   center: {
     type: Array,
@@ -61,7 +61,7 @@ const containerStyle = computed(() => {
 
 <template>
   <div
-    class="flex flex-col size-full rounded-xl z-2 relative overflow-hidden"
+    class="flex flex-col size-full rounded-md z-2 relative overflow-hidden"
     :style="containerStyle"
   >
     <div class="flex flex-col size-full z-1 absolute h-full inset-0">
