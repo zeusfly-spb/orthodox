@@ -22,6 +22,8 @@ interface FormFields {
   description: string
   email: string
   phone: string
+  latitude: number | null
+  longitude: number | null
 }
 
 const props = withDefaults(
@@ -79,6 +81,8 @@ const form = reactive<Omit<FormFields, 'id'>>({
   description: '',
   phone: '',
   email: '',
+  latitude: null,
+  longitude: null,
   parameters: {},
 })
 
@@ -88,8 +92,16 @@ const resetForm = () => {
     description: '',
     phone: '',
     email: '',
+    latitude: '',
+    longitude: '',
     parameters: {},
   })
+}
+
+const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
+  // Reverse coordinates for right order
+  form.latitude = lng.toFixed(10)
+  form.longitude = lat.toFixed(10)
 }
 
 watch(
@@ -105,6 +117,8 @@ watch(
         description: newEntity.description,
         phone: newEntity.phone,
         email: newEntity.email,
+        latitude: newEntity.location?.coordinates[1],
+        longitude: newEntity.location?.coordinates[0],
         parameters,
       })
     }
@@ -167,11 +181,34 @@ const onSubmit = () => {
               <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
             </div>
           </div>
-        </div>
 
-        <!-- Координаты -->
-        <div class="flex flex-col size-full rounded-xl my-4">
-          <MarkerMap :height="'480px'" :zoom="14" :marker-data="item?.location" />
+          <!-- Поля для координат -->
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="space-y-2">
+              <Label for="latitude">Широта</Label>
+              <Input id="latitude" v-model="form.latitude" type="number" step="0.000001" disabled />
+            </div>
+            <div class="space-y-2">
+              <Label for="longitude">Долгота</Label>
+              <Input
+                id="longitude"
+                v-model="form.longitude"
+                type="number"
+                step="0.000001"
+                disabled
+              />
+            </div>
+          </div>
+
+          <!-- Карта -->
+          <div class="flex flex-col size-full my-4">
+            <MarkerMap
+              :height="'480px'"
+              :zoom="14"
+              :marker-data="item?.location"
+              @update:coordinates="handleMarkerUpdate"
+            />
+          </div>
         </div>
 
         <DialogFooter>

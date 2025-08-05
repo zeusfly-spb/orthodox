@@ -1,42 +1,33 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { MglMap, MglNavigationControl, MglMarker, MglPopup } from '@indoorequal/vue-maplibre-gl'
 
-const props = defineProps({
-  mapStyle: {
-    type: String,
-    default: import.meta.env.VITE_MAP_STREETS_URL,
+const props = withDefaults(
+  defineProps<{
+    mapStyle?: string
+    center?: number[]
+    zoom?: number
+    height?: string
+    markerData?: { type: string; coordinates: number[] } | null
+    markerColor?: string
+    draggable?: boolean
+  }>(),
+  {
+    mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
+    center: () => [110.32128708, 65.53927338],
+    zoom: 2,
+    height: '200px',
+    markerData: null,
+    markerColor: '#10B981',
+    draggable: false,
   },
-  center: {
-    type: Array,
-    default: () => [110.32128708, 65.53927338],
-    validator: (value) =>
-      value.length === 2 && typeof value[0] === 'number' && typeof value[1] === 'number',
-  },
-  zoom: {
-    type: Number,
-    default: 2,
-    validator: (value) => value >= 0 && value <= 22,
-  },
-  height: {
-    type: String,
-    default: '200px',
-  },
-  markerData: {
-    type: Object,
-    default: null,
-    validator: (value) => {
-      if (value == null) return true
-      return value.type === 'Point' && Array.isArray(value.coordinates)
-    },
-  },
-  markerColor: {
-    type: String,
-    default: '#10B981',
-  },
-})
+)
 
-const draggable = ref(true)
+const emit = defineEmits<{
+  (e: 'update:coordinates', coords: { lat: number; lng: number }): void
+}>()
+
+const draggable = ref(props.draggable)
 
 const markerCoordinates = ref(
   props.markerData?.coordinates
@@ -50,6 +41,10 @@ const mapZoom = computed(() => {
   return props.markerData ? props.zoom : 2
 })
 
+const containerStyle = computed(() => {
+  return { height: props.height }
+})
+
 watch(
   () => props.markerData,
   (newVal) => {
@@ -61,15 +56,9 @@ watch(
 )
 
 const onDragEnd = () => {
-  // console.log('Новые координаты маркера:', markerCoordinates.value)
+  const { lng, lat } = markerCoordinates.value
+  emit('update:coordinates', { lat, lng })
 }
-
-const containerStyle = computed(() => {
-  if (typeof props.height === 'number') {
-    return { height: `${props.height}px` }
-  }
-  return { height: props.height }
-})
 </script>
 
 <template>
@@ -101,7 +90,6 @@ const containerStyle = computed(() => {
       <input type="checkbox" v-model="draggable" />
       Переместить маркер
     </label>
-    <div class="coordinates">Координаты маркера: {{ markerCoordinates }}</div>
   </div>
 </template>
 
