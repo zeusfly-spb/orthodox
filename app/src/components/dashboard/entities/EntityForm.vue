@@ -15,8 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
-
-import Map from '@/components/map/Map.vue'
+import MarkerMap from '@/components/map/MarkerMap.vue'
 
 interface FormFields {
   title: string
@@ -170,8 +169,9 @@ const onSubmit = () => {
           </div>
         </div>
 
+        <!-- Координаты -->
         <div class="flex flex-col size-full rounded-xl my-4">
-          <Map :height="'480px'" :zoom="14" :marker-data="item?.location" />
+          <MarkerMap :height="'480px'" :zoom="14" :marker-data="item?.location" />
         </div>
 
         <DialogFooter>
