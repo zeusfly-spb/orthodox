@@ -99,9 +99,8 @@ const resetForm = () => {
 }
 
 const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
-  // Reverse coordinates for right order
-  form.latitude = lng.toFixed(10)
-  form.longitude = lat.toFixed(10)
+  form.latitude = lat
+  form.longitude = lng
 }
 
 watch(
