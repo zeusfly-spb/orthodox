@@ -185,17 +185,11 @@ const onSubmit = () => {
           <div class="grid grid-cols-2 gap-4 mt-4">
             <div class="space-y-2">
               <Label for="latitude">Широта</Label>
-              <Input id="latitude" v-model="form.latitude" type="number" step="0.000001" disabled />
+              <Input id="latitude" v-model="form.latitude" type="number" disabled />
             </div>
             <div class="space-y-2">
               <Label for="longitude">Долгота</Label>
-              <Input
-                id="longitude"
-                v-model="form.longitude"
-                type="number"
-                step="0.000001"
-                disabled
-              />
+              <Input id="longitude" v-model="form.longitude" type="number" disabled />
             </div>
           </div>
 

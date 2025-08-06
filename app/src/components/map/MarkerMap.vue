@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { MglMap, MglNavigationControl, MglMarker, MglPopup } from '@indoorequal/vue-maplibre-gl'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 const props = withDefaults(
   defineProps<{
@@ -67,7 +69,7 @@ const onDragEnd = () => {
 
 <template>
   <div
-    class="flex flex-col size-full rounded-md z-2 relative overflow-hidden"
+    class="flex flex-col size-full z-2 relative overflow-hidden rounded-md bg-neutral-100"
     :style="containerStyle"
   >
     <div class="flex flex-col size-full z-1 absolute h-full inset-0">
@@ -89,11 +91,13 @@ const onDragEnd = () => {
     </div>
   </div>
 
-  <div class="map-controls">
-    <label>
-      <input type="checkbox" v-model="draggable" />
-      Переместить маркер
-    </label>
+  <div class="flex">
+    <div class="pt-3">
+      <Label for="switch">
+        <Switch id="switch" v-model="draggable" @update:model-value="!draggable" />
+        Изменить положение
+      </Label>
+    </div>
   </div>
 </template>
 
