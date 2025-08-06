@@ -58,11 +58,10 @@ watch(
 const onDragEnd = () => {
   const { lat, lng } = markerCoordinates.value
 
-  // Reverse coordinates for right order
-  const latitude = lng.toFixed(8)
-  const longitude = lat.toFixed(8)
-
-  emit('update:coordinates', { lat: latitude, lng: longitude })
+  emit('update:coordinates', {
+    lat: lng.toFixed(8),
+    lng: lat.toFixed(8),
+  })
 }
 </script>
 
