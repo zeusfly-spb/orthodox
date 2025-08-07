@@ -18,7 +18,7 @@ const props = withDefaults(
     mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
     center: () => [110.32128708, 65.53927338],
     zoom: 2,
-    height: '200px',
+    height: '300px',
     markerData: null,
     markerColor: '#10B981',
     draggable: false,
