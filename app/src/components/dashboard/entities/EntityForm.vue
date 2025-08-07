@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
-import MarkerMap from '@/components/map/MarkerMap.vue'
+import MarkerMap from '@/components/maps/MarkerMap.vue'
 
 interface FormFields {
   title: string
