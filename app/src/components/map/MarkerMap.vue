@@ -50,9 +50,9 @@ const containerStyle = computed(() => {
 watch(
   () => props.markerData,
   (newVal) => {
-    markerCoordinates.value = newVal?.coordinates
-      ? [newVal.coordinates[1], newVal.coordinates[0]]
-      : [110.32128708, 65.53927338]
+    if (newVal?.coordinates) {
+      markerCoordinates.value = [newVal.coordinates[1], newVal.coordinates[0]]
+    }
   },
   { immediate: true },
 )
