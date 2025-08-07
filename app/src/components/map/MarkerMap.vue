@@ -34,7 +34,7 @@ const draggable = ref(props.draggable)
 const markerCoordinates = ref(
   props.markerData?.coordinates
     ? [props.markerData.coordinates[1], props.markerData.coordinates[0]]
-    : [110.32128708, 65.53927338],
+    : props.center,
 )
 
 const mapCenter = ref(markerCoordinates.value)
