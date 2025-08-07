@@ -1,106 +1,214 @@
-<script setup>
-import { onMounted, ref } from 'vue'
-import { MglMap, MglGeoJsonSource, MglLineLayer } from '@indoorequal/vue-maplibre-gl'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import {
+  MglMap,
+  MglNavigationControl,
+  MglGeoJsonSource,
+  MglLineLayer,
+  MglCircleLayer,
+  MglSymbolLayer,
+  MglMarker,
+  MglPopup,
+} from '@indoorequal/vue-maplibre-gl'
 
-const style =
-  'https://api.maptiler.com/maps/streets-v2/style.json?key=get_your_own_api_key_3YeFnghdqUJJpIvlgLti'
-const center = [-122.483696, 37.833818]
-const zoom = 15
-
-const lineString = [
-  [-122.483696, 37.833818],
-  [-122.483482, 37.833174],
-  [-122.483396, 37.8327],
-  [-122.483568, 37.832056],
-  [-122.48404, 37.831141],
-  [-122.48404, 37.830497],
-  [-122.483482, 37.82992],
-  [-122.483568, 37.829548],
-  [-122.48507, 37.829446],
-  [-122.4861, 37.828802],
-  [-122.486958, 37.82931],
-  [-122.487001, 37.830802],
-  [-122.487516, 37.831683],
-  [-122.488031, 37.832158],
-  [-122.488889, 37.832971],
-  [-122.489876, 37.832632],
-  [-122.490434, 37.832937],
-  [-122.49125, 37.832429],
-  [-122.491636, 37.832564],
-  [-122.492237, 37.833378],
-  [-122.493782, 37.833683],
-]
-
-const geojsonSource = ref({
-  data: {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: lineString.slice(0, 1),
-        },
-      },
-    ],
-  },
-})
-
-onMounted(() => {
-  setInterval(() => {
-    if (geojsonSource.value.data.features[0].geometry.coordinates.length >= lineString.length) {
-      geojsonSource.value.data = {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: lineString.slice(0, 1),
-            },
-          },
-        ],
+const props = withDefaults(
+  defineProps<{
+    mapStyle?: string
+    height?: string
+    points?: Array<{
+      entity: {
+        location: {
+          type: 'Point'
+          coordinates: [number, number]
+        }
+        [key: string]: any
       }
-    } else {
-      geojsonSource.value.data = {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: [
-                ...geojsonSource.value.data.features[0].geometry.coordinates,
-                lineString[geojsonSource.value.data.features[0].geometry.coordinates.length],
-              ],
-            },
-          },
-        ],
-      }
+      [key: string]: any
+    }>
+    linePaint?: {
+      'line-color': string
+      'line-width': number
     }
-  }, 1000)
+    lineLayout?: {
+      'line-join': string
+      'line-cap': string
+    }
+    circlePaint?: {
+      'circle-color': string
+      'circle-radius': number
+      'circle-stroke-width': number
+    }
+  }>(),
+  {
+    mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
+    height: '300px',
+    points: () => [],
+    linePaint: {
+      'line-color': '#fff',
+      'line-width': 3,
+      'line-dasharray': [3, 2],
+      'line-opacity': 0.9,
+      'line-translate': [0, 0],
+    },
+    lineLayout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+      'line-sort-key': 1,
+    },
+    circlePaint: {
+      'circle-color': '#10B981',
+      'circle-radius': 12,
+      'circle-stroke-color': '#fff',
+      'circle-stroke-width': 2,
+    },
+  },
+)
+
+const mapContainer = ref<HTMLElement | null>(null)
+const containerStyle = computed(() => ({ height: props.height }))
+
+const normalizedPoints = computed(() => {
+  return props.points.map((point) => ({
+    ...point,
+    entity: {
+      ...point.entity,
+      location: {
+        ...point.entity.location,
+        coordinates: [
+          point.entity.location.coordinates[1], // Lng
+          point.entity.location.coordinates[0], // Lat
+        ],
+      },
+    },
+  }))
 })
 
-const layout = {
-  'line-join': 'round',
-  'line-cap': 'round',
+const coordinates = computed(() =>
+  normalizedPoints.value.map((point) => point.entity.location.coordinates),
+)
+
+const popup = ref<any>(null)
+const popupCoordinates = ref<[number, number] | null>(null)
+const popupContent = ref('')
+
+// Bounding box
+const calculateViewport = () => {
+  if (!normalizedPoints.value.length) return { center: [110.32128708, 65.53927338], zoom: 2 }
+
+  const coords = coordinates.value
+  const lngs = coords.map((c) => c[0])
+  const lats = coords.map((c) => c[1])
+
+  const bbox = {
+    minLng: Math.min(...lngs),
+    maxLng: Math.max(...lngs),
+    minLat: Math.min(...lats),
+    maxLat: Math.max(...lats),
+  }
+
+  const center = [(bbox.minLng + bbox.maxLng) / 2, (bbox.minLat + bbox.maxLat) / 2]
+
+  const latDiff = bbox.maxLat - bbox.minLat
+  const lngDiff = bbox.maxLng - bbox.minLng
+  const maxDiff = Math.max(latDiff, lngDiff)
+
+  let zoom = 5
+  if (maxDiff > 20) zoom = 3
+  else if (maxDiff > 10) zoom = 4
+  else if (maxDiff > 5) zoom = 5
+  else if (maxDiff > 2) zoom = 6
+  else if (maxDiff > 1) zoom = 7
+  else if (maxDiff > 0.5) zoom = 8
+  else zoom = 9
+
+  return { center, zoom }
 }
 
-const paint = {
-  'line-color': '#FF0000',
-  'line-width': 8,
-}
+const mapParams = computed(calculateViewport)
+
+// GeoJSON points
+const routeData = computed(() => {
+  const features = normalizedPoints.value.map((point, index) => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: point.entity.location.coordinates, // Уже в правильном формате
+    },
+    properties: {
+      id: point.entity.id,
+      title: point.entity.title,
+      time: point.time,
+      index: index + 1,
+    },
+  }))
+
+  // Add lines
+  if (normalizedPoints.value.length >= 2) {
+    features.push({
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: normalizedPoints.value.map((p) => p.entity.location.coordinates),
+      },
+    })
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features,
+  }
+})
+
+const pointFilter = ['==', ['geometry-type'], 'Point']
+const lineFilter = ['==', ['geometry-type'], 'LineString']
 </script>
 
 <template>
-  <mgl-map :map-style="style" :center="center" :zoom="zoom" height="500px">
-    <mgl-geo-json-source source-id="geojson" :data="geojsonSource.data">
-      <mgl-line-layer layer-id="geojson" :layout="layout" :paint="paint" />
-    </mgl-geo-json-source>
-  </mgl-map>
+  <div
+    ref="mapContainer"
+    class="flex flex-col size-full z-2 relative overflow-hidden rounded-md bg-neutral-100"
+    :style="containerStyle"
+  >
+    <div class="flex flex-col size-full z-1 absolute h-full inset-0">
+      <MglMap :map-style="mapStyle" :center="mapParams.center" :zoom="mapParams.zoom">
+        <MglNavigationControl />
+        <MglGeoJsonSource source-id="route" :data="routeData">
+          <MglLineLayer
+            v-if="props.points.length >= 2"
+            layer-id="line"
+            source="route"
+            :filter="lineFilter"
+            :paint="props.linePaint"
+            :layout="props.lineLayout"
+          />
+          <MglCircleLayer
+            layer-id="points"
+            source="route"
+            :filter="pointFilter"
+            :paint="props.circlePaint"
+          />
+          <MglSymbolLayer
+            layer-id="point-labels"
+            source="route"
+            :filter="pointFilter"
+            :layout="{
+              'text-field': ['get', 'index'],
+              'text-size': 12,
+              'text-font': ['Open Sans Bold'],
+              'text-allow-overlap': true,
+              'text-ignore-placement': true,
+            }"
+            :paint="{
+              'text-color': '#fff',
+              'text-halo-color': '#000',
+              'text-halo-width': 0,
+            }"
+          />
+        </MglGeoJsonSource>
+      </MglMap>
+    </div>
+  </div>
 </template>
 
 <style lang="css">

@@ -12,6 +12,7 @@ import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
 import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
 import TourPointsForm from '@/components/dashboard/tours/TourPointsForm.vue'
 import { tourApi } from '@/api/tours.ts'
+import RouteMap from '@/components/maps/RouteMap.vue'
 
 interface DayItem {
   title: string
@@ -215,6 +216,14 @@ const onSubmit = () => {
       <CardContent>
         <div>
           <TourDaysForm v-model="form.days" />
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardContent>
+        <div>
+          <RouteMap :height="'480px'" :points="form.points" />
         </div>
       </CardContent>
     </Card>
