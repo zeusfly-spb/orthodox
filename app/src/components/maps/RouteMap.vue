@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import {
   MglMap,
   MglNavigationControl,
@@ -73,8 +73,9 @@ const mapContainer = ref<HTMLElement | null>(null)
 const containerStyle = computed(() => ({ height: props.height }))
 
 const normalizedPoints = computed(() => {
-  return props.points.map((point) => ({
+  return props.points.map((point, index) => ({
     ...point,
+    index: index + 1,
     entity: {
       ...point.entity,
       location: {
@@ -92,9 +93,35 @@ const coordinates = computed(() =>
   normalizedPoints.value.map((point) => point.entity.location.coordinates),
 )
 
-const popup = ref<any>(null)
-const popupCoordinates = ref<[number, number] | null>(null)
-const popupContent = ref('')
+// Словарь для быстрого доступа к данным точек по ID
+const pointsDictionary = ref<
+  Record<
+    string,
+    {
+      coordinates: [number, number]
+      title: string
+      description: string
+      index: number
+    }
+  >
+>({})
+
+// Обновляем словарь при изменении данных
+watch(
+  normalizedPoints,
+  (points) => {
+    pointsDictionary.value = {}
+    points.forEach((point) => {
+      pointsDictionary.value[point.entity.id] = {
+        coordinates: point.entity.location.coordinates,
+        title: point.entity.title || 'Неизвестно',
+        description: point.entity.description || '',
+        index: point.index,
+      }
+    })
+  },
+  { immediate: true },
+)
 
 // Bounding box
 const calculateViewport = () => {
@@ -133,17 +160,17 @@ const mapParams = computed(calculateViewport)
 
 // GeoJSON points
 const routeData = computed(() => {
-  const features = normalizedPoints.value.map((point, index) => ({
+  const features = normalizedPoints.value.map((point) => ({
     type: 'Feature',
     geometry: {
       type: 'Point',
-      coordinates: point.entity.location.coordinates, // Уже в правильном формате
+      coordinates: point.entity.location.coordinates,
     },
     properties: {
       id: point.entity.id,
       title: point.entity.title,
       description: point.entity.description,
-      index: index + 1,
+      index: point.index,
     },
   }))
 
@@ -179,6 +206,44 @@ const truncateText = (text: string, maxLength: number) => {
   return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
 }
 
+const openPopupById = (id: string, fly?: boolean) => {
+  const pointData = pointsDictionary.value[id]
+  if (!pointData) return
+
+  const truncatedDescription = truncateText(pointData.description, 100)
+
+  activePopup.value = {
+    coordinates: [...pointData.coordinates],
+    content: `
+      <div class="map-popup">
+        <h4><strong>${pointData.title}</strong></h4>
+        ${truncatedDescription ? `<p>${truncatedDescription}</p>` : ''}
+        <p>Пункт: ${pointData.index}</p>
+      </div>
+    `,
+    id: id,
+  }
+
+  if (!fly) return
+  flyToPointById(id)
+}
+
+const flyToPointById = (id: string) => {
+  const pointData = pointsDictionary.value[id]
+  if (!pointData) return
+
+  const map = mapRef.value?.map
+  if (map) {
+    map.flyTo({
+      center: pointData.coordinates,
+      zoom: 14,
+      essential: true,
+      duration: 1000,
+    })
+  }
+}
+
+// Map click handler
 const handleMapClick = async (e: any) => {
   const map = mapRef.value?.map
   if (!map) return
@@ -191,21 +256,9 @@ const handleMapClick = async (e: any) => {
     const pointFeature = features[0]
     const clickedId = pointFeature.properties?.id
 
-    emit('marker-click', clickedId)
-
-    const rawDescription = pointFeature.properties?.description || ''
-    const truncatedDescription = truncateText(rawDescription, 100)
-
-    activePopup.value = {
-      coordinates: [...pointFeature.geometry.coordinates],
-      content: `
-        <div class="map-popup">
-          <h4><strong>${pointFeature.properties?.title || 'Неизвестно'}</strong></h4>
-          ${truncatedDescription ? `<p>${truncatedDescription}</p>` : ''}
-          <p>Пункт: ${pointFeature.properties?.index || '—'}</p>
-        </div>
-      `,
-      id: clickedId,
+    if (clickedId) {
+      emit('marker-click', clickedId)
+      openPopupById(clickedId)
     }
   } else {
     activePopup.value = null
@@ -239,6 +292,11 @@ onUnmounted(() => {
   if (mapRef.value?.map) {
     mapRef.value.map.off('click', handleMapClick)
   }
+})
+
+defineExpose({
+  openPopupById,
+  flyToPointById,
 })
 </script>
 
@@ -304,13 +362,22 @@ onUnmounted(() => {
 
 .maplibregl-popup-content {
   border-radius: 12px;
+  padding: 16px;
 }
 .maplibregl-popup-close-button {
-  padding: 2px 8px;
+  padding: 4px 8px;
+  font-size: 16px;
 }
 .map-popup {
-  padding: 8px;
   min-width: 120px;
   max-width: 240px;
+}
+.map-popup h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+.map-popup p {
+  margin: 4px 0;
+  font-size: 14px;
 }
 </style>

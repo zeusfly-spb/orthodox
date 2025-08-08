@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'vue-sonner'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue'
 import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
 import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
@@ -138,7 +138,13 @@ const onSubmit = () => {
   emit('submit', form)
 }
 
-// Map click handler
+// Map click handling
+const mapRef = ref()
+
+const openPoint = (id) => {
+  mapRef.value?.flyToPointById(id)
+}
+
 const handleMarkerClick = (id) => {
   console.log('Клик по маркеру с entity ID:', id)
 }
@@ -242,9 +248,27 @@ const handleMarkerClick = (id) => {
     </Card>
 
     <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardHeader>
+        <div class="flex flex-row flex-wrap items-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            type="button"
+            v-for="point in form.points"
+            :key="point.entity.id"
+            @click="openPoint(point.entity.id)"
+          >
+            {{ point.entity.title }}
+          </Button>
+        </div>
+      </CardHeader>
       <CardContent>
         <div>
-          <RouteMap :height="'480px'" :points="form.points" @marker-click="handleMarkerClick" />
+          <RouteMap
+            ref="mapRef"
+            :height="'480px'"
+            :points="form.points"
+            @marker-click="handleMarkerClick"
+          />
         </div>
       </CardContent>
     </Card>
