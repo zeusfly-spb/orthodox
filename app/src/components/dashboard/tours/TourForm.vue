@@ -137,6 +137,11 @@ const onSubmit = () => {
 
   emit('submit', form)
 }
+
+// Map click handler
+const handleMarkerClick = (id) => {
+  console.log('Клик по маркеру с entity ID:', id)
+}
 </script>
 
 <template>
@@ -223,7 +228,7 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <RouteMap :height="'480px'" :points="form.points" />
+          <TourDatesForm v-model="form.dates" />
         </div>
       </CardContent>
     </Card>
@@ -239,7 +244,7 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <TourDatesForm v-model="form.dates" />
+          <RouteMap :height="'480px'" :points="form.points" @marker-click="handleMarkerClick" />
         </div>
       </CardContent>
     </Card>

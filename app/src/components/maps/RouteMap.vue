@@ -64,6 +64,10 @@ const props = withDefaults(
   },
 )
 
+const emit = defineEmits<{
+  (e: 'marker-click', id: string | undefined): void
+}>()
+
 const mapRef = ref(null)
 const mapContainer = ref<HTMLElement | null>(null)
 const containerStyle = computed(() => ({ height: props.height }))
@@ -138,7 +142,7 @@ const routeData = computed(() => {
     properties: {
       id: point.entity.id,
       title: point.entity.title,
-      time: point.time,
+      description: point.entity.description,
       index: index + 1,
     },
   }))
@@ -170,6 +174,11 @@ const activePopup = ref<{
   id: string
 } | null>(null)
 
+const truncateText = (text: string, maxLength: number) => {
+  if (!text) return ''
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+}
+
 const handleMapClick = async (e: any) => {
   const map = mapRef.value?.map
   if (!map) return
@@ -182,12 +191,17 @@ const handleMapClick = async (e: any) => {
     const pointFeature = features[0]
     const clickedId = pointFeature.properties?.id
 
+    emit('marker-click', clickedId)
+
+    const rawDescription = pointFeature.properties?.description || ''
+    const truncatedDescription = truncateText(rawDescription, 100)
+
     activePopup.value = {
       coordinates: [...pointFeature.geometry.coordinates],
       content: `
         <div class="map-popup">
           <h4><strong>${pointFeature.properties?.title || 'Неизвестно'}</strong></h4>
-          <p>Время: ${pointFeature.properties?.time || '—'}</p>
+          ${truncatedDescription ? `<p>${truncatedDescription}</p>` : ''}
           <p>Объект: ${pointFeature.properties?.index || '—'}</p>
         </div>
       `,
