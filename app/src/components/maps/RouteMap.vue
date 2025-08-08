@@ -369,6 +369,7 @@ defineExpose({
   font-size: 16px;
 }
 .map-popup {
+  margin: 8px 0 0 0;
   min-width: 120px;
   max-width: 240px;
 }
