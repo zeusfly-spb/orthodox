@@ -202,7 +202,7 @@ const handleMapClick = async (e: any) => {
         <div class="map-popup">
           <h4><strong>${pointFeature.properties?.title || 'Неизвестно'}</strong></h4>
           ${truncatedDescription ? `<p>${truncatedDescription}</p>` : ''}
-          <p>Объект: ${pointFeature.properties?.index || '—'}</p>
+          <p>Пункт: ${pointFeature.properties?.index || '—'}</p>
         </div>
       `,
       id: clickedId,
@@ -302,11 +302,15 @@ onUnmounted(() => {
 <style lang="css">
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
-.map-popup {
-  padding: 8px;
-  max-width: 250px;
+.maplibregl-popup-content {
+  border-radius: 12px;
 }
 .maplibregl-popup-close-button {
   padding: 2px 8px;
+}
+.map-popup {
+  padding: 8px;
+  min-width: 120px;
+  max-width: 240px;
 }
 </style>
