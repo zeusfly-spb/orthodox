@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   MglMap,
   MglNavigationControl,
@@ -64,6 +64,7 @@ const props = withDefaults(
   },
 )
 
+const mapRef = ref(null)
 const mapContainer = ref<HTMLElement | null>(null)
 const containerStyle = computed(() => ({ height: props.height }))
 
@@ -162,6 +163,69 @@ const routeData = computed(() => {
 
 const pointFilter = ['==', ['geometry-type'], 'Point']
 const lineFilter = ['==', ['geometry-type'], 'LineString']
+
+const activePopup = ref<{
+  coordinates: [number, number]
+  content: string
+  id: string
+} | null>(null)
+
+const handleMapClick = async (e: any) => {
+  const map = mapRef.value?.map
+  if (!map) return
+
+  const features = map.queryRenderedFeatures(e.point, {
+    layers: ['points', 'point-labels'],
+  })
+
+  if (features.length > 0) {
+    const pointFeature = features[0]
+    const clickedId = pointFeature.properties?.id
+
+    activePopup.value = {
+      coordinates: [...pointFeature.geometry.coordinates],
+      content: `
+        <div class="map-popup">
+          <h4><strong>${pointFeature.properties?.title || 'Неизвестно'}</strong></h4>
+          <p>Время: ${pointFeature.properties?.time || '—'}</p>
+          <p>Объект: ${pointFeature.properties?.index || '—'}</p>
+        </div>
+      `,
+      id: clickedId,
+    }
+  } else {
+    activePopup.value = null
+  }
+}
+
+const closePopup = () => {
+  activePopup.value = null
+}
+
+onMounted(() => {
+  const map = mapRef.value?.map
+  if (!map) return
+
+  try {
+    map.on('click', handleMapClick)
+
+    map.on('mouseenter', ['points', 'point-labels'], () => {
+      map.getCanvas().style.cursor = 'pointer'
+    })
+
+    map.on('mouseleave', ['points', 'point-labels'], () => {
+      map.getCanvas().style.cursor = ''
+    })
+  } catch (error) {
+    console.error('Ошибка подписки на события карты:', error)
+  }
+})
+
+onUnmounted(() => {
+  if (mapRef.value?.map) {
+    mapRef.value.map.off('click', handleMapClick)
+  }
+})
 </script>
 
 <template>
@@ -171,7 +235,7 @@ const lineFilter = ['==', ['geometry-type'], 'LineString']
     :style="containerStyle"
   >
     <div class="flex flex-col size-full z-1 absolute h-full inset-0">
-      <MglMap :map-style="mapStyle" :center="mapParams.center" :zoom="mapParams.zoom">
+      <MglMap ref="mapRef" :map-style="mapStyle" :center="mapParams.center" :zoom="mapParams.zoom">
         <MglNavigationControl />
         <MglGeoJsonSource source-id="route" :data="routeData">
           <MglLineLayer
@@ -206,6 +270,16 @@ const lineFilter = ['==', ['geometry-type'], 'LineString']
             }"
           />
         </MglGeoJsonSource>
+
+        <MglPopup
+          v-if="activePopup"
+          :coordinates="activePopup.coordinates"
+          :close-button="true"
+          :close-on-click="false"
+          @close="closePopup"
+        >
+          <div v-html="activePopup.content"></div>
+        </MglPopup>
       </MglMap>
     </div>
   </div>
@@ -213,4 +287,12 @@ const lineFilter = ['==', ['geometry-type'], 'LineString']
 
 <style lang="css">
 @import 'maplibre-gl/dist/maplibre-gl.css';
+
+.map-popup {
+  padding: 8px;
+  max-width: 250px;
+}
+.maplibregl-popup-close-button {
+  padding: 2px 8px;
+}
 </style>
