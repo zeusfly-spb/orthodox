@@ -47,7 +47,7 @@ const props = withDefaults(
       'line-color': '#fff',
       'line-width': 3,
       'line-dasharray': [3, 2],
-      'line-opacity': 0.9,
+      'line-opacity': 0.95,
       'line-translate': [0, 0],
     },
     lineLayout: {
@@ -123,9 +123,16 @@ watch(
   { immediate: true },
 )
 
+const startMapParams = ref({
+  center: [110.32128708, 65.53927338] as [number, number],
+  zoom: 2,
+})
+
 // Bounding box
 const calculateViewport = () => {
-  if (!normalizedPoints.value.length) return { center: [110.32128708, 65.53927338], zoom: 2 }
+  if (!normalizedPoints.value.length) {
+    return startMapParams.value
+  }
 
   const coords = coordinates.value
   const lngs = coords.map((c) => c[0])
@@ -153,10 +160,23 @@ const calculateViewport = () => {
   else if (maxDiff > 0.5) zoom = 8
   else zoom = 9
 
+  startMapParams.value = { center, zoom }
   return { center, zoom }
 }
 
 const mapParams = computed(calculateViewport)
+
+const resetView = () => {
+  const map = mapRef.value?.map
+  if (map) {
+    map.flyTo({
+      center: startMapParams.value.center,
+      zoom: startMapParams.value.zoom,
+      essential: true,
+      duration: 1000,
+    })
+  }
+}
 
 // GeoJSON points
 const routeData = computed(() => {
@@ -218,7 +238,6 @@ const openPopupById = (id: string, fly?: boolean) => {
       <div class="map-popup">
         <h4><strong>${pointData.title}</strong></h4>
         ${truncatedDescription ? `<p>${truncatedDescription}</p>` : ''}
-        <p>Пункт: ${pointData.index}</p>
       </div>
     `,
     id: id,
@@ -297,6 +316,7 @@ onUnmounted(() => {
 defineExpose({
   openPopupById,
   flyToPointById,
+  resetView,
 })
 </script>
 
