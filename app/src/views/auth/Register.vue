@@ -1,198 +1,185 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Check, Search, Mail, Lock, User } from 'lucide-vue-next'
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList,
-} from '@/components/ui/combobox'
-import { toast } from 'vue-sonner'
-import type { AuthError, RegisterData } from '@/types/auth'
-import { cn } from '@/lib/utils'
+<script setup>
+import axios from 'axios'
+import Header from '@/views/auth/AuthHeader.vue'
+import UButton from '@/components/ui/UButton.vue'
+import regInput from '@/components/ui/RegInput.vue'
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import regDropdown from '@/components/ui/RegDropdown.vue'
+import { fetchOperators } from '@/api/operators'
 
 const router = useRouter()
-const authStore = useAuthStore()
 
-const form = ref<RegisterData>({
-  name: '',
-  email: '',
-  password: '',
-  password_confirmation: '',
-  tour_operator_id: '',
+const pilgrimServiceList = ref([])
+const agreement = ref(false)
+const form = reactive({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    tour_operator_id: ''
 })
 
-const operators = ref<{ value: string; label: string }[]>([])
+async function registration(){
+    if(!agreement.value) return
+    try{
+        const { data } = await axios.post('http://pilgrim.tour-click.ru:8080/api/auth/register', form)
+        if(data.code == 201){
+            router.push({ name: 'login' })
+        }
+    } catch (error) {
+    console.error('Registration failed:', error)
+  }
+}
 
 onMounted(async () => {
   try {
-    const { data } = await authStore.loadOperators()
-    operators.value = data
-  } catch (error) {
-    console.error('Error loading operators:', error)
-    toast.error('Ошибка загрузки списка операторов')
+    pilgrimServiceList.value = await fetchOperators()
+  } catch (err) {
+    console.error('Ошибка:', err)
   }
 })
-
-const handleSubmit = async () => {
-  try {
-    // form.value = { ...form.value, tour_operator_id: form.value.tour_operator_id?.value }
-    await authStore.register(form.value)
-    router.push({ name: 'dashboard' })
-  } catch (error: unknown) {
-    const apiError = error as AuthError
-    let errorMessage = 'Неверные данные для регистрации'
-
-    if (apiError.response?.data?.message) {
-      errorMessage = apiError.response.data.message
-    } else if (apiError.response?.status === 422 && apiError.response.data?.errors) {
-      errorMessage = Object.values(apiError.response.data.errors).flat().join('\n')
-    } else if (apiError.message) {
-      errorMessage = apiError.message
-    }
-
-    toast.error(errorMessage)
-    console.error(error)
-    form.value.password = ''
-    form.value.password_confirmation = ''
-  }
-}
 </script>
 
 <template>
-  <div class="flex grow items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <Card class="w-full max-w-md">
-      <CardHeader>
-        <CardTitle class="text-3xl mb-2">Регистрация</CardTitle>
-        <CardDescription class="text-gray-800">Регистрация на портале</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div class="relative">
-            <Combobox v-model="form.tour_operator_id" by="id">
-              <ComboboxAnchor class="w-full">
-                <div class="relative w-full max-w-sm items-center">
-                  <ComboboxInput
-                    class="pl-2"
-                    :display-value="(id) => operators[id] || ''"
-                    placeholder="Выберите оператора..."
-                  />
-                  <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
-                    <Search class="size-4 text-gray-400" />
-                  </span>
-                </div>
-              </ComboboxAnchor>
-
-              <ComboboxList
-                class="w-full max-w-md max-h-60 overflow-y-auto overscroll-contain relative scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400 scrollbar-thumb-rounded-md hover:scrollbar-thumb-gray-500"
-              >
-                <ComboboxEmpty>
-                  <div class="w-full max-w-md px-6">Нет доступных операторов</div>
-                </ComboboxEmpty>
-
-                <ComboboxGroup>
-                  <ComboboxItem
-                    v-for="(name, id) in operators"
-                    :key="id"
-                    :value="id"
-                    class="cursor-pointer"
-                  >
-                    {{ name }}
-
-                    <ComboboxItemIndicator>
-                      <Check :class="cn('ml-auto h-4 w-4')" />
-                    </ComboboxItemIndicator>
-                  </ComboboxItem>
-                </ComboboxGroup>
-              </ComboboxList>
-            </Combobox>
-          </div>
-
-          <div class="space-y-2">
-            <div class="relative">
-              <User class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="name"
-                v-model="form.name"
-                type="text"
-                placeholder="Имя пользователя"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
-              />
+    <div class="register-wrapper">
+        <Header 
+            title="Регистрация" 
+            description="Регистрация на портале доступна только паломническим службам, зарегистрированным в Едином реестре паломнических служб (центров) Русской Православной Церкви"
+        />
+        <div class="inputs">
+            <regDropdown 
+                :list="pilgrimServiceList" 
+                @update="form.tour_operator_id = $event"
+            />
+            <div class="inputs__row">
+                <regInput
+                    id="name"
+                    inputType="text" 
+                    firstIconPath="/svg/user.svg" 
+                    placeholder="Имя пользователя"
+                    @update="form.name = $event"
+                />
+                <regInput
+                    id="email"
+                    inputType="email" 
+                    firstIconPath="/svg/mail.svg" 
+                    placeholder="E-mail"
+                    @update="form.email = $event"
+                />
             </div>
-          </div>
-
-          <div class="space-y-2">
-            <div class="relative">
-              <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="email"
-                v-model="form.email"
-                type="email"
-                placeholder="E-mail"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
-              />
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <div class="relative">
-              <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
+            <regInput
                 id="password"
-                v-model="form.password"
-                type="password"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+                inputType="password" 
+                firstIconPath="/svg/lock.svg" 
+                secondIconPathBefore="/svg/eye.svg" 
+                secondIconPathAfter="/svg/eye-slash.svg" 
                 placeholder="Пароль"
-              />
+                @update="form.password = $event"
+            />
+            <div class="limit">
+                Минимум 8 символов
             </div>
-          </div>
-
-          <div class="space-y-2">
-            <div class="relative">
-              <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="password_confirmation"
-                v-model="form.password_confirmation"
-                type="password"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+            <regInput
+                id="password-retry"
+                inputType="password" 
+                firstIconPath="/svg/lock.svg" 
+                secondIconPathBefore="/svg/eye.svg" 
+                secondIconPathAfter="/svg/eye-slash.svg" 
                 placeholder="Подтвердите пароль"
-              />
+                @update="form.password_confirmation = $event"
+            />
+            <div class="agreenment">
+                <input type="checkbox" name="checkbox" id="checkbox" v-model="agreement">
+                <label for="checkbox">Я согласен на обработку моих персональных данных в соответствии с <router-link to="/" class="conditions">Условиями</router-link></label>
             </div>
-          </div>
-
-          <div>
-            <Button
-              type="submit"
-              class="w-full py-6 bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-              :disabled="authStore.isLoading"
-            >
-              Зарегистрироваться
-            </Button>
-          </div>
-        </form>
-
-        <div class="mt-6 text-center">
-          <RouterLink
-            :to="{ name: 'login' }"
-            class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
-          >
-            У вас уже есть аккаунт? Вход
-          </RouterLink>
         </div>
-      </CardContent>
-    </Card>
-  </div>
+        <div class="enter">
+            <UButton
+                variant="primary"
+                size="medium"
+                :action="agreement? 'normal' : 'disabled'"
+                text="Зарегистироваться"
+                class="enter__button"
+                @click="registration"
+            />
+            <div class="enter__description">
+                У вас уже есть аккаунт? <router-link to="/login" class="forget">Вход</router-link>
+            </div>
+        </div>
+    </div>
 </template>
+
+<style lang="scss" scoped>
+.register-wrapper {
+    width: 624px;
+    height: 100%;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background-color: #fff;
+    border-radius: 24px;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__row {
+        display: flex;
+        gap: 16px;
+    }
+}
+
+.forget {
+    font-weight: 400;
+    font-size: 14px;
+    color: #768187;
+}
+
+.enter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    &__button {
+        width: 100%;
+    }
+
+    &__description {
+        font-weight: 400;
+        font-size: 16px;
+
+        & .forget {
+            font-weight: 600;
+            font-size: 16px;
+            color: #10B981;
+        }
+    }
+}
+.limit{
+    font-weight: 400;
+    font-size: 14px;
+    color: #6A6E75;
+}
+.agreenment{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+
+    & label{
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 22px;
+
+        & .conditions{
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    }
+}
+</style>

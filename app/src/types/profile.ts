@@ -1,4 +1,4 @@
-import { User } from '@/types/user'
+import type { User } from '@/types/user'
 export interface OperatorProfile {
   id: number | string
   name: string

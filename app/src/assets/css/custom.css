@@ -1,3 +1,6 @@
+@import url('./_mixins.scss');
+@import url('./main');
+
 .circular-progress {
   display: flex;
   align-items: center;

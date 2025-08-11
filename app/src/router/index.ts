@@ -17,20 +17,28 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: Login,
-    meta: { guestOnly: true },
+    component: () => import('@/views/dashboard/MainLayout.vue'),
+    children:[]
   },
   {
-    path: '/login',
-    name: 'login',
-    component: Login,
+    path: '/auth',
+    name: 'auth',
+    component: () => import('@/views/auth/AuthLayout.vue'),
     meta: { guestOnly: true },
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('@/views/auth/Register.vue'),
-    meta: { guestOnly: true },
+    children: [
+      {
+        path: '/login',
+        name: 'login',
+        component: Login,
+        meta: { guestOnly: true },
+      },
+      {
+        path: '/register',
+        name: 'register',
+        component: () => import('@/views/auth/Register.vue'),
+        meta: { guestOnly: true },
+      },
+    ]
   },
   {
     path: '/forgot-password',
@@ -59,13 +67,13 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('@/views/dashboard/Dashboard.vue'),
+    component: () => import('@/views/dashboard/MainLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
         path: '',
         name: 'dashboard-home',
-        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
+        component: () => import('@/views/dashboard/views/operator/Profile.vue'),
         meta: { requiresAuth: true },
       },
       {
@@ -108,7 +116,7 @@ const routes = [
       {
         path: 'operator',
         name: 'operator-view',
-        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
+        component: () => import('@/views/dashboard/views/operator/Profile.vue'),
         meta: { requiresAuth: true },
       },
       {
