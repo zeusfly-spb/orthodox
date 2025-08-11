@@ -134,7 +134,17 @@ const onSubmit = () => {
     return
   }
 
-  emit('submit', form)
+  // Prepare points data for backend
+  const pointsForBackend = form.points.map((point) => ({
+    entity: { id: point.entity.id } as string,
+    time: point.time,
+    order_column: point.order_column,
+  }))
+
+  emit('submit', {
+    ...form,
+    points: pointsForBackend,
+  })
 }
 </script>
 
