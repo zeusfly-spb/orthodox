@@ -1,25 +1,30 @@
 export const paragraph = [
     {
+        id: 1,
         image: '/svg/earth.svg',
         linkName: 'tours-list',
         name: 'Мои туры'
     },
     {
+        id: 2,
         image: '/svg/data.svg',
         linkName: 'orders',
         name: 'Мои заявки'
     },
     {
+        id: 3,
         image: '/svg/community.svg',
         linkName: 'partners-list',
         name: 'Мои паломники'
     },
     {
+        id: 4,
         image: '/svg/success.svg',
         linkName: 'partners-list',
         name: 'Мои контрагенты'
     },
     {
+        id: 5,
         image: '/svg/home.svg',
         linkName: 'home',
         name: 'Профиль ПС'

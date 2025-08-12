@@ -1,6 +1,9 @@
 <script setup>
 
 import { catalog, paragraph } from '@/composables/sidebar.js';
+import { ref } from 'vue'
+
+const selectedItem = ref(5)
 
 </script>
 
@@ -20,10 +23,11 @@ import { catalog, paragraph } from '@/composables/sidebar.js';
     <div class="sidebar-menu">
         <div class="left-title-s">Раздел</div>
         <router-link 
-            v-for="(item, index) in paragraph"
-            :key="index"
+            v-for="item in paragraph"
+            :key="item.id"
             :to="{name: item.linkName}" 
-            class="menu-item" 
+            :class="['menu-item', selectedItem === item.id? 'active' : '']" 
+            @click="selectedItem = item.id"
         >
             <img :src="item.image" alt="image" />
             <span class="menu-text">{{ item.name }}</span>
