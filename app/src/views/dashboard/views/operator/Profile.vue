@@ -7,10 +7,15 @@ import Users from './Users.vue'
 import Requisite from './Requisite.vue'
 import FAQ from './FAQ.vue'
 import Files from './Files.vue'
-import { fetchOperatorById } from '@/api/operators'
+import { fetchOperator, fixOperatorById } from '@/api/operators'
 import UModal from '@/components/ui/UModal.vue'
 import UInput from '@/components/ui/UInput.vue'
 import Textarea from '@/components/ui/textarea/Textarea.vue'
+import AppDatePicker from '@/components/app/AppDatePicker.vue'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover' 
+import { Button } from '@/components/ui/button'
+import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
+
 
 const router = useRouter()
 
@@ -38,6 +43,7 @@ const tabList = ref([
 
 const activeTabName = ref(tabList.value[0].title)
 const isShowModal = ref(false)
+const isCalendarOpen = ref(false)
 
 const modalFields = reactive({
     name: '',
@@ -48,6 +54,7 @@ const modalFields = reactive({
     opf: '',
     inn: '',
     ogrn: '',
+    ogrn_date: '',
     kpp: '',
     okpo: '',
     legal_address: '',
@@ -55,10 +62,14 @@ const modalFields = reactive({
     postal_address: ''
 })
 
-// Находим активный таб по имени
 const activeTab = computed(() => {
     return tabList.value.find(tab => tab.title === activeTabName.value)
 })
+
+const dashOffset = computed(() => {
+    const circumference = 2 * Math.PI * 18;
+    return circumference - (operator.value.profile_filled / 100) * circumference || 0;
+});
 
 function pickTab(tabTitle) {
     activeTabName.value = tabTitle
@@ -71,12 +82,21 @@ function closeModal(){
     isShowModal.value = false
 }
 
+async function sendForm() {
+    try {
+        await fixOperatorById(localStorage.getItem('tour_operator_id'), modalFields)
+    }
+    catch(e){
+        console.error(e)
+    }
+}
+
 onMounted(async () => {
     if(localStorage.getItem('tour_operator_id')){
         try {
-            operator.value = await fetchOperatorById(localStorage.getItem('tour_operator_id'))
+            operator.value = await fetchOperator()
         } catch (error) {
-            
+            console.error(error)
         }
 
         for (const key in modalFields) {
@@ -115,7 +135,7 @@ onMounted(async () => {
                                 <circle class="progress-ring-circle-bg" cx="24" cy="24" r="18" stroke-width="6"
                                     fill="transparent" />
                                 <circle class="progress-ring-circle" cx="24" cy="24" r="18" stroke-width="6"
-                                    fill="transparent" stroke-dasharray="113.1" :stroke-dashoffset="113.1 * (1 - operator.profile_filled / 100)" />
+                                    fill="transparent" stroke-dasharray="113.1" :stroke-dashoffset="dashOffset" />
                             </svg>
                         </div>
                         <div class="progress-description">
@@ -163,7 +183,7 @@ onMounted(async () => {
                 </div>
                 <div class="base-info__block">
                     <label for="title">Описание</label>
-                    <Textarea v-model="modalFields.description" />
+                    <Textarea v-model="modalFields.description" class="textarea-style"/>
                 </div>
             </section>
             <section class="contacts">
@@ -197,6 +217,28 @@ onMounted(async () => {
                 </div>
                 <div class="requisites__block">
                     <label for="ogrn">Дата ОГРН</label>
+                    <div class="flex">
+                    <Popover>
+                        <PopoverTrigger as-child>
+                        <Button variant="outline" class="w-full justify-start text-left font-normal flex gap-2" @click="isCalendarOpen = true">
+                            <CalendarIcon class="mr-2 h-4 w-4" />
+                            <span>{{ modalFields.ogrn_date || 'Выберите дату' }}</span>
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-auto p-0">
+                            <AppDatePicker v-if="isCalendarOpen" v-model="modalFields.ogrn_date" @addDate="isCalendarOpen = false"/>
+                        </PopoverContent>
+                    </Popover>
+                    <Button
+                        v-if="modalFields.ogrn_date"
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        @click="modalFields.ogrn_date = null"
+                    >
+                        <Trash2 class="h-4 w-4 text-destructive" />
+                    </Button>
+                </div>
                 </div>
                 <div class="requisites__block">
                     <label for="kpp">КПП</label>
@@ -227,7 +269,7 @@ onMounted(async () => {
         
         <template #buttons>
             <UButton text="Отмена" size="small" variant="secondary" @click="closeModal"/>
-            <UButton text="Сохранить" size="small" @click="sendManager"/>
+            <UButton text="Сохранить" size="small" @click="sendForm"/>
         </template>
     </UModal>
 </template>
@@ -293,8 +335,6 @@ body {
     r: 18;
     cx: 24;
     cy: 24;
-    // stroke-dasharray: 113.1;
-    // stroke-dashoffset: 30.5;
 }
 
 .progress-description h3 {
@@ -457,5 +497,9 @@ body {
 }
 label span {
     color: red;
+}
+.textarea-style{
+    padding: 5px 10px;
+    max-width: 596px;
 }
 </style>

@@ -15,12 +15,6 @@ import Login from '@/views/auth/Login.vue'
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: () => import('@/views/dashboard/MainLayout.vue'),
-    children:[]
-  },
-  {
     path: '/auth',
     name: 'auth',
     component: () => import('@/views/auth/AuthLayout.vue'),
@@ -71,8 +65,8 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: '',
-        name: 'dashboard-home',
+        path: '/',
+        name: 'home',
         component: () => import('@/views/dashboard/views/operator/Profile.vue'),
         meta: { requiresAuth: true },
       },
@@ -117,6 +111,18 @@ const routes = [
         path: 'operator',
         name: 'operator-view',
         component: () => import('@/views/dashboard/views/operator/Profile.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'orders',
+        name: 'orders',
+        component: () => import('@/views/dashboard/views/orders/Orders.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'orders/:id/edit',
+        name: 'edit-order',
+        component: () => import('@/views/dashboard/views/orders/EditOrder.vue'),
         meta: { requiresAuth: true },
       },
       {

@@ -22,7 +22,7 @@ import { catalog, paragraph } from '@/composables/sidebar.js';
         <router-link 
             v-for="(item, index) in paragraph"
             :key="index"
-            :to="item.link" 
+            :to="{name: item.linkName}" 
             class="menu-item" 
         >
             <img :src="item.image" alt="image" />
