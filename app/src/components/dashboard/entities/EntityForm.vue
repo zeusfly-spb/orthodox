@@ -15,12 +15,15 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
+import MarkerMap from '@/components/map/MarkerMap.vue'
 
 interface FormFields {
   title: string
   description: string
   email: string
   phone: string
+  latitude: number | null
+  longitude: number | null
 }
 
 const props = withDefaults(
@@ -78,6 +81,8 @@ const form = reactive<Omit<FormFields, 'id'>>({
   description: '',
   phone: '',
   email: '',
+  latitude: null,
+  longitude: null,
   parameters: {},
 })
 
@@ -87,8 +92,15 @@ const resetForm = () => {
     description: '',
     phone: '',
     email: '',
+    latitude: '',
+    longitude: '',
     parameters: {},
   })
+}
+
+const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
+  form.latitude = lat
+  form.longitude = lng
 }
 
 watch(
@@ -104,6 +116,8 @@ watch(
         description: newEntity.description,
         phone: newEntity.phone,
         email: newEntity.email,
+        latitude: newEntity.location?.coordinates[1],
+        longitude: newEntity.location?.coordinates[0],
         parameters,
       })
     }
@@ -165,6 +179,28 @@ const onSubmit = () => {
               <Label for="phone" required>Телефон</Label>
               <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
             </div>
+          </div>
+
+          <!-- Поля для координат -->
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="space-y-2">
+              <Label for="latitude">Широта</Label>
+              <Input id="latitude" v-model="form.latitude" type="number" disabled />
+            </div>
+            <div class="space-y-2">
+              <Label for="longitude">Долгота</Label>
+              <Input id="longitude" v-model="form.longitude" type="number" disabled />
+            </div>
+          </div>
+
+          <!-- Карта -->
+          <div class="flex flex-col size-full my-4">
+            <MarkerMap
+              :height="'480px'"
+              :zoom="14"
+              :marker-data="item?.location"
+              @update:coordinates="handleMarkerUpdate"
+            />
           </div>
         </div>
 
