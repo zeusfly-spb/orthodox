@@ -377,14 +377,14 @@ onMounted(async () => {
                                     <label class="room-type-option">
                                         <input type="checkbox" checked>
                                         <span class="custom-checkbox"></span>
-                                        <span class="room-type-text"><img src="/temp/bedd.svg"> <img
-                                                src="/temp/bedd.svg">Двухместный номер</span>
+                                        <span class="room-type-text"><img src="/svg/bedd.svg"> <img
+                                                src="/svg/bedd.svg">Двухместный номер</span>
 
                                     </label>
                                     <label class="room-type-option">
                                         <input type="checkbox">
                                         <span class="custom-checkbox"></span>
-                                        <span class="room-type-text"><img src="/temp/bedd.svg"> Одноместный
+                                        <span class="room-type-text"><img src="/svg/bedd.svg"> Одноместный
                                             номер</span>
 
                                     </label>
@@ -396,12 +396,12 @@ onMounted(async () => {
                                 <div class="placement-options">
                                     <label class="placement-option">
                                         <input type="checkbox">
-                                        <img src="/temp/bedd.svg"> <img src="/temp/bedd.svg">
+                                        <img src="/svg/bedd.svg"> <img src="/svg/bedd.svg">
                                         <span class="placement-text">x1</span>
                                     </label>
                                     <label class="placement-option">
                                         <input type="checkbox">
-                                        <img src="/temp/bedd.svg">
+                                        <img src="/svg/bedd.svg">
                                         <span class="placement-text">x2</span>
                                     </label>
                                 </div>
@@ -438,7 +438,7 @@ onMounted(async () => {
                                     </thead>
                                     <tbody>
                                         <tr class="bed-i-tabel">
-                                            <td colspan="5"><img src="/temp/bed-i.svg"> Двухместный номер / 2 туриста
+                                            <td colspan="5"><img src="/svg/bed-i.svg"> Двухместный номер / 2 туриста
                                             </td>
 
                                         </tr>
@@ -515,7 +515,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -573,7 +573,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -631,7 +631,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -689,7 +689,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -747,7 +747,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -805,7 +805,7 @@ onMounted(async () => {
                                             <td>
                                                 <div class="name-dog">
 
-                                                    <div><img src="/temp/dog.svg"></div>
+                                                    <div><img src="/svg/dog.svg"></div>
                                                     <div>
                                                         <div class="name-dogov-tab"> Договор на оказание туристических
                                                             услуг</div>
@@ -871,7 +871,7 @@ onMounted(async () => {
 
                         <div class="order-item">
                             <div class="header-sec-right-col">
-                                <div><img src="/temp/mini-sob.png"></div>
+                                <div><img src="/img/mini-sob.png"></div>
                                 <div>
                                     <div class="order-title3">Паломничество по Святым Местам</div>
                                     <div class="order-meta">2024-03-04 16:00 МСК / 8 ночей</div>
