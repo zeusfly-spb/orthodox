@@ -68,8 +68,21 @@ function closeModal(){
 }
 
 function selectSortType(type){
+    const matchTypeToProp = {
+        'Имя пользователя': 'name',
+        'Новые пользователи': 'id',
+        'Тег': '',
+    }
     sortType.value = type
-    // filteredManagers.sort((a, b) => a.age - b.age)
+    const prop = matchTypeToProp[type]
+
+    filteredManagers.value = [...filteredManagers.value].sort((a, b) => {
+        if (prop === 'name') {
+            return a.name.localeCompare(b.name)
+        } else {
+            return b[prop] - a[prop]
+        }
+    })
     isSortTypeListOpened.value = false
 }
 
@@ -92,7 +105,8 @@ onMounted(() => {
 
         <div class="users-toolbar">
             <div class="search-container">
-                <UInput 
+                <UInput
+                    inputHeightPx="48"
                     placeholder="Поиск по пользователям"
                     svgPath="/svg/search.svg" 
                     v-model="searchQuery"
@@ -252,6 +266,7 @@ onMounted(() => {
     font-size: 14px;
     cursor: pointer;
     padding: 8px;
+    z-index: 10;
 
     &__list {
         width: 165px;
