@@ -23,6 +23,7 @@ interface PointItem {
     id: number
     title?: string
     description?: string | null
+    location?: object
   }
   time: string
   order_column: number
@@ -73,15 +74,24 @@ const handleInput = (event: Event) => {
 }
 
 const selectPoint = (point: Entity) => {
+  const alreadyExists = props.modelValue.some((item) => item.entity.id === point.id)
+
+  if (alreadyExists) {
+    toast.error('Объект уже добавлен')
+    return
+  }
+
   const newPoint: PointItem = {
     entity: {
       id: point.id,
       title: point.title,
       description: point.description,
+      location: point.location,
     },
     time: '',
     order_column: props.modelValue.length + 1,
   }
+
   emit('update:modelValue', [...props.modelValue, newPoint])
   searchQuery.value = ''
   points.value = []

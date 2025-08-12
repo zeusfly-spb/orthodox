@@ -331,7 +331,6 @@ defineExpose({
         <MglNavigationControl />
         <MglGeoJsonSource source-id="route" :data="routeData">
           <MglLineLayer
-            v-if="props.points.length >= 2"
             layer-id="line"
             source="route"
             :filter="lineFilter"
