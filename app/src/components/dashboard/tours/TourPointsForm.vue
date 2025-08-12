@@ -146,7 +146,7 @@ const removePoint = (index: number) => {
             v-for="point in points"
             :key="point.id"
             :value="point.id.toString()"
-            @click="selectPoint(point)"
+            @select="selectPoint(point)"
             class="cursor-pointer"
           >
             <div class="flex flex-col">
