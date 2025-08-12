@@ -5,10 +5,12 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchOperators } from '@/api/operators'
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const authStore = useAuthStore()
 const router = useRouter()
 const pilgrimServiceList = ref([])
+const hasErrorAlert = ref(false)
 
 const form = reactive({
     serviceId: {
@@ -51,9 +53,14 @@ async function login(){
     try {
         await authStore.login(credentials)
         localStorage.setItem('tour_operator_id', form.serviceId.value)
-        router.push({ name: 'dashboard-home' })
+        router.push({ name: 'home' })
     } catch (error) {
         console.error('Login failed:', authStore.error)
+        hasErrorAlert.value = true
+
+        setTimeout(() => {
+            hasErrorAlert.value = false
+        }, 3000) // Автоскрытие через 3 сек
     }
 
 }
@@ -137,6 +144,12 @@ onMounted(async () => {
             </div>
         </div>
     </div>
+    <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] z-50 shadow-lg">
+        <AlertTitle>Ошибка!</AlertTitle>
+        <AlertDescription>
+            {{ authStore.error }}
+        </AlertDescription>
+    </Alert>
 </template>
 
 <style lang="scss" scoped>
@@ -254,5 +267,17 @@ onMounted(async () => {
             color: #10B981;
         }
     }
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.3s ease-in;
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
