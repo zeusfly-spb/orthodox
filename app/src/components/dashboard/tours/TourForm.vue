@@ -6,12 +6,13 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'vue-sonner'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue'
 import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
 import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
 import TourPointsForm from '@/components/dashboard/tours/TourPointsForm.vue'
 import { tourApi } from '@/api/tours.ts'
+import RouteMap from '@/components/maps/RouteMap.vue'
 
 interface DayItem {
   title: string
@@ -146,6 +147,21 @@ const onSubmit = () => {
     points: pointsForBackend,
   })
 }
+
+// Map click handling
+const mapRef = ref()
+
+const openPoint = (id) => {
+  mapRef.value?.flyToPointById(id)
+}
+
+const handleMarkerClick = (id) => {
+  console.log('Клик по маркеру с entity ID:', id)
+}
+
+const resetMapView = () => {
+  mapRef.value?.resetView()
+}
 </script>
 
 <template>
@@ -232,7 +248,7 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <TourPointsForm v-model="form.points" />
+          <TourDatesForm v-model="form.dates" />
         </div>
       </CardContent>
     </Card>
@@ -240,7 +256,53 @@ const onSubmit = () => {
     <Card class="mb-8 gap-0 border-none shadow-custom">
       <CardContent>
         <div>
-          <TourDatesForm v-model="form.dates" />
+          <TourPointsForm v-model="form.points" />
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="mb-8 gap-0 border-none shadow-custom">
+      <CardHeader>
+        <div class="flex shrink-0 items-center justify-between gap-2">
+          <div class="flex flex-row flex-wrap items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              type="button"
+              v-for="point in form.points"
+              :key="point.entity.id"
+              @click="openPoint(point.entity.id)"
+            >
+              {{ point.entity.title }}
+            </Button>
+          </div>
+          <div class="flex items-center gap-2">
+            <Button variant="outline" type="button" title="Сбросить" @click="resetMapView">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div>
+          <RouteMap
+            ref="mapRef"
+            :height="'480px'"
+            :points="form.points"
+            @marker-click="handleMarkerClick"
+          />
         </div>
       </CardContent>
     </Card>
