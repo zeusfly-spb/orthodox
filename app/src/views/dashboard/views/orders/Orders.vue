@@ -1,17 +1,15 @@
 <script setup>
 
-import { fetchManagers, operatorApi } from '@/api/operators'
+import { managerApi } from '@/api/managers'
 import UButton from '@/components/ui/UButton.vue'
 import UInput from '@/components/ui/UInput.vue';
 import UModal from '@/components/ui/UModal.vue'
 import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { tourApi } from '@/api/tours';
+import UBanner from '@/components/ui/UBanner.vue';
 
-const isOpen = reactive({
-    modal: false,
-    banner: true
-})
+const isOpenModal = ref(false)
 
 const filters = reactive({
     days: 1,
@@ -27,13 +25,11 @@ const statusList = ['Новая', 'В обработке', 'Подтвержде
 onMounted(async () => {
   const [toursResponse, managersResponse] = await Promise.all([
     tourApi.fetchData(),
-    fetchManagers()
+    managerApi.fetchData()
   ]);
 
   tours.value = toursResponse.data;
-  managers.value = managersResponse.map(manager => manager.name);
-  console.log(tours.value)
-  console.log(managers.value)
+  managers.value = managersResponse.data.map(manager => manager.name);
 })
 </script>
 
@@ -45,24 +41,22 @@ onMounted(async () => {
                     <h1 class="page-title-g">Мои заявки</h1>
                     <div class="actions">
                         <UButton text="Добавить новую заявку" size="medium" variant="primary"
-                            @click="isOpen.modal = true" />
+                            @click="isOpenModal = true" />
                     </div>
                 </div>
-                <div class="hide-banner" v-show="isOpen.banner">
-                    <div><img src="/svg/hide-b.svg"></div>
-                    <div>
-                        <div class="title-banners">Lorem ipsum dolor sit amet, consectetur adipiscing elit</div>
-                        <div class="desc-banners">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                            eiusmod tempor incididunt ut labore et dolore magna aliqua.&nbsp;</div>
-                    </div>
-                    <img src="/svg/cancel.svg" class="absl-cancel" @click="isOpen.banner = false">
-                </div>
+                <UBanner>
+                    <template #title>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</template>
+                    <template #description>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus temporibus sit, impedit adipisci perferendis incidunt accusantium neque, fuga, molestiae harum quae maiores expedita beatae sapiente voluptatibus? Aut distinctio atque facilis!</template>
+                </UBanner>
                 <!-- Фильтры для заявок -->
                 <div class="search-filters-container2">
                     <div class="search-container">
                         <div class="search-input-wrapper">
-                            <UInput svgPath="/svg/search.svg"
-                                placeholder="Поиск по названию тура, заказчику, номеру заявки..." />
+                            <UInput 
+                                svgPath="/svg/search.svg"
+                                placeholder="Поиск по названию тура, заказчику, номеру заявки..."
+                                inputHeightPx="36" 
+                            />
                         </div>
                     </div>
 
@@ -299,7 +293,7 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <UModal v-show="isOpen.modal" @close="isOpen.modal = false">
+    <UModal v-show="isOpenModal" @close="isOpenModal = false">
         <template #headerTitle>
             Добавление заявки
         </template>
@@ -309,7 +303,7 @@ onMounted(async () => {
         </template>
 
         <template #buttons>
-            <UButton text="Отмена" variant="secondary" size="small" @click="isOpen.modal = false" />
+            <UButton text="Отмена" variant="secondary" size="small" @click="isOpenModal = false" />
             <UButton text="Сохранить" @click="save" size="small" variant="primary" />
         </template>
     </UModal>
@@ -541,39 +535,6 @@ body {
     color: var(--text-color);
     background-color: #f9f9f9;
     transition: all 0.3s;
-}
-
-.hide-banner {
-    background: rgba(249, 249, 250, 1);
-    -webkit-border-radius: 16px;
-    -moz-border-radius: 16px;
-    border-radius: 16px;
-    padding: 24px;
-    display: grid;
-    position: relative;
-    grid-template-columns: 50px 1fr;
-    grid-gap: 24px;
-    margin-bottom: 24px;
-}
-
-.absl-cancel {
-    position: absolute;
-    right: 24px;
-    top: 24px;
-}
-
-.title-banners {
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 24px;
-    color: rgba(53, 53, 53, 1);
-}
-
-.desc-banners {
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 20px;
-    color: rgba(106, 110, 117, 1);
 }
 
 .main-content {

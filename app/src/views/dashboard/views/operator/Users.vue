@@ -4,10 +4,9 @@ import { defineProps, ref, onMounted, shallowRef, reactive } from 'vue'
 import UButton from '@/components/ui/UButton.vue'
 import UInput from '@/components/ui/UInput.vue'
 import UModal from '@/components/ui/UModal.vue'
-import { fetchManagers } from '@/api/operators'
 import UsersInTable from './UsersInTable.vue'
 import UsersInBlock from './UsersInBlock.vue'
-import { pushManagers } from '@/api/operators'
+import { managerApi } from '@/api/managers'
 
 
 const props = defineProps({
@@ -51,15 +50,23 @@ const contacts = reactive(
 const emit = defineEmits(['close'])
 
 async function sendManager(){
-    await pushManagers({
-        avatar: '',
-        email: contacts.email,
-        firstname: mainInfo.value[1].value,
-        lastname: mainInfo.value[0].value,
-        patronymic: mainInfo.value[2].value,
-        phone: contacts.phone
-    })
-    closeModal()
+    try {
+        await managerApi.storeData(
+            {
+                avatar: '',
+                email: contacts.email,
+                firstname: mainInfo.value[1].value,
+                lastname: mainInfo.value[0].value,
+                patronymic: mainInfo.value[2].value,
+                phone: contacts.phone
+            })
+    }
+    catch(error) {
+        console.error(error)
+    }
+    finally {
+        closeModal()
+    }
 }
 
 function closeModal(){
@@ -87,8 +94,13 @@ function selectSortType(type){
 }
 
 async function getManagers(){
-    managers.value = await fetchManagers()
-    filteredManagers.value = managers.value;
+    try {
+        managers.value = (await managerApi.fetchData()).data
+        filteredManagers.value = managers.value;
+    }
+    catch(error) {
+        console.log(error)
+    }
 }
 
 onMounted(() => {

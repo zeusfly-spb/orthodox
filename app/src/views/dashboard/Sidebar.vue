@@ -1,10 +1,17 @@
 <script setup>
 
 import { catalog, paragraph } from '@/composables/sidebar.js';
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router';
 
 const selectedItem = ref(5)
+const route = useRoute();
 
+function matchRouteName(){
+    selectedItem.value = (paragraph.find(item => item.linkName === route.name)).id
+}
+
+onMounted(() => matchRouteName())
 </script>
 
 <template>
@@ -14,6 +21,7 @@ const selectedItem = ref(5)
             <router-link 
                 to="/" 
                 class="active-block"
+                @click="x"
             >
                 <img src="/logo.png" />
             </router-link>

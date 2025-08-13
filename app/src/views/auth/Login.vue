@@ -144,7 +144,7 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] z-50 shadow-lg">
+    <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
         <AlertTitle>Ошибка!</AlertTitle>
         <AlertDescription>
             {{ authStore.error }}

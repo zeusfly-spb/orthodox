@@ -1,49 +1,31 @@
 <script setup>
+
 import UButton from '@/components/ui/UButton.vue'
 import { onMounted, ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import About from './About.vue'
 import Users from './Users.vue'
-import Requisite from './Requisite.vue'
-import FAQ from './FAQ.vue'
-import Files from './Files.vue'
 import { fetchOperator, fixOperatorById } from '@/api/operators'
 import UModal from '@/components/ui/UModal.vue'
 import UInput from '@/components/ui/UInput.vue'
+import UBanner from '@/components/ui/UBanner.vue'
 import Textarea from '@/components/ui/textarea/Textarea.vue'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover' 
 import { Button } from '@/components/ui/button'
 import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useProfileStore } from '@/stores/profile'
 
 
 const router = useRouter()
-
+const profile = useProfileStore()
 const operator = ref('')
 const actionProfileList = ref(['Создать профиль', 'Данные о паломнической службе', 'Реквизиты', 'FAQ', 'Туры паломнической службы'])
 
-const tabList = ref([
-    {
-        title: 'Данные о паломнической службе',
-        component: About
-    },
-    {
-        title: 'Реквизиты',
-        component: Requisite
-    },
-    {
-        title: 'Файлы',
-        component: Files
-    },
-    {
-        title: 'FAQ',
-        component: FAQ
-    }
-])
-
-const activeTabName = ref(tabList.value[0].title)
+const activeTabName = ref(profile.tabList[0].title)
 const isShowModal = ref(false)
 const isCalendarOpen = ref(false)
+const hasErrorAlert = ref(false)
 
 const modalFields = reactive({
     name: '',
@@ -63,7 +45,7 @@ const modalFields = reactive({
 })
 
 const activeTab = computed(() => {
-    return tabList.value.find(tab => tab.title === activeTabName.value)
+    return profile.tabList.find(tab => tab.title === activeTabName.value)
 })
 
 const dashOffset = computed(() => {
@@ -86,8 +68,14 @@ async function sendForm() {
     try {
         await fixOperatorById(localStorage.getItem('tour_operator_id'), modalFields)
     }
-    catch(e){
-        console.error(e)
+    catch(error){
+        profile.error = error.response?.data?.message || error.message
+        console.error('Request failed:', profile.error)
+        hasErrorAlert.value = true
+        
+        setTimeout(() => {
+            hasErrorAlert.value = false
+        }, 3000)
     }
 }
 
@@ -96,7 +84,13 @@ onMounted(async () => {
         try {
             operator.value = await fetchOperator()
         } catch (error) {
-            console.error(error)
+            profile.error = error.response?.data?.message || error.message
+            console.error('Request failed:', profile.error)
+            hasErrorAlert.value = true
+        
+            setTimeout(() => {
+                hasErrorAlert.value = false
+            }, 3000)
         }
 
         for (const key in modalFields) {
@@ -128,6 +122,10 @@ onMounted(async () => {
                         />
                     </div>
                 </div>
+                <UBanner>
+                    <template #title>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</template>
+                    <template #description>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus temporibus sit, impedit adipisci perferendis incidunt accusantium neque, fuga, molestiae harum quae maiores expedita beatae sapiente voluptatibus? Aut distinctio atque facilis!</template>
+                </UBanner>
                 <div class="bg-bread-proc">
                     <div class="circular-progress">
                         <div class="progress-circle">
@@ -156,7 +154,7 @@ onMounted(async () => {
                 </div>
                 <div class="profile-tabs">
                     <div 
-                        v-for="tab in tabList"
+                        v-for="tab in profile.tabList"
                         :class="['tab', {'active': activeTabName === tab.title}]"
                         @click="pickTab(tab.title)"
                     >
@@ -165,7 +163,7 @@ onMounted(async () => {
                 </div>
             </div>
             <component :is="activeTab.component" :operator="activeTab.title !== 'FAQ'? operator : ''" />
-            <Users v-show="activeTab.title === tabList[0].title" />
+            <Users v-show="activeTab.title === profile.tabList[0].title" />
         </div>
     </div>
 
@@ -272,16 +270,15 @@ onMounted(async () => {
             <UButton text="Сохранить" size="small" @click="sendForm"/>
         </template>
     </UModal>
+    <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
+        <AlertTitle>Ошибка!</AlertTitle>
+        <AlertDescription>
+            {{ profile.error }}
+        </AlertDescription>
+    </Alert>
 </template>
 
 <style lang="scss" scoped>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Inter", sans-serif;
-}
-
 body {
     min-height: 100vh;
     background-color: #f9f9f9;
@@ -501,5 +498,16 @@ label span {
 .textarea-style{
     padding: 5px 10px;
     max-width: 596px;
+}
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.3s ease-in;
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
