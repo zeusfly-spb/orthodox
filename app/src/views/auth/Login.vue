@@ -31,72 +31,125 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex grow items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <Card class="w-full max-w-md">
-      <CardHeader>
-        <CardTitle class="text-3xl mb-2">Войти в систему</CardTitle>
-        <CardDescription class="text-gray-800">
-          Введите свою электронную почту и пароль
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div class="space-y-2">
-            <div class="relative">
-              <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="email"
-                v-model="form.email"
-                type="email"
-                placeholder="E-mail"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
-              />
-            </div>
-          </div>
+  <div class="flex min-h-screen flex-col bg-gray-50">
 
-          <div class="space-y-2">
-            <div class="relative">
-              <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="password"
-                v-model="form.password"
-                type="password"
-                required
-                class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
-                placeholder="Пароль"
-              />
-            </div>
-          </div>
+    <div
+      class="mt-[24px] px-[42px]"
+    >
+      <div
+        class="w-full"
+        style="display: flex; flex-direction: row;"
+      >
+        <img
+          src="@/assets/images/app-logo.png"
+          alt="App Logo"
+          style="height: 46px"
+        />
+        <div
+          class="w-full desk-text ml-4"
+        >
+          Автономная Некоммерческая <br>
+          Организация Паломнический Центр
+        </div>
+        <div
+          class="flex items-center"
+          style="text-decoration: underline"
+        >
+          Помощь
+        </div>
+      </div>
+    </div>
 
-          <div class="flex items-center justify-between">
+    <div class="flex grow items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Card class="w-full max-w-md">
+        <CardHeader>
+          <CardTitle class="text-3xl mb-2">Войти в систему</CardTitle>
+          <CardDescription class="text-gray-800">
+            Введите свою электронную почту и пароль
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form @submit.prevent="handleSubmit" class="space-y-6">
+            <div class="space-y-2">
+              <div class="relative">
+                <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Input
+                  id="email"
+                  v-model="form.email"
+                  type="email"
+                  placeholder="E-mail"
+                  required
+                  class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="relative">
+                <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Input
+                  id="password"
+                  v-model="form.password"
+                  type="password"
+                  required
+                  class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+                  placeholder="Пароль"
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <RouterLink
+                :to="{ name: 'forgot-password' }"
+                class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
+              >
+                Забыли пароль?
+              </RouterLink>
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                class="w-full py-6 bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
+                :disabled="authStore.isLoading"
+              >
+                Вход
+              </Button>
+            </div>
+          </form>
+
+          <div class="mt-6 text-center">
             <RouterLink
-              :to="{ name: 'forgot-password' }"
+              :to="{ name: 'register' }"
               class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
             >
-              Забыли пароль?
+              У вас нет аккаунта? Регистрация
             </RouterLink>
           </div>
-
-          <div>
-            <Button
-              type="submit"
-              class="w-full py-6 bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-              :disabled="authStore.isLoading"
-              >Вход</Button
-            >
-          </div>
-        </form>
-
-        <div class="mt-6 text-center">
-          <RouterLink
-            :to="{ name: 'register' }"
-            class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
-          >
-            У вас нет аккаунта? Регистрация
-          </RouterLink>
+        </CardContent>
+      </Card>
+    </div>
+    <div class="mb-[24px] px-[42px]">
+      <div
+        class="flex items-center w-full justify-between"
+      >
+        <div>
+          2025 @ АНО "Паломнический центр"
         </div>
-      </CardContent>
-    </Card>
+        <div>
+          Публичная оферта | Политика конфиденциальности
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+
+<style>
+.desk-text {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  vertical-align: middle;
+}
+</style>
