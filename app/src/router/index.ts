@@ -120,8 +120,8 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'orders/:id/edit',
-        name: 'edit-order',
+        path: 'orders/edit/:id',
+        name: 'order-edit',
         component: () => import('@/views/dashboard/views/orders/EditOrder.vue'),
         meta: { requiresAuth: true },
       },

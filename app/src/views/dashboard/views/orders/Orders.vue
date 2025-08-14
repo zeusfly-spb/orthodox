@@ -3,7 +3,6 @@
 import { managerApi } from '@/api/managers'
 import UButton from '@/components/ui/UButton.vue'
 import UInput from '@/components/ui/UInput.vue';
-import UModal from '@/components/ui/UModal.vue'
 import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { tourApi } from '@/api/tours';
@@ -214,7 +213,7 @@ onMounted(async () => {
                                                     <img src="/svg/eye.svg" alt="view">
                                                 </button>
                                                 <button class="edit-btn">
-                                                    <router-link :to="{name: 'edit-order', params: { id: item.id }}">
+                                                    <router-link :to="{name: 'order-edit', params: { id: item.id }}">
                                                         <img src="/svg/pencil.svg" alt="edit">
                                                     </router-link>
                                                 </button>
@@ -293,20 +292,6 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <UModal v-show="isOpenModal" @close="isOpenModal = false">
-        <template #headerTitle>
-            Добавление заявки
-        </template>
-
-        <template #bodyContent>
-            ghbdtns sdgsdg
-        </template>
-
-        <template #buttons>
-            <UButton text="Отмена" variant="secondary" size="small" @click="isOpenModal = false" />
-            <UButton text="Сохранить" @click="save" size="small" variant="primary" />
-        </template>
-    </UModal>
 </template>
 <style lang="scss" scoped>
 .white-bg {

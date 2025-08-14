@@ -3,14 +3,48 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { tourApi } from '@/api/tours';
+import { getBookingByFilter } from '@/api/bookings'
+import UInput from '@/components/ui/UInput.vue'
 
 const route = useRoute();
-const orderId = route.params.id; // Получаем id из URL
+const orderId = route.params.id
 const tour = ref('')
+const hasErrorAlert = ref(false)
+const bookings = ref('')
+const formFields = reactive({
+    title: '',
+    numbers: {
+        tour: '',
+        order: '',
+    },
+    manager: '',
+    counts: {
+        nights: '',
+        freePlaces: '',
+        people: ''
+    },
+    dates: {
+        start: '',
+        finish: ''
+    },
+    guaranteeType: ''
+})
 
 onMounted(async () => {
-    const { data } = await tourApi.getData(orderId)
-    tour.value = data
+    try {
+        const [tourResponse, bookingsResponse] = await Promise.all([
+          (await tourApi.getData(orderId))?.data,
+        //   (await getBookingByFilter(orderId))?.data
+        ]);
+      
+        tour.value = tourResponse;
+
+        formFields.title = tour.value?.title
+        // bookings.value = bookingsResponse;
+    }
+    catch(error) {
+        console.error(error)
+    }
 })
 </script>
 
@@ -25,12 +59,13 @@ onMounted(async () => {
                         <label class="info-label">Название паломнического тура</label>
                         <div class="filter-item mar-bb30">
                             <div class="custom-select">
-                                <div class="filter-trigger filter-trigger-tour">
+                                <UInput :inputHeightPx="36" v-model="formFields.title"/>
+                                <!-- <div class="filter-trigger filter-trigger-tour">
                                     <span>Название паломнического тура</span>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#64748B">
                                         <path d="M7 10l5 5 5-5z" />
                                     </svg>
-                                </div>
+                                </div> -->
                                 <div class="filter-dropdown filter-dropdown-tour">
                                     <div class="filter-search-container">
                                         <input type="text" class="filter-search-input"
@@ -1009,6 +1044,12 @@ onMounted(async () => {
             </div>
         </div>
     </div>
+        <!-- <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
+            <AlertTitle>Ошибка!</AlertTitle>
+            <AlertDescription>
+                {{ profile.error }}
+            </AlertDescription>
+        </Alert> -->
 </template>
 <style scoped lang="scss">
   :root {
@@ -1036,7 +1077,6 @@ body {
 .main-content {
     margin-left: 250px;
     flex: 1;
-    margin-left: var(--sidebar-width);
     transition: all 0.3s;
     min-width: 0;
 }

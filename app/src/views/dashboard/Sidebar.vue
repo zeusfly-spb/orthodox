@@ -8,7 +8,7 @@ const selectedItem = ref(5)
 const route = useRoute();
 
 function matchRouteName(){
-    selectedItem.value = (paragraph.find(item => item.linkName === route.name)).id
+    selectedItem.value = (paragraph.find(item => item.linkName === route.name))?.id || selectedItem.value //TODO: исправить соответствие
 }
 
 onMounted(() => matchRouteName())
@@ -21,7 +21,6 @@ onMounted(() => matchRouteName())
             <router-link 
                 to="/" 
                 class="active-block"
-                @click="x"
             >
                 <img src="/logo.png" />
             </router-link>
