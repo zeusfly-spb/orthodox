@@ -16,6 +16,9 @@ import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
 import MarkerMap from '@/components/maps/MarkerMap.vue'
+import { MapPinHouse } from 'lucide-vue-next'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import api from '@/api/httpClient'
 
 interface FormFields {
   title: string
@@ -90,14 +93,16 @@ const form = reactive<Omit<FormFields, 'id'>>({
 })
 
 const resetForm = () => {
+  markerData.value = null
+
   Object.assign(form, {
     title: '',
     description: '',
     phone: '',
     email: '',
     address: '',
-    latitude: '',
-    longitude: '',
+    latitude: null,
+    longitude: null,
     parameters: {},
   })
 }
@@ -105,6 +110,26 @@ const resetForm = () => {
 const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
   form.latitude = lat
   form.longitude = lng
+}
+
+const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
+
+const findPoint = async (address: string) => {
+  try {
+    const response = await api.post('/manage/suggestions/address', { address })
+    const lat = response.data.data.latitude
+    const lng = response.data.data.longitude
+
+    markerData.value = {
+      type: 'Point',
+      coordinates: [lat, lng],
+    }
+
+    handleMarkerUpdate({ lat, lng })
+  } catch (error) {
+    toast.error('Ошибка при загрузке координат')
+    console.error(error)
+  }
 }
 
 watch(
@@ -125,6 +150,14 @@ watch(
         longitude: newEntity.location?.coordinates[0],
         parameters,
       })
+
+      // Обновляем данные маркера если есть location
+      if (newEntity.location) {
+        markerData.value = {
+          type: newEntity.location.type,
+          coordinates: [newEntity.location?.coordinates[1], newEntity.location?.coordinates[0]],
+        }
+      }
     }
   },
   { immediate: true },
@@ -142,6 +175,11 @@ watch(
 )
 
 const onSubmit = () => {
+  if (!form.title || !form.description || Object.keys(form.parameters).length === 0) {
+    toast.error('Заполните обязательные поля')
+    return
+  }
+
   emit('submit', { ...form })
   emit('update:open', false)
 }
@@ -187,9 +225,32 @@ const onSubmit = () => {
           </div>
 
           <div class="grid gap-4">
-            <div class="space-y-2">
-              <Label for="address">Адрес</Label>
-              <Input id="address" v-model="form.address" />
+            <Label for="address">Адрес</Label>
+            <div class="flex items-center flex-row gap-4">
+              <div class="flex grow gap-2 space-y-2">
+                <Input id="address" v-model="form.address" />
+              </div>
+              <div class="flex shrink space-y-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        class="border-emerald-500 text-emerald-500 hover:text-emerald-600"
+                        :disabled="!form.address"
+                        @click="findPoint(form.address)"
+                      >
+                        <MapPinHouse class="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <span>Найти на карте</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
           </div>
 
@@ -210,7 +271,7 @@ const onSubmit = () => {
             <MarkerMap
               :height="'480px'"
               :zoom="14"
-              :marker-data="item?.location"
+              :marker-data="markerData"
               @update:coordinates="handleMarkerUpdate"
             />
           </div>
