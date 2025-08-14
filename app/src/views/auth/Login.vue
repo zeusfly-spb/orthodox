@@ -53,7 +53,9 @@ const handleSubmit = async () => {
         <div
           class="flex items-center underlined"
         >
-          Помощь
+          <a href="">
+            Помощь
+          </a>
         </div>
       </div>
     </div>
