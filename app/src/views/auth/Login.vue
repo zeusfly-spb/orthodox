@@ -37,7 +37,7 @@ const handleSubmit = async () => {
       class="mt-[24px] px-[42px]"
     >
       <div
-        class="w-full"
+        class="w-full text-gray-500"
         style="display: flex; flex-direction: row;"
       >
         <img
@@ -52,8 +52,7 @@ const handleSubmit = async () => {
           Организация Паломнический Центр
         </div>
         <div
-          class="flex items-center"
-          style="text-decoration: underline"
+          class="flex items-center underlined"
         >
           Помощь
         </div>
@@ -63,7 +62,9 @@ const handleSubmit = async () => {
     <div class="flex grow items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card class="w-full max-w-md">
         <CardHeader>
-          <CardTitle class="text-3xl mb-2">Войти в систему</CardTitle>
+          <CardTitle class="text-3xl mb-2">
+            Войти в систему
+          </CardTitle>
           <CardDescription class="text-gray-800">
             Введите свою электронную почту и пароль
           </CardDescription>
@@ -131,13 +132,20 @@ const handleSubmit = async () => {
     </div>
     <div class="mb-[24px] px-[42px]">
       <div
-        class="flex items-center w-full justify-between"
+        class="flex items-center w-full justify-between text-gray-500"
       >
-        <div>
+        <div
+
+        >
           2025 @ АНО "Паломнический центр"
         </div>
         <div>
-          Публичная оферта | Политика конфиденциальности
+          <a href="">
+            Публичная оферта
+          </a>
+          <a href="">
+            Политика конфиденциальности
+          </a>
         </div>
       </div>
     </div>
@@ -151,5 +159,8 @@ const handleSubmit = async () => {
   font-size: 14px;
   line-height: 20px;
   vertical-align: middle;
+}
+.underlined {
+  text-decoration: underline;
 }
 </style>
