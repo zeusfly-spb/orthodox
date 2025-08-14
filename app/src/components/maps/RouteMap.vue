@@ -80,10 +80,7 @@ const normalizedPoints = computed(() => {
       ...point.entity,
       location: {
         ...point.entity.location,
-        coordinates: [
-          point.entity.location.coordinates[0], // Lng
-          point.entity.location.coordinates[1], // Lat
-        ],
+        coordinates: [...point.entity.location.coordinates],
       },
     },
   }))
