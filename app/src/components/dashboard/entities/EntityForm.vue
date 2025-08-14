@@ -22,6 +22,7 @@ interface FormFields {
   description: string
   email: string
   phone: string
+  address: string
   latitude: number | null
   longitude: number | null
 }
@@ -56,6 +57,7 @@ const formTemplate: FormFields = {
   description: '',
   email: '',
   phone: '',
+  address: '',
 }
 
 const requiredFields: Array<keyof FormFields> = ['title', 'description']
@@ -81,6 +83,7 @@ const form = reactive<Omit<FormFields, 'id'>>({
   description: '',
   phone: '',
   email: '',
+  address: '',
   latitude: null,
   longitude: null,
   parameters: {},
@@ -92,6 +95,7 @@ const resetForm = () => {
     description: '',
     phone: '',
     email: '',
+    address: '',
     latitude: '',
     longitude: '',
     parameters: {},
@@ -116,6 +120,7 @@ watch(
         description: newEntity.description,
         phone: newEntity.phone,
         email: newEntity.email,
+        address: newEntity.requisite?.real_address,
         latitude: newEntity.location?.coordinates[1],
         longitude: newEntity.location?.coordinates[0],
         parameters,
@@ -172,12 +177,19 @@ const onSubmit = () => {
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label for="email" required>Email</Label>
+              <Label for="email">Email</Label>
               <Input id="email" v-model="form.email" type="email" />
             </div>
             <div class="space-y-2">
-              <Label for="phone" required>Телефон</Label>
+              <Label for="phone">Телефон</Label>
               <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
+            </div>
+          </div>
+
+          <div class="grid gap-4">
+            <div class="space-y-2">
+              <Label for="address">Адрес</Label>
+              <Input id="address" v-model="form.address" />
             </div>
           </div>
 
