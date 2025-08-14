@@ -18,7 +18,7 @@ const props = withDefaults(
     mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
     center: () => [110.32128708, 65.53927338],
     zoom: 2,
-    height: '200px',
+    height: '300px',
     markerData: null,
     markerColor: '#10B981',
     draggable: false,
@@ -34,7 +34,7 @@ const draggable = ref(props.draggable)
 const markerCoordinates = ref(
   props.markerData?.coordinates
     ? [props.markerData.coordinates[1], props.markerData.coordinates[0]]
-    : [110.32128708, 65.53927338],
+    : props.center,
 )
 
 const mapCenter = ref(markerCoordinates.value)
@@ -50,9 +50,9 @@ const containerStyle = computed(() => {
 watch(
   () => props.markerData,
   (newVal) => {
-    markerCoordinates.value = newVal?.coordinates
-      ? [newVal.coordinates[1], newVal.coordinates[0]]
-      : [110.32128708, 65.53927338]
+    if (newVal?.coordinates) {
+      markerCoordinates.value = [newVal.coordinates[1], newVal.coordinates[0]]
+    }
   },
   { immediate: true },
 )
