@@ -175,7 +175,7 @@ watch(
 )
 
 const onSubmit = () => {
-  if (!form.title || !form.description || Object.keys(form.parameters).length === 0) {
+  if (!form.title || Object.keys(form.parameters).length === 0) {
     toast.error('Заполните обязательные поля')
     return
   }
