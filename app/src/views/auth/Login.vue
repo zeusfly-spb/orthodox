@@ -31,8 +31,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-gray-50">
-
+  <div class="flex min-h-screen flex-col bg-gray-50 inter">
     <div
       class="mt-[24px] px-[42px]"
     >
@@ -124,7 +123,12 @@ const handleSubmit = async () => {
               :to="{ name: 'register' }"
               class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
             >
-              У вас нет аккаунта? Регистрация
+              У вас нет аккаунта?
+              <span
+                class="text-emerald-500 underlined"
+              >
+                Регистрация
+              </span>
             </RouterLink>
           </div>
         </CardContent>
@@ -134,16 +138,25 @@ const handleSubmit = async () => {
       <div
         class="flex items-center w-full justify-between text-gray-500"
       >
-        <div
-
-        >
+        <div>
           2025 @ АНО "Паломнический центр"
         </div>
         <div>
-          <a href="">
+          <a
+            href=""
+            class="underlined"
+          >
             Публичная оферта
           </a>
-          <a href="">
+          <span
+            class="ml-2 mr-1"
+          >
+            |
+          </span>
+          <a
+            href=""
+            class="underlined"
+          >
             Политика конфиденциальности
           </a>
         </div>
@@ -162,5 +175,8 @@ const handleSubmit = async () => {
 }
 .underlined {
   text-decoration: underline;
+}
+.inter {
+  font-family: Inter, sans-serif;
 }
 </style>
