@@ -151,7 +151,6 @@ watch(
         parameters,
       })
 
-      // Обновляем данные маркера если есть location
       if (newEntity.location) {
         markerData.value = {
           type: newEntity.location.type,
