@@ -127,7 +127,7 @@ const findPoint = async (address: string) => {
 
     handleMarkerUpdate({ lat, lng })
   } catch (error) {
-    toast.error('Ошибка при загрузке координат')
+    toast.error(error.response.data.message || 'Ошибка при загрузке координат')
     console.error(error)
   }
 }
