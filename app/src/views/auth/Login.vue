@@ -8,6 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'vue-sonner'
 import type { LoginCredentials } from '@/types/auth'
 import { Mail, Lock } from 'lucide-vue-next'
+import {
+  SelectContent,
+  SelectGroup,
+  SelectIcon,
+  SelectItem,
+  SelectItemIndicator,
+  SelectLabel,
+  SelectPortal,
+  SelectRoot,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -28,6 +44,31 @@ const handleSubmit = async () => {
     form.value.password = ''
   }
 }
+import { Icon } from '@iconify/vue'
+import { ComboboxAnchor, ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxSeparator, ComboboxTrigger, ComboboxViewport } from 'reka-ui'
+
+const options = [
+  { name: 'Fruit', children: [
+      { name: 'Apple' },
+      { name: 'Banana' },
+      { name: 'Orange' },
+      { name: 'Honeydew' },
+      { name: 'Grapes' },
+      { name: 'Watermelon' },
+      { name: 'Cantaloupe' },
+      { name: 'Pear' },
+    ] },
+  { name: 'Vegetable', children: [
+      { name: 'Cabbage' },
+      { name: 'Broccoli' },
+      { name: 'Carrots' },
+      { name: 'Lettuce' },
+      { name: 'Spinach' },
+      { name: 'Bok Choy' },
+      { name: 'Cauliflower' },
+      { name: 'Potatoes' },
+    ] },
+];
 </script>
 
 <template>
@@ -50,6 +91,20 @@ const handleSubmit = async () => {
           Автономная Некоммерческая <br>
           Организация Паломнический Центр
         </div>
+        <template>
+          <SelectRoot>
+            <SelectTrigger>…</SelectTrigger>
+            <SelectPortal>
+              <SelectContent
+                class="SelectContent"
+                position="popper"
+                :side-offset="5"
+              >
+                …
+              </SelectContent>
+            </SelectPortal>
+          </SelectRoot>
+        </template>
         <div
           class="flex items-center underlined"
         >
@@ -72,6 +127,13 @@ const handleSubmit = async () => {
         </CardHeader>
         <CardContent>
           <form @submit.prevent="handleSubmit" class="space-y-6">
+
+            <div class="space-y-2">
+              <div class="relative">
+
+              </div>
+            </div>
+
             <div class="space-y-2">
               <div class="relative">
                 <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
@@ -166,7 +228,6 @@ const handleSubmit = async () => {
     </div>
   </div>
 </template>
-
 
 <style>
 .desk-text {

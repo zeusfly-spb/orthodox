@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreHorizontal, Trash2, SquarePen } from 'lucide-vue-next'
+import { MoreHorizontal, Trash2, SquarePen, Pencil } from 'lucide-vue-next'
 import {
   Table,
   TableBody,
@@ -31,41 +31,49 @@ const props = defineProps<{
   <Table v-else>
     <TableHeader class="bg-muted/50">
       <TableRow>
-        <TableHead class="w-[50px]"> ID </TableHead>
-        <TableHead>Название</TableHead>
-        <TableHead>Дней</TableHead>
-        <TableHead>Цена</TableHead>
-        <TableHead>Маршрут</TableHead>
-        <TableHead>Тип</TableHead>
-        <TableHead>Категория</TableHead>
-        <TableHead>Транспорт</TableHead>
-        <TableHead>Статус</TableHead>
-        <TableHead class="w-[50px] text-right px-4 pl-6">
-          <MoreHorizontal class="h-4 w-4" />
-        </TableHead>
+        <TableHead class="w-[50px]"> Номер тура </TableHead>
+        <TableHead>Название тура</TableHead>
+        <TableHead>Тип тура</TableHead>
+        <TableHead>Категория тура</TableHead>
+        <TableHead>Логистика тура</TableHead>
+        <TableHead>Кол-во ночей/дней</TableHead>
+        <TableHead>Кол-во паломников</TableHead>
+        <TableHead>Действия</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="item in collection" :key="item.id" class="hover:bg-green-50/50">
-        <TableCell>{{ item.id }}</TableCell>
+      <TableRow
+        v-for="item in collection"
+        :key="item.id"
+        class="hover:bg-green-50/50"
+      >
+        <TableCell>
+          {{ item.id }}
+        </TableCell>
         <TableCell class="font-medium">
           {{ item.title }}
         </TableCell>
-        <TableCell>{{ item.duration }}</TableCell>
         <TableCell>
-          {{ item.price }}
+          {{ item?.tourType?.title }}
         </TableCell>
-        <TableCell>{{ item.route }}</TableCell>
-        <TableCell>{{ item?.tourType?.title }}</TableCell>
-        <TableCell>{{ item?.tourCategory?.title }}</TableCell>
-        <TableCell>{{ item?.tourTransport?.title }}</TableCell>
-        <TableCell>{{ item?.tourStatus?.title }}</TableCell>
+        <TableCell>
+          {{ item?.tourCategory?.title }}
+        </TableCell>
+        <TableCell>
+          {{ item?.tourTransport?.title }}
+        </TableCell>
+        <TableCell>
+          {{ item.night_count || 0 }} / {{ item.night_count || 0 }}
+        </TableCell>
+        <TableCell>
+          ??
+        </TableCell>
         <TableCell>
           <TableCell>
-            <DropdownMenu>
+            <DropdownMenu title="Редактировать">
               <DropdownMenuTrigger as-child>
-                <Button variant="ghost" class="h-8 w-8 p-0">
-                  <MoreHorizontal class="h-4 w-4" />
+                <Button variant="ghost" class="h-8 w-8 p-0  touchable">
+                  <Pencil /> <MoreHorizontal class="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right">

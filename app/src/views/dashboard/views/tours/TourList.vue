@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
 
 import DataTable from '@/components/dashboard/tours/DataTable.vue'
@@ -12,21 +14,25 @@ import { useCrudActions } from '@/composables/useCrudActions'
 
 import Pagination from '@/components/app/Pagination.vue'
 import { useRoute } from 'vue-router'
+
 const route = useRoute()
 
 import { usePaginationFilters } from '@/composables/usePaginationFilters'
 import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
+import { ArrowDownToLine, X, ArrowDownUp, Pencil } from 'lucide-vue-next'
+
 
 // Инициализация с дефолтными фильтрами
 const { filters, complexFilters, applyFilters, resetFilters, handlePageChange, currentPage } =
   usePaginationFilters({
     search: '',
-    status: '',
+    status: ''
   })
 
 const {
   isLoading,
   showConfirm,
+
   handledItemId,
   items,
   currentItem,
@@ -35,10 +41,10 @@ const {
   handleSubmit,
   handleDelete,
   onDeleteConfirm,
-  onCancel,
+  onCancel
 } = useCrudActions(tourApi, {
   successMessage: 'Данные сохранены',
-  deleteMessage: 'Данные удалены',
+  deleteMessage: 'Данные удалены'
 })
 
 // Загрузка данных при изменении фильтров
@@ -47,10 +53,13 @@ watch(
   (newFilters) => {
     loadCollection(newFilters)
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 import { useRouter } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
+import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
+import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
 
 const router = useRouter()
 
@@ -62,63 +71,105 @@ const handleEditTour = (id: string | number) => {
   router
     .push({
       name: 'tour-edit',
-      params: { id: String(id) },
+      params: { id: String(id) }
     })
     .catch((err) => {
       console.error('Navigation error:', err)
     })
 }
-
-// const getCurrentPage = () => {
-//   return route.query?.page || 1
-// }
-//
-// // Load API data
-// loadCollection({ page: getCurrentPage() })
-//
-// // Filters
-// const filters = ref({
-//   search: '',
-//   status: '',
-// })
-//
-// const handlePageChange = (page: number) => {
-//   loadCollection({
-//     page,
-//     ...filters.value,
-//   })
-// }
-//
-// const applyFilters = () => {
-//   // Сбрасываем на первую страницу при применении фильтров
-//   loadCollection({
-//     page: 1,
-//     ...filters.value,
-//   })
-// }
 </script>
 
 <template>
   <div>
-    <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
-      <div class="flex shrink-0 items-center justify-between gap-2">
-        <!-- Левая часть -->
-        <div class="flex items-center gap-4 pl-4">
-          <h1 class="text-lg font-bold text-muted-foreground">Мои туры</h1>
-        </div>
-        <!-- Правая часть -->
-        <div class="flex items-center gap-4 pr-4">
-          <Button
-            class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
-            @click="handleAddTour"
-          >
-            Добавить тур
-          </Button>
-        </div>
-      </div>
-    </div>
     <Card class="mb-8 gap-0">
       <CardContent>
+        <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+          <div class="flex shrink-0 items-center justify-between gap-2">
+            <div class="flex items-center gap-4 pl-4">
+              <h1 class="text-lg font-bold text-muted-foreground">
+                Паломнические туры
+              </h1>
+            </div>
+            <div class="flex items-center gap-4 pr-4">
+              <Button
+                variant="outline"
+                class="bg-white text-emerald-500 border-emerald-500 shadow hover:bg-emerald-500/90 hover:text-white px-8 py-6 touchable"
+                @click="handleAddTour"
+              >
+                <ArrowDownToLine />
+                Скачать отчет
+              </Button>
+              <Button
+                class="bg-emerald-500 text-white shadow hover:bg-white hover:text-emerald-500 px-8 py-6 touchable"
+                @click="handleAddTour"
+              >
+                Создать новый тур
+              </Button>
+            </div>
+          </div>
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center mb-6">
+              <span
+                class="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white mr-4">
+              <svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8"
+                                                              fill="gray" /></svg>
+              </span>
+            <div>
+              <div class="font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit</div>
+              <div class="text-gray-500 text-sm">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua.
+              </div>
+            </div>
+            <button class="ml-auto text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Поиск по турам..."
+              class="border rounded-xl px-3 py-2 w-64"
+            />
+            <select class="border rounded-xl px-2 py-2">
+              <option>1 день</option>
+            </select>
+            <select class="border rounded-xl px-2 py-2">
+              <option>1 паломник</option>
+            </select>
+
+            <div class="flex border border-gray-300 rounded-[12px] overflow-hidden w-fit h-9">
+              <div class="flex items-center px-3 border-r border-gray-300 bg-white" >
+                <input
+                  type="number"
+                  placeholder="Цена от"
+                  class="outline-none text-gray-500 placeholder-gray-400 bg-transparent w-20 text-sm"
+                />
+                <span class="ml-1 text-gray-400 text-sm">₽</span>
+              </div>
+              <div class="flex items-center px-3 bg-white">
+                <input
+                  type="number"
+                  placeholder="Цена до"
+                  class="outline-none text-gray-500 placeholder-gray-400 bg-transparent w-20 text-sm"
+                />
+                <span class="ml-1 text-gray-400 text-sm">₽</span>
+              </div>
+            </div>
+
+            <select class="border rounded-xl px-2 py-2">
+              <option>Тип тура</option>
+            </select>
+            <select class="border rounded-xl px-2 py-2">
+              <option>Категория тура</option>
+            </select>
+          </div>
+          <TourListTags />
+          <TourListSort
+            :items = "items"
+          />
+        </div>
         <DataTable
           :isLoading="isLoading"
           :collection="items"

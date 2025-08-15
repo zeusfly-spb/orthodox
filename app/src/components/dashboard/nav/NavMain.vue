@@ -38,7 +38,10 @@ const isItemActive = (url: string) => {
     </SidebarGroupLabel>
     <SidebarGroupContent>
       <SidebarMenu>
-        <SidebarMenuItem v-for="childItem in item.items" :key="childItem.title">
+        <SidebarMenuItem
+          v-for="childItem in item.items"
+          :key="childItem.title"
+        >
           <SidebarMenuButton
             as-child
             :is-active="isItemActive(childItem.url)"

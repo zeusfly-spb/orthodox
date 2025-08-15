@@ -11,3 +11,9 @@ import { Toaster } from 'vue-sonner'
     <Toaster position="top-right" richColors />
   </div>
 </template>
+
+<style>
+.touchable {
+  cursor: pointer;
+}
+</style>
