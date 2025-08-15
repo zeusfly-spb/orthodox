@@ -238,7 +238,7 @@ const onSubmit = () => {
                         variant="outline"
                         size="lg"
                         class="border-emerald-500 text-emerald-500 hover:text-emerald-600"
-                        :disabled="!form.address"
+                        :disabled="form.address.length <= 10"
                         @click="findPoint(form.address)"
                       >
                         <MapPinHouse class="h-4 w-4" />
