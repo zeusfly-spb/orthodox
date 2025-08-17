@@ -21,7 +21,6 @@ interface Customer {
   id: number
   firstname: string
   lastname: string
-  // ... остальные поля
 }
 
 export interface Role {
@@ -31,7 +30,8 @@ export interface Role {
 
 export interface User {
   id: number | string
-  uuid: string
+  uuid?: string
+  email_verified: boolean
   email: string
   name: string
   full_name: string | null

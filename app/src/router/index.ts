@@ -45,6 +45,12 @@ const routes = [
     meta: { guestOnly: true },
   },
   {
+    path: '/email/verify/code',
+    name: 'email-verify-code',
+    component: () => import('@/views/auth/VerificationCode.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/email/verify/:id/:hash',
     name: 'email-verify',
     component: () => import('@/views/auth/EmailVerification.vue'),
@@ -134,10 +140,20 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  if (authStore.accessToken && !authStore.isInitialized) {
+    try {
+      await authStore.initializeAuth()
+    } catch (error) {
+      console.error('Failed to initialize auth:', error)
+    }
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login' })
+  } else if (to.meta.requiresAuth && authStore.isAuthenticated && !authStore.isEmailVerified) {
+    next({ name: 'email-verify-code' })
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    next({ name: 'dashboard' })
+    next({ name: 'dashboard-home' })
   } else {
     next()
   }
