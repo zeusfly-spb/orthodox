@@ -44,11 +44,8 @@ const handleSubmit = async () => {
       }
     }
   } catch (error: any) {
-    // console.error('Verification error:', error)
-
     if (error.response?.status === 401) {
       toast.error('Сессия истекла. Пожалуйста, войдите снова.')
-      // await authStore.logout()
       router.push({ name: 'login' })
     } else if (error.response?.status === 422) {
       toast.error('Неверный код подтверждения')
