@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch, nextTick, ref, onMounted, reactive } from 'vue'
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -16,18 +16,19 @@ import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
 import MarkerMap from '@/components/maps/MarkerMap.vue'
-import { MapPinHouse } from 'lucide-vue-next'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import api from '@/api/httpClient'
+import { debounce } from 'lodash-es'
+import type { AddressSuggestion } from '@/types/addressSuggestion.ts'
+import type { Requisite } from '@/types/requisite.ts'
 
 interface FormFields {
   title: string
   description: string
   email: string
   phone: string
-  address: string
   latitude: number | null
   longitude: number | null
+  requisite: Requisite | null
 }
 
 const props = withDefaults(
@@ -60,12 +61,33 @@ const formTemplate: FormFields = {
   description: '',
   email: '',
   phone: '',
-  address: '',
+  latitude: null,
+  longitude: null,
+  requisite: {
+    title: null,
+    type: null,
+    description: null,
+    legal_name: null,
+    opf_short: null,
+    inn: null,
+    ogrn: null,
+    ogrn_date: null,
+    kpp: null,
+    okpo: null,
+    legal_address: null,
+    real_address: null,
+    postal_address: null,
+    email: null,
+    phone: null,
+  },
 }
 
 const requiredFields: Array<keyof FormFields> = ['title', 'description']
 
 const parametersData = ref<any>([])
+const addressSuggestions = ref<AddressSuggestion[]>([])
+const showSuggestions = ref(false)
+const isLoadingSuggestions = ref(false)
 
 const fetchParameters = async () => {
   try {
@@ -86,25 +108,22 @@ const form = reactive<Omit<FormFields, 'id'>>({
   description: '',
   phone: '',
   email: '',
-  address: '',
   latitude: null,
   longitude: null,
   parameters: {},
+  requisite: {},
 })
 
 const resetForm = () => {
   markerData.value = null
+  addressSuggestions.value = []
+  showSuggestions.value = false
 
-  Object.assign(form, {
-    title: '',
-    description: '',
-    phone: '',
-    email: '',
-    address: '',
-    latitude: null,
-    longitude: null,
-    parameters: {},
+  Object.keys(form).forEach((key) => {
+    form[key] = formTemplate[key]
   })
+  form.parameters = {}
+  form.requisite = {}
 }
 
 const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
@@ -114,42 +133,91 @@ const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
 
 const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
 
-const findPoint = async (address: string) => {
-  try {
-    const response = await api.post('/manage/suggestions/address', { address })
-    const lat = response.data.data.latitude
-    const lng = response.data.data.longitude
-
-    markerData.value = {
-      type: 'Point',
-      coordinates: [lat, lng],
-    }
-
-    handleMarkerUpdate({ lat, lng })
-  } catch (error) {
-    toast.error(error.response.data.message || 'Ошибка при загрузке координат')
-    console.error(error)
+const fetchSuggestions = debounce(async (address: string) => {
+  if (address.length < 5) {
+    addressSuggestions.value = []
+    showSuggestions.value = false
+    return
   }
+
+  try {
+    isLoadingSuggestions.value = true
+    const response = await api.post('/manage/suggestions/address', { address })
+    addressSuggestions.value = response.data.data
+    showSuggestions.value = true
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
+    console.error(error)
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } finally {
+    isLoadingSuggestions.value = false
+  }
+}, 500)
+
+const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
+  if (!form.requisite) {
+    form.requisite = { ...formTemplate.requisite! }
+  }
+  form.requisite.real_address = suggestion.value
+  form.latitude = parseFloat(suggestion.latitude)
+  form.longitude = parseFloat(suggestion.longitude)
+
+  markerData.value = {
+    type: 'Point',
+    coordinates: [parseFloat(suggestion.latitude), parseFloat(suggestion.longitude)],
+  }
+
+  addressSuggestions.value = []
+  showSuggestions.value = false
+}
+
+const handleAddressInput = () => {
+  if (!form.requisite) return
+
+  // Clear coordinates if real_address is changed
+  if (form.requisite.real_address.length < 5) {
+    form.latitude = null
+    form.longitude = null
+    markerData.value = null
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } else {
+    fetchSuggestions(form.requisite.real_address)
+  }
+}
+
+const handleAddressFocus = () => {
+  if (addressSuggestions.value.length > 0) {
+    showSuggestions.value = true
+  }
+}
+
+const handleAddressBlur = () => {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
 }
 
 watch(
   () => props.item,
   (newEntity) => {
     if (newEntity) {
-      const parameters = {
+      resetForm()
+
+      form.title = newEntity.title || ''
+      form.description = newEntity.description || ''
+      form.phone = newEntity.phone || ''
+      form.email = newEntity.email || ''
+      form.latitude = newEntity.location?.coordinates[1] || null
+      form.longitude = newEntity.location?.coordinates[0] || null
+      form.parameters = {
         entityType: newEntity.entityType?.id,
       }
 
-      Object.assign(form, {
-        title: newEntity.title,
-        description: newEntity.description,
-        phone: newEntity.phone,
-        email: newEntity.email,
-        address: newEntity.requisite?.real_address,
-        latitude: newEntity.location?.coordinates[1],
-        longitude: newEntity.location?.coordinates[0],
-        parameters,
-      })
+      if (newEntity.requisite) {
+        form.requisite = { ...newEntity.requisite }
+      }
 
       if (newEntity.location) {
         markerData.value = {
@@ -159,7 +227,7 @@ watch(
       }
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 watch(
@@ -207,7 +275,7 @@ const onSubmit = () => {
               <Input id="title" v-model="form.title" />
             </div>
             <div class="space-y-2">
-              <Label for="description" required>Описание</Label>
+              <Label for="description">Описание</Label>
               <Textarea id="description" v-model="form.description" />
             </div>
           </div>
@@ -223,32 +291,46 @@ const onSubmit = () => {
             </div>
           </div>
 
-          <div class="grid gap-4">
-            <Label for="address">Адрес</Label>
+          <div class="grid gap-4 relative">
+            <Label for="real_address">Адрес</Label>
             <div class="flex items-center flex-row gap-4">
-              <div class="flex grow gap-2 space-y-2">
-                <Input id="address" v-model="form.address" />
-              </div>
-              <div class="flex shrink space-y-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        class="border-emerald-500 text-emerald-500 hover:text-emerald-600"
-                        :disabled="form.address?.length <= 10"
-                        @click="findPoint(form.address)"
-                      >
-                        <MapPinHouse class="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <span>Найти на карте</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div class="flex grow gap-2 space-y-2 relative">
+                <Input
+                  id="real_address"
+                  :model-value="form.requisite?.real_address || ''"
+                  @update:model-value="
+                    (value) => {
+                      if (form.requisite) {
+                        form.requisite.real_address = value
+                      } else {
+                        form.requisite = { ...formTemplate.requisite!, real_address: value }
+                      }
+                      handleAddressInput()
+                    }
+                  "
+                  @focus="handleAddressFocus"
+                  @blur="handleAddressBlur"
+                  @keydown.enter.prevent="fetchSuggestions(form.requisite?.real_address || '')"
+                />
+
+                <!-- Dropdown for address suggestions -->
+                <div
+                  v-if="showSuggestions && addressSuggestions.length > 0"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+                >
+                  <div
+                    v-for="(suggestion, index) in addressSuggestions"
+                    :key="index"
+                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    @mousedown.prevent="selectAddressSuggestion(suggestion)"
+                  >
+                    <div class="text-sm font-medium">{{ suggestion.value }}</div>
+                    <div class="text-xs text-gray-500">
+                      {{ suggestion.city_with_type }}, {{ suggestion.street_with_type }}
+                      {{ suggestion.house_type }} {{ suggestion.house }}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -257,11 +339,11 @@ const onSubmit = () => {
           <div class="grid grid-cols-2 gap-4 mt-4">
             <div class="space-y-2">
               <Label for="latitude">Широта</Label>
-              <Input id="latitude" v-model="form.latitude" type="number" disabled />
+              <Input id="latitude" :model-value="form.latitude" type="number" disabled />
             </div>
             <div class="space-y-2">
               <Label for="longitude">Долгота</Label>
-              <Input id="longitude" v-model="form.longitude" type="number" disabled />
+              <Input id="longitude" :model-value="form.longitude" type="number" disabled />
             </div>
           </div>
 
