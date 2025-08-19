@@ -99,7 +99,7 @@ const handleEditTour = (id: string | number) => {
 </script>
 
 <template>
-  <div>
+  <div class="ml-70">
     <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
       <div class="flex shrink-0 items-center justify-between gap-2">
         <!-- Левая часть -->
