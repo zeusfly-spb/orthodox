@@ -12,11 +12,6 @@ const handleRetry = (config, token) => {
   return api.request(config)
 }
 
-const handleExit = () => {
-  const authStore = useAuthStore()
-  return authStore.logout()
-}
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   withCredentials: false,
@@ -54,19 +49,14 @@ api.interceptors.response.use(
   },
   async (error) => {
     const authStore = useAuthStore()
-    //console.log('All error headers:', error.response?.headers)
 
     if (error.code === 'ECONNABORTED') {
       error.response = {
         status: 408,
         statusText: 'Request Timeout',
-        data: {
-          message:
-            'The server did not respond within ' +
-            error.config.timeout / DEFAULT_TIMEOUT +
-            '  seconds',
-        },
+        data: { message: 'Превышено время ожидания ответа сервера' },
       }
+      return Promise.reject(error)
     }
 
     if (error.response?.headers?.authorization && !isRefreshing) {
@@ -82,25 +72,15 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response.status === 401) {
-      return handleExit()
+    if (error.response?.status === 401) {
+      await authStore.logout()
+      return Promise.reject(new Error('Сессия истекла. Пожалуйста, войдите снова.'))
     }
 
-    if (
-      error.response.status === 403
-      // || error.response.status === 429
-    ) {
-      const authStore = useAuthStore()
-      const accessToken = authStore.accessToken
-
-      if (retryCount < maxRetries) {
-        try {
-          return handleRetry(error.config, accessToken)
-        } finally {
-          retryCount++
-        }
-      } else {
-        return handleExit()
+    if (error.response?.status === 403) {
+      await authStore.loadUser()
+      if (!authStore.isEmailVerified) {
+        window.location.reload()
       }
     }
 
