@@ -78,7 +78,7 @@ onClickOutside(dropdownRef, () => {
                 v-if="withSearch" 
                 v-model="dropdown.searchValue" 
                 svgPath="/svg/search.svg" 
-                inputHeightPx="40" 
+                :inputHeightPx="40" 
                 placeholder="Поиск" 
                 @click.stop
             />
@@ -97,7 +97,7 @@ onClickOutside(dropdownRef, () => {
 <style scoped lang="scss">
 .dropdown {
   position: relative;
-  z-index: 1; /* Создаем контекст наложения */
+  z-index: 10; /* Создаем контекст наложения */
 
   &__input {
     height: 40px;
@@ -138,25 +138,25 @@ onClickOutside(dropdownRef, () => {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+    // overflow: hidden;
     background-color: #f8fafc;
     white-space: nowrap;
-    z-index: 1000; /* Высокий z-index для поверх других элементов */
-    transform-origin: top center;
-    animation: fadeIn 0.2s ease-out forwards;
+    // z-index: 10; /* Высокий z-index для поверх других элементов */
+    // transform-origin: top center;
+    // animation: fadeIn 0.2s ease-out forwards;
     background-color: white;
     
     /* Для плавного появления */
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: 
-      opacity 0.2s ease,
-      transform 0.2s ease;
+    // opacity: 0;
+    // transform: translateY(-10px);
+    // transition: 
+    //   opacity 0.2s ease,
+    //   transform 0.2s ease;
     
-    &.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    // &.show {
+    //   opacity: 1;
+    //   transform: translateY(0);
+    // }
   }
 
   &__item {
@@ -176,14 +176,14 @@ onClickOutside(dropdownRef, () => {
 }
 
 /* Анимация появления */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+// @keyframes fadeIn {
+//   from {
+//     opacity: 0;
+//     transform: translateY(-10px);
+//   }
+//   to {
+//     opacity: 1;
+//     transform: translateY(0);
+//   }
+// }
 </style>

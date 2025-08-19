@@ -3,7 +3,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { tourApi } from '@/api/tours';
-import { getBookingByFilter } from '@/api/bookings'
+import { bookingApi } from '@/api/bookings'
 import UInput from '@/components/ui/UInput.vue'
 import UDropdown from '@/components/ui/UDropdown.vue'
 
@@ -48,21 +48,24 @@ function matchFromQuery(key, value) {
 
 onMounted(async () => {
     try {
-        const [currentTourResponse, allToursData, /*bookingsResponse*/] = await Promise.all([
-          (await tourApi.getData(orderId))?.data,
+        const [allToursData, bookingsResponse] = await Promise.all([
           (await tourApi.fetchData())?.data,
-        //   (await getBookingByFilter(orderId))?.data
+          (await bookingApi.getData(orderId))?.data
         ]);
-        const {title, id, night_count, seats, bookings} = currentTourResponse
-        const match = {'title': title, 'tourId': id, 'counts.nights': night_count, 'counts.people': seats, 'counts.freePlaces': seats - bookings.length}
-        // formFields.numbers.tour
+
+        const {customers, status} = bookingsResponse
+        const {title, id, night_count, seats, dates} = bookingsResponse.tour
+
+        const match = {'title': title, 'tourId': id, 'counts.nights': night_count, 'counts.people': customers.length, 'counts.freePlaces': seats - customers.length, 'guaranteeType': status, 'dates.start': Math.min(...dates.map(item => item.date_start)), 'dates.finish': Math.max(...dates.map(item => item.date_end))}
 
         for(const key in match) {
             matchFromQuery(key, match[key])
         }
 
-        infoAboutAllTours.toursTitlesArr = allToursData.map(item => item.title);
-        console.log(currentTourResponse)
+        infoAboutAllTours.toursTitlesArr = allToursData.map(val => val.title)
+
+        console.log(allToursData)
+        console.log(bookingsResponse)
     }
     catch(error) {
         console.error(error)
@@ -73,63 +76,55 @@ onMounted(async () => {
 <template>
     <div class="main-content">
         <div class="content">
-            <div class="title-bread-com">Мои заявки / Редактирование & создание заявки #189</div>
+            <div class="title-bread-com">Мои заявки / Редактирование заявки #{{ orderId }}</div>
             <div class="grid-tours-fd">
                 <div>
                     <div class="section filters">
                         <h2 class="section-title">Общая информация</h2>
                         <label class="info-label">Название паломнического тура</label>
-                        <div class="filter-item mar-bb30">
-                            <div class="custom-select">
-                                 <UDropdown :list="infoAboutAllTours.toursTitlesArr" v-model="formFields.title" :withSearch="true"/>
-                            </div>
-                        </div>
-
+                        <UDropdown :list="infoAboutAllTours.toursTitlesArr" v-model="formFields.title" :withSearch="true"/>
                         <div class="info-grid">
                             <div class="info-item">
                                 <label class="info-label">Номер тура</label>
-                                <div type="text" class="input-field">{{ formFields.tourId }}</div>
+                                <div class="input-field">{{ formFields.tourId }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Номер заявки</label>
-                                <div type="text" class="input-field">{{ orderId }}</div>
+                                <div class="input-field">{{ orderId }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Менеджер</label>
-                                <input type="text" class="input-field" value="Иванов А. А.">
+                                <div class="input-field">Иванов А. А.</div>
                             </div>
                         </div>
 
                         <div class="info-grid">
                             <div class="info-item">
                                 <label class="info-label">Кол-во ночей</label>
-                                <div class="number-input-container">
-                                    <div type="number" class="number-input">{{ formFields.counts.nights }}</div>
-                                    <div class="number-controls">
-                                        <button class="number-up" @click="formFields.counts.nights++">+</button>
-                                        <button class="number-down" @click="formFields.counts.nights--">-</button>
-                                    </div>
-                                </div>
+                                <UInput 
+                                    inputType="number" 
+                                    v-model="formFields.counts.night_count" 
+                                    :allowNegative="false" 
+                                    :inputHeightPx="43"
+                                />
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Кол-во свободных мест</label>
-                                <div class="number-input-container">
-                                    <input type="number" class="number-input" :value="formFields.counts.freePlaces">
-                                    <div class="number-controls">
-                                        <button class="number-up" @click="formFields.counts.freePlaces++">+</button>
-                                        <button class="number-down" @click="formFields.counts.freePlaces--">-</button>
-                                    </div>
-                                </div>
+                                <UInput 
+                                    inputType="number" 
+                                    v-model="formFields.counts.freePlaces" 
+                                    :allowNegative="false" 
+                                    :inputHeightPx="43"
+                                />
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Кол-во человек</label>
-                                <div class="number-input-container">
-                                    <input type="number" class="number-input" :value="formFields.counts.people">
-                                    <div class="number-controls">
-                                        <button class="number-up" @click="formFields.counts.people++">+</button>
-                                        <button class="number-down" @click="formFields.counts.people--">-</button>
-                                    </div>
-                                </div>
+                                <UInput 
+                                    inputType="number" 
+                                    v-model="formFields.counts.people" 
+                                    :allowNegative="false" 
+                                    :inputHeightPx="43"
+                                />
                             </div>
                         </div>
 
@@ -1292,65 +1287,7 @@ body {
     border-radius: 4px;
     font-size: 16px;
 }
-.number-input-container {
-    position: relative;
-    width: 100%;
-}
-.number-input {
-    width: 100%;
-    padding: 10px 36px 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-    background-color: #f8fafc;
-    -moz-appearance: textfield;
-    transition: all 0.2s;
-}
-.number-input::-webkit-inner-spin-button,
-.number-input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-.number-input:focus {
-    outline: 0;
-    border-color: #94a3b8;
-    background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
-}
-.number-controls {
-    position: absolute;
-    right: 1px;
-    top: 1px;
-    bottom: 1px;
-    width: 24px;
-    display: flex;
-    flex-direction: column;
-    border-radius: 0 7px 7px 0;
-    overflow: hidden;
-}
-.number-down,
-.number-up {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e2e8f0;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.number-up {
-    border-bottom: 1px solid #cbd5e1;
-}
-.number-down:hover,
-.number-up:hover {
-    background: #cbd5e1;
-}
-.number-down svg,
-.number-up svg {
-    fill: #334155;
-}
+
 .status-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1953,6 +1890,7 @@ tr:hover .edit-column {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 16px;
     margin-bottom: 20px;
+    margin-top: 10px;
 }
 .custom-radio {
     position: relative;
