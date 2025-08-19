@@ -5,18 +5,20 @@ import { useRoute } from 'vue-router';
 import { tourApi } from '@/api/tours';
 import { getBookingByFilter } from '@/api/bookings'
 import UInput from '@/components/ui/UInput.vue'
+import UDropdown from '@/components/ui/UDropdown.vue'
 
 const route = useRoute();
 const orderId = route.params.id
-const tour = ref('')
+const infoAboutAllTours = reactive({
+    tours: [],
+    toursTitlesArr: []
+})
+
 const hasErrorAlert = ref(false)
 const bookings = ref('')
 const formFields = reactive({
     title: '',
-    numbers: {
-        tour: '',
-        order: '',
-    },
+    tourId: '',
     manager: '',
     counts: {
         nights: '',
@@ -30,17 +32,37 @@ const formFields = reactive({
     guaranteeType: ''
 })
 
+function matchFromQuery(key, value) {
+  const keys = key.split('.');
+  let current = formFields;
+  
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!current[keys[i]]) {
+      current[keys[i]] = {}; 
+    }
+    current = current[keys[i]];
+  }
+  
+  current[keys[keys.length - 1]] = value || 0;
+}
+
 onMounted(async () => {
     try {
-        const [tourResponse, bookingsResponse] = await Promise.all([
+        const [currentTourResponse, allToursData, /*bookingsResponse*/] = await Promise.all([
           (await tourApi.getData(orderId))?.data,
+          (await tourApi.fetchData())?.data,
         //   (await getBookingByFilter(orderId))?.data
         ]);
-      
-        tour.value = tourResponse;
+        const {title, id, night_count, seats, bookings} = currentTourResponse
+        const match = {'title': title, 'tourId': id, 'counts.nights': night_count, 'counts.people': seats, 'counts.freePlaces': seats - bookings.length}
+        // formFields.numbers.tour
 
-        formFields.title = tour.value?.title
-        // bookings.value = bookingsResponse;
+        for(const key in match) {
+            matchFromQuery(key, match[key])
+        }
+
+        infoAboutAllTours.toursTitlesArr = allToursData.map(item => item.title);
+        console.log(currentTourResponse)
     }
     catch(error) {
         console.error(error)
@@ -59,53 +81,18 @@ onMounted(async () => {
                         <label class="info-label">Название паломнического тура</label>
                         <div class="filter-item mar-bb30">
                             <div class="custom-select">
-                                <UInput :inputHeightPx="36" v-model="formFields.title"/>
-                                <!-- <div class="filter-trigger filter-trigger-tour">
-                                    <span>Название паломнического тура</span>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#64748B">
-                                        <path d="M7 10l5 5 5-5z" />
-                                    </svg>
-                                </div> -->
-                                <div class="filter-dropdown filter-dropdown-tour">
-                                    <div class="filter-search-container">
-                                        <input type="text" class="filter-search-input"
-                                            placeholder="Поиск по названию тура">
-                                    </div>
-                                    <div class="filter-options">
-                                        <label class="filter-option">
-                                            <input type="checkbox" name="tour" value="tour1">
-                                            <span class="option-text">Паломничество по святым местам / 2024-03-04 16:00
-                                                МСК</span>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                        <label class="filter-option">
-                                            <input type="checkbox" name="tour" value="tour2">
-                                            <span class="option-text">Святые места России / 2024-04-15 10:00 МСК</span>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                        <label class="filter-option">
-                                            <input type="checkbox" name="tour" value="tour3">
-                                            <span class="option-text">Путешествие к святыням Греции / 2024-05-22 14:00
-                                                МСК</span>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                    </div>
-                                    <div class="filter-actions">
-                                        <button class="filter-clear-btn">Очистить</button>
-                                        <button class="filter-apply-btn">Применить</button>
-                                    </div>
-                                </div>
+                                 <UDropdown :list="infoAboutAllTours.toursTitlesArr" v-model="formFields.title" :withSearch="true"/>
                             </div>
                         </div>
 
                         <div class="info-grid">
                             <div class="info-item">
                                 <label class="info-label">Номер тура</label>
-                                <input type="text" class="input-field" value="#32">
+                                <div type="text" class="input-field">{{ formFields.tourId }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Номер заявки</label>
-                                <input type="text" class="input-field" value="#189">
+                                <div type="text" class="input-field">{{ orderId }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Менеджер</label>
@@ -117,30 +104,30 @@ onMounted(async () => {
                             <div class="info-item">
                                 <label class="info-label">Кол-во ночей</label>
                                 <div class="number-input-container">
-                                    <input type="number" class="number-input" value="8">
+                                    <div type="number" class="number-input">{{ formFields.counts.nights }}</div>
                                     <div class="number-controls">
-                                        <button class="number-up">+</button>
-                                        <button class="number-down">-</button>
+                                        <button class="number-up" @click="formFields.counts.nights++">+</button>
+                                        <button class="number-down" @click="formFields.counts.nights--">-</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Кол-во свободных мест</label>
                                 <div class="number-input-container">
-                                    <input type="number" class="number-input" value="12">
+                                    <input type="number" class="number-input" :value="formFields.counts.freePlaces">
                                     <div class="number-controls">
-                                        <button class="number-up">+</button>
-                                        <button class="number-down">-</button>
+                                        <button class="number-up" @click="formFields.counts.freePlaces++">+</button>
+                                        <button class="number-down" @click="formFields.counts.freePlaces--">-</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Кол-во человек</label>
                                 <div class="number-input-container">
-                                    <input type="number" class="number-input" value="25">
+                                    <input type="number" class="number-input" :value="formFields.counts.people">
                                     <div class="number-controls">
-                                        <button class="number-up">+</button>
-                                        <button class="number-down">-</button>
+                                        <button class="number-up" @click="formFields.counts.people++">+</button>
+                                        <button class="number-down" @click="formFields.counts.people--">-</button>
                                     </div>
                                 </div>
                             </div>
@@ -1083,7 +1070,6 @@ body {
 .custom-select {
     position: relative;
     width: 100%;
-    z-index: auto;
 }
 .filter-select {
     width: 100%;

@@ -7,29 +7,57 @@ import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
+import { useOrderStore } from '@/stores/orders'
+
+const orders = useOrderStore()
 
 const isOpenModal = ref(false)
 
 const filters = reactive({
     days: 1,
-    status: '',
-    manager: '',
+    status: 'Статус заявки',
+    manager: 'Менеджер',
     operator: ''
 })
 
-const tours = ref('')
-const managers = ref('')
 const statusList = ['Новая', 'В обработке', 'Подтверждена', 'Отклонена', 'Завершена']
 
-onMounted(async () => {
-  const [toursResponse, managersResponse] = await Promise.all([
-    tourApi.fetchData(),
-    managerApi.fetchData()
-  ]);
-
-  tours.value = toursResponse.data;
-  managers.value = managersResponse.data.map(manager => manager.name);
+const state = reactive({
+  tours: [],
+  managers: []
 })
+
+async function loadAllData() {
+  try {
+    const [toursResponse, managersResponse] = await Promise.all([
+      tourApi.fetchData(),
+      managerApi.fetchData()
+    ]);
+
+    state.managers = managersResponse.data.map(m => m.name);
+
+    // Загружаем полные данные по каждому туру
+    const toursWithDetails = await Promise.all(
+      toursResponse.data.map(tour => 
+        tourApi.getData(tour.id).then(res => res.data)
+      )
+    );
+
+    // Объединяем базовую информацию с bookings
+    state.tours = toursResponse.data.map((tour, index) => ({
+      ...tour,
+      bookings: toursWithDetails[index].bookings || []
+    }));
+
+    orders.orders = state.tours
+  } catch (error) {
+    console.error('Ошибка загрузки данных:', error);
+  }
+}
+
+onMounted(() => {
+  loadAllData();
+});
 </script>
 
 <template>
@@ -61,8 +89,8 @@ onMounted(async () => {
 
                     <div class="filters-scroll-container">
                         <div class="filters-grid">
-                            <UDropdown initValue="Статус заявки" :list="statusList" v-model="filters.status"/>
-                            <UDropdown initValue="Менеджер" :list="managers" v-model="filters.manager"/>
+                            <UDropdown :list="statusList" v-model="filters.status"/>
+                            <UDropdown :list="state.managers" v-model="filters.manager"/>
 
                             <!-- Фильтр по периоду создания -->
                             <div class="filter-item">
@@ -164,7 +192,7 @@ onMounted(async () => {
                 </div>
 
 
-                <div class="filters"  v-for="item in tours" :key="item.id">
+                <div class="filters"  v-for="item in state.tours" :key="item.id">
                     <div class="page-header">
                         <div class="title-table-n-za">{{ item.title }}</div>
                         <div>
@@ -188,22 +216,22 @@ onMounted(async () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(val, index) in item.dates" :key="index">
+                                <tr v-for="(val, index) in item.bookings" :key="index">
                                     <td>
-                                        {{ val.date_start }}
+                                        {{ item.dates[index].date_start }}
                                     </td>
                                     <td>
-                                        {{ val.date_end }}
+                                        {{ item.dates[index].date_end }}
                                     </td>
                                     <td>
-                                        {{ item.bookings }}
+                                        {{ item.bookings[index].customers.length }}
                                     </td>
                                     <td>
-                                        {{ item.seats }}
+                                        {{ item.bookings.length }}
                                     </td>
                                     <td>
                                         <div class="status-item">
-                                            <span class="status-name" v-show="item?.tourStatus?.title">{{ item?.tourStatus?.title }}</span>
+                                            <span class="status-name" v-show="val.status">{{ val.status }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -213,20 +241,13 @@ onMounted(async () => {
                                                     <img src="/svg/eye.svg" alt="view">
                                                 </button>
                                                 <button class="edit-btn">
-                                                    <router-link :to="{name: 'order-edit', params: { id: item.id }}">
+                                                    <router-link :to="{name: 'order-edit', params: { id: item.bookings[index].id }}">
                                                         <img src="/svg/pencil.svg" alt="edit">
                                                     </router-link>
                                                 </button>
                                                 <button class="more-btn">
                                                     <img src="/svg/more-horiz.svg" alt="edit">
                                                 </button>
-                                            </div>
-                                            <div class="actions-dropdown">
-                                                <a href="#" class="dropdown-item">Очистить сессию</a>
-                                                <a href="#" class="dropdown-item">Войти как</a>
-                                                <a href="#" class="dropdown-item">Изменить пароль</a>
-                                                <a href="#" class="dropdown-item">Деактивировать</a>
-                                                <a href="#" class="dropdown-item">Удалить пользователя</a>
                                             </div>
                                         </div>
                                     </td>
