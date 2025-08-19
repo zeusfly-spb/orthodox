@@ -3,6 +3,7 @@
 import { catalog, paragraph } from '@/composables/sidebar.js';
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router';
+import EntityForm from '@/components/dashboard/entities/EntityForm.vue'
 
 const selectedItem = ref(5)
 const route = useRoute();
@@ -41,13 +42,13 @@ onMounted(() => matchRouteName())
         </router-link>
     </div>
 
-    <div class="menu-item with-submenu">
+    <div class="sidebar-submenu">
         <div style="display: flex; align-items: center;">
-            <span class="menu-text title-left-spravoch">Справочники</span>
+            <span class="left-title-s">Справочники</span>
         </div>
     </div>
 
-    <div class="submenu">
+    <div v-if="false" class="submenu">
         <router-link 
             v-for="(item, index) in catalog"
             :key="index"
@@ -57,6 +58,7 @@ onMounted(() => matchRouteName())
             {{ item.name }}
         </router-link>
     </div>
+    <router-link :to="{name: 'entities-view'}" class="submenu-item">Объекты</router-link>
 </aside>
 </template>
 <style lang="scss" scoped>
@@ -105,6 +107,10 @@ onMounted(() => matchRouteName())
 
 .sidebar-menu {
     padding: 20px 16px;
+    padding-top: 0;
+}
+.sidebar-submenu {
+    padding: 0 16px;
     padding-top: 0;
 }
 
