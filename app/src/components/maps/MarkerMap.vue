@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { MglMap, MglNavigationControl, MglMarker, MglPopup } from '@indoorequal/vue-maplibre-gl'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -31,6 +31,8 @@ const emit = defineEmits<{
 
 const draggable = ref(props.draggable)
 
+const mapKey = ref(0)
+
 const markerCoordinates = ref(
   props.markerData?.coordinates
     ? [props.markerData.coordinates[1], props.markerData.coordinates[0]]
@@ -39,30 +41,37 @@ const markerCoordinates = ref(
 
 const mapCenter = ref(markerCoordinates.value)
 
-const mapZoom = computed(() => {
-  return props.markerData ? props.zoom : 2
-})
+const mapZoom = ref(props.markerData ? props.zoom : 2)
 
 const containerStyle = computed(() => {
   return { height: props.height }
 })
+
+const updateMapView = () => {
+  mapKey.value++
+  nextTick(() => {
+    mapCenter.value = [...markerCoordinates.value]
+    mapZoom.value = 14
+  })
+}
 
 watch(
   () => props.markerData,
   (newVal) => {
     if (newVal?.coordinates) {
       markerCoordinates.value = [newVal.coordinates[1], newVal.coordinates[0]]
+      updateMapView()
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 const onDragEnd = () => {
   const { lat, lng } = markerCoordinates.value
 
   emit('update:coordinates', {
-    lat: lng.toFixed(8),
-    lng: lat.toFixed(8),
+    lat: lat.toFixed(8),
+    lng: lng.toFixed(8),
   })
 }
 </script>
@@ -74,6 +83,7 @@ const onDragEnd = () => {
   >
     <div class="flex flex-col size-full z-1 absolute h-full inset-0">
       <MglMap
+        :key="mapKey"
         :map-style="props.mapStyle"
         :center="mapCenter"
         :zoom="mapZoom"
