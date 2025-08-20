@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, nextTick, ref, onMounted, reactive } from 'vue'
+import { watch, nextTick, ref, onMounted, onUnmounted, reactive } from 'vue'
 import {
   Dialog,
   DialogContent,
@@ -101,6 +101,11 @@ const fetchParameters = async () => {
 
 onMounted(() => {
   fetchParameters()
+  document.addEventListener('mousedown', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside)
 })
 
 const form = reactive<Omit<FormFields, 'id'>>({
@@ -126,12 +131,31 @@ const resetForm = () => {
   form.requisite = {}
 }
 
+const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
+
 const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
   form.latitude = lat
   form.longitude = lng
+
+  fetchMarkerSuggestions(lat, lng)
 }
 
-const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
+const suggestionsRef = ref<HTMLElement | null>(null)
+const addressInputRef = ref<HTMLElement | null>(null)
+
+const handleClickOutside = (event: MouseEvent) => {
+  const addressInputElement = addressInputRef.value?.$el || addressInputRef.value
+  const suggestionsElement = suggestionsRef.value
+
+  if (
+    suggestionsElement &&
+    !suggestionsElement.contains(event.target as Node) &&
+    addressInputElement &&
+    !addressInputElement.contains(event.target as Node)
+  ) {
+    showSuggestions.value = false
+  }
+}
 
 const fetchSuggestions = debounce(async (address: string) => {
   if (address.length < 5) {
@@ -155,6 +179,22 @@ const fetchSuggestions = debounce(async (address: string) => {
   }
 }, 500)
 
+const fetchMarkerSuggestions = debounce(async (lat: number, lng: number) => {
+  try {
+    isLoadingSuggestions.value = true
+    const { data } = await api.post('/manage/suggestions/geo/reverse', { lat, lng })
+    addressSuggestions.value = data.data
+    showSuggestions.value = true
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
+    console.error(error)
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } finally {
+    isLoadingSuggestions.value = false
+  }
+}, 500)
+
 const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   if (!form.requisite) {
     form.requisite = { ...formTemplate.requisite! }
@@ -162,10 +202,11 @@ const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   const postal_code = suggestion.postal_code || ''
   const country = suggestion.country || ''
   form.requisite.real_address = suggestion.value
-  form.latitude = suggestion.latitude
-  form.longitude = suggestion.longitude
 
-  if (form.latitude && form.longitude) {
+  if (suggestion.latitude && suggestion.longitude) {
+    form.latitude = suggestion.latitude
+    form.longitude = suggestion.longitude
+
     markerData.value = {
       type: 'Point',
       coordinates: [form.latitude, form.longitude],
@@ -199,6 +240,7 @@ const handleAddressFocus = () => {
 
 const handleAddressBlur = () => {
   setTimeout(() => {
+    if (!showSuggestions.value) return
     showSuggestions.value = false
   }, 200)
 }
@@ -300,6 +342,7 @@ const onSubmit = () => {
             <div class="flex items-center flex-row gap-4">
               <div class="flex grow gap-2 space-y-2 relative">
                 <Input
+                  ref="addressInputRef"
                   type="text"
                   id="real_address"
                   :model-value="form.requisite?.real_address || ''"
@@ -316,12 +359,12 @@ const onSubmit = () => {
                   @focus="handleAddressFocus"
                   @blur="handleAddressBlur"
                   @keydown.enter.prevent="fetchSuggestions(form.requisite?.real_address || '')"
-                  autocomplete="off"
                   :clearable="false"
                 />
 
                 <!-- Dropdown for address suggestions -->
                 <div
+                  ref="suggestionsRef"
                   v-if="showSuggestions && addressSuggestions.length > 0"
                   class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
                 >
