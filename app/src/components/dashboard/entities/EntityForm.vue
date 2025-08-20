@@ -159,15 +159,17 @@ const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   if (!form.requisite) {
     form.requisite = { ...formTemplate.requisite! }
   }
-  const postal_code = suggestion.postal_code
-  const country = suggestion.country
+  const postal_code = suggestion.postal_code || ''
+  const country = suggestion.country || ''
   form.requisite.real_address = suggestion.value
-  form.latitude = parseFloat(suggestion.latitude)
-  form.longitude = parseFloat(suggestion.longitude)
+  form.latitude = suggestion.latitude ? parseFloat(suggestion.latitude) : null
+  form.longitude = suggestion.longitude ? parseFloat(suggestion.longitude) : null
 
-  markerData.value = {
-    type: 'Point',
-    coordinates: [parseFloat(suggestion.latitude), parseFloat(suggestion.longitude)],
+  if (form.latitude && form.longitude) {
+    markerData.value = {
+      type: 'Point',
+      coordinates: [form.latitude, form.longitude],
+    }
   }
 
   addressSuggestions.value = []
