@@ -162,8 +162,8 @@ const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   const postal_code = suggestion.postal_code || ''
   const country = suggestion.country || ''
   form.requisite.real_address = suggestion.value
-  form.latitude = suggestion.latitude ? parseFloat(suggestion.latitude) : null
-  form.longitude = suggestion.longitude ? parseFloat(suggestion.longitude) : null
+  form.latitude = suggestion.latitude
+  form.longitude = suggestion.longitude
 
   if (form.latitude && form.longitude) {
     markerData.value = {
@@ -316,6 +316,7 @@ const onSubmit = () => {
                   @focus="handleAddressFocus"
                   @blur="handleAddressBlur"
                   @keydown.enter.prevent="fetchSuggestions(form.requisite?.real_address || '')"
+                  autocomplete="off"
                   :clearable="false"
                 />
 
