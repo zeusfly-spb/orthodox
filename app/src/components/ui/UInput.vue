@@ -19,7 +19,7 @@ const props = defineProps({
   inputType: {
     type: String,
     default: 'text',
-    validator: (value) => ['text', 'number', 'email', 'password'].includes(value)
+    validator: (value) => ['text', 'number', 'email', 'password', 'tel'].includes(value)
   },
   allowNegative: {
     type: Boolean,

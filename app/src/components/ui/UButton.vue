@@ -27,12 +27,17 @@ const props = defineProps({
         'normal',
         'disabled'
         ].includes(value)
+    },
+    svgPath: {
+        type: String,
+        default: ''
     }
 })
 
 </script>
 <template>
-    <button :class="`btn ${props.variant}-${props.action} ${props.size}`">
+    <button :class="[`btn ${props.variant}-${props.action} ${props.size}`, {'spbn': props.svgPath}]">
+        <img v-if="props.svgPath" :src="props.svgPath" alt="icon">
         {{ props.text }}
     </button>
 </template>
@@ -98,5 +103,10 @@ const props = defineProps({
     padding: 16px 32px;
     height: 56px;
     border-radius: 12px;
+}
+.spbn{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 </style>
