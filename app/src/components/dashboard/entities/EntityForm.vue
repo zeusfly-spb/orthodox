@@ -329,10 +329,6 @@ const onSubmit = () => {
                     @mousedown.prevent="selectAddressSuggestion(suggestion)"
                   >
                     <div class="text-sm font-medium text-gray-500">{{ suggestion.value }}</div>
-                    <!--                    <div class="text-xs text-gray-500">-->
-                    <!--                      {{ suggestion.city_with_type }}, {{ suggestion.street_with_type }}-->
-                    <!--                      {{ suggestion.house_type }} {{ suggestion.house }}-->
-                    <!--                    </div>-->
                   </div>
                 </div>
               </div>
