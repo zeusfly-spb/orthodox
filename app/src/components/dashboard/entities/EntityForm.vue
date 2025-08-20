@@ -142,8 +142,8 @@ const fetchSuggestions = debounce(async (address: string) => {
 
   try {
     isLoadingSuggestions.value = true
-    const response = await api.post('/manage/suggestions/address', { address })
-    addressSuggestions.value = response.data.data
+    const { data } = await api.post('/manage/suggestions/address', { address })
+    addressSuggestions.value = data.data
     showSuggestions.value = true
   } catch (error) {
     toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
@@ -159,6 +159,8 @@ const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   if (!form.requisite) {
     form.requisite = { ...formTemplate.requisite! }
   }
+  const postal_code = suggestion.postal_code
+  const country = suggestion.country
   form.requisite.real_address = suggestion.value
   form.latitude = parseFloat(suggestion.latitude)
   form.longitude = parseFloat(suggestion.longitude)
@@ -287,7 +289,7 @@ const onSubmit = () => {
             </div>
             <div class="space-y-2">
               <Label for="phone">Телефон</Label>
-              <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
+              <Input id="phone" v-model="form.phone" placeholder="" />
             </div>
           </div>
 
@@ -296,6 +298,7 @@ const onSubmit = () => {
             <div class="flex items-center flex-row gap-4">
               <div class="flex grow gap-2 space-y-2 relative">
                 <Input
+                  type="text"
                   id="real_address"
                   :model-value="form.requisite?.real_address || ''"
                   @update:model-value="
@@ -311,6 +314,7 @@ const onSubmit = () => {
                   @focus="handleAddressFocus"
                   @blur="handleAddressBlur"
                   @keydown.enter.prevent="fetchSuggestions(form.requisite?.real_address || '')"
+                  :clearable="false"
                 />
 
                 <!-- Dropdown for address suggestions -->
@@ -324,11 +328,11 @@ const onSubmit = () => {
                     class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                     @mousedown.prevent="selectAddressSuggestion(suggestion)"
                   >
-                    <div class="text-sm font-medium">{{ suggestion.value }}</div>
-                    <div class="text-xs text-gray-500">
-                      {{ suggestion.city_with_type }}, {{ suggestion.street_with_type }}
-                      {{ suggestion.house_type }} {{ suggestion.house }}
-                    </div>
+                    <div class="text-sm font-medium text-gray-500">{{ suggestion.value }}</div>
+                    <!--                    <div class="text-xs text-gray-500">-->
+                    <!--                      {{ suggestion.city_with_type }}, {{ suggestion.street_with_type }}-->
+                    <!--                      {{ suggestion.house_type }} {{ suggestion.house }}-->
+                    <!--                    </div>-->
                   </div>
                 </div>
               </div>
