@@ -1,5 +1,5 @@
-import { Customer } from '@/types/customer'
-import { Tour } from '@/types/tour'
+import type { Customer } from '@/types/customer'
+import type { Tour } from '@/types/tour'
 
 export interface Booking {
   id: number | string
