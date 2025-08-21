@@ -70,7 +70,7 @@ onMounted(() => matchRouteName())
     transition: all 0.3s;
     position: fixed;
     height: 100vh;
-    z-index: 3;
+    z-index: 100;
     overflow-y: auto;
 }
 

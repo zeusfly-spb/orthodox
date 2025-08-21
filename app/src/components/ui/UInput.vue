@@ -96,7 +96,7 @@ function handleInput(event) {
   if (props.inputType === 'number') {
     // Для числового поля проверяем валидность
     const numericValue = parseFloat(value);
-    
+
     if (value === '' || !isNaN(numericValue)) {
       // Если пустая строка или валидное число - эмитим
       emit('update:modelValue', value === '' ? '' : numericValue);
@@ -112,7 +112,10 @@ function handleInput(event) {
 </script>
 
 <template>
-  <div :class="['search-box', {'number-input-container': props.inputType === 'number'}]">
+  <div 
+    :class="['search-box', {'number-input-container': props.inputType === 'number'}]"
+    :style="`height: ${props.inputHeightPx}px;`"
+  >
     <img 
       class="search-box__left-image" 
       v-show="props.svgPath" 
@@ -123,7 +126,6 @@ function handleInput(event) {
       :class="['search-box__input', svgPath ? 'withImg' : 'withoutImg', {'number-input': props.inputType === 'number'}]" 
       :type="props.inputType" 
       :placeholder="props.placeholder" 
-      :style="`height: ${props.inputHeightPx}px;`"
       :value="props.modelValue"
       @input="handleInput"
       :min="props.inputType === 'number' ? (props.allowNegative ? undefined : 0) : undefined"
@@ -164,6 +166,7 @@ function handleInput(event) {
     }
 
     &__input {
+        height: 100%;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
         font-size: 14px;
@@ -202,14 +205,15 @@ function handleInput(event) {
 .number-input-container {
     position: relative;
     width: 100%;
+    min-width: 80px;
 }
 
 .number-controls {
     position: absolute;
-    right: 1px;
+    right: 0;
     top: 1px;
     bottom: 1px;
-    width: 24px;
+    width: 20px;
     display: flex;
     flex-direction: column;
     border-radius: 0 7px 7px 0;

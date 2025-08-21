@@ -1,0 +1,696 @@
+<script setup>
+import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed } from 'vue';
+import UDropdown from '@/components/ui/UDropdown.vue';
+import UInput from '@/components/ui/UInput.vue';
+import UButton from '@/components/ui/UButton.vue';
+
+const props = defineProps({
+    touristCount: Number,
+})
+
+const innerTouristCount = ref(props.touristCount || 0)
+const availableRoomTypes = ref([
+    { type: 'single', name: 'Одноместный', capacity: 1, available: 10 },
+    { type: 'double', name: 'Двухместный', capacity: 2, available: 5 },
+    { type: 'double_extra', name: 'Двухместный с доп. местом', capacity: 3, available: 3 }
+])
+const accommodationOptions = ref([])
+
+function calculateOptions() {
+    accommodationOptions.value = findAccommodationOptions(
+        innerTouristCount.value,
+        availableRoomTypes.value
+    );
+    console.log('Options calculated:', accommodationOptions.value);
+}
+
+// Исправленная функция
+function findAccommodationOptions(people, roomTypes, currentCombination = {}, index = 0) {
+    if (people === 0) {
+        return [{ ...currentCombination }];
+    }
+    
+    if (index >= roomTypes.length) {
+        return [];
+    }
+    
+    const results = [];
+    const room = roomTypes[index];
+    const maxRooms = Math.min(
+        Math.floor(people / room.capacity),
+        room.available
+    );
+    
+    // Пробуем все возможные количества текущего типа комнаты (включая 0)
+    for (let count = 0; count <= maxRooms; count++) {
+        const peopleCovered = count * room.capacity;
+        
+        if (peopleCovered <= people) {
+            const newCombination = {
+                ...currentCombination,
+                [room.type]: count
+            };
+            
+            // Рекурсивно ищем варианты для оставшихся людей и комнат
+            const remainingResults = findAccommodationOptions(
+                people - peopleCovered,
+                roomTypes,
+                newCombination,
+                index + 1
+            );
+            
+            results.push(...remainingResults);
+        }
+    }
+    
+    return results;
+}
+
+function getRoomName(roomType) {
+    const room = availableRoomTypes.value.find(r => r.type === roomType);
+    return room ? room.name : roomType;
+}
+
+function getRoomCapacity(roomType) {
+    const room = availableRoomTypes.value.find(r => r.type === roomType);
+    return room ? room.capacity : 0;
+}
+
+function calculateTotalPeople(option) {
+    return Object.entries(option).reduce((total, [roomType, count]) => {
+        const room = availableRoomTypes.value.find(r => r.type === roomType);
+        return total + (count * (room?.capacity || 0));
+    }, 0);
+}
+
+const maxRooms = computed(() => 
+    Math.ceil(innerTouristCount.value / Math.min(...availableRoomTypes.value.map(r => r.capacity)))
+)
+
+// Исправленные watch
+watch(innerTouristCount, (newValue) => {
+    console.log('innerTouristCount changed:', newValue);
+    calculateOptions();
+});
+
+watch(() => props.touristCount, (newValue) => {
+    console.log('props.touristCount changed:', newValue);
+    if (newValue !== undefined) {
+        innerTouristCount.value = newValue;
+    }
+});
+
+onMounted(() => {
+    console.log('Component mounted, calculating options...');
+    calculateOptions();
+});
+</script>
+<template>
+    <div class="section filters">
+        <h2 class="section-title">Паломники / Туристы</h2>
+        <div class="pilgrims-count-container">
+            <label class="info-label">Количество туристов</label>
+            <UInput 
+                class="number-input back-none" 
+                v-model="innerTouristCount" 
+                inputType="number"
+                :inputHeightPx="43"
+                :min="1"
+            />
+        </div>
+        <div class="pilgrims-info-container">
+            <div class="room-types-section">
+                <label class="info-label">Доступные типы номеров</label>
+                <div 
+                    class="room-types-options" 
+                    v-for="(room, index) in availableRoomTypes" 
+                    :key="room.type"
+                >
+                    <label class="room-type-option">
+                        <input type="checkbox" :checked="index === 0">
+                        <span class="custom-checkbox"></span>
+                        <span class="room-type-text">
+                            <span class="bed-icons-inline">
+                                <span 
+                                    v-for="n in room.capacity" 
+                                    :key="n"
+                                    class="bed-icon"
+                                >
+                                    <img src="/svg/bedd.svg" alt="кровать">
+                                </span>
+                            </span>
+                            {{ room.name }}
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="placement-options-section">
+                <div>
+                    <label class="info-label">Варианты размещения</label>
+                    <div class="placement-options">
+                        <!-- Динамические варианты размещения -->
+                        <label 
+                            class="placement-option"
+                            v-for="(option, index) in accommodationOptions"
+                            :key="index"
+                            @click="selectOption(option)"
+                        >
+                        <!-- :checked="isOptionSelected(option)" -->
+                            <input type="checkbox">
+                            <div class="bed-icons-inline">
+                                <template v-for="(count, roomType) in option" :key="roomType">
+                                    <template v-if="count > 0">
+                                        <img 
+                                            v-for="n in count" 
+                                            :key="`${roomType}-${n}`"
+                                            src="/svg/bedd.svg" 
+                                            alt="кровать"
+                                            class="bed-icon"
+                                            :title="getRoomName(roomType)"
+                                        >
+                                        <span class="placement-text">x{{ count }}</span>
+                                    </template>
+                                </template>
+                            </div>
+                        </label>
+                        
+                        <!-- Заглушка если нет вариантов -->
+                        <div v-if="accommodationOptions.length === 0" class="no-options">
+                            Нет вариантов для {{ innerTouristCount }} туристов
+                        </div>
+                    </div>
+                </div>
+                <div class="buttom-right">
+                    <UButton 
+                        text="Выбрать"
+                        size="small"
+                    />
+                    <UButton 
+                        text="Выбрано"
+                        size="small"
+                        variant="secondary"
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="tourists-data-section">
+            <label class="info-label">Данные о туристах</label>
+            <div class="table-wrapper2">
+                <table class="users-table draggable-table">
+                    <thead>
+                        <tr class="bg-header-table">
+                            <th data-column="pilgrims-count" draggable="true">ФИО туриста <span
+                                    class="drag-handle">⋮⋮</span></th>
+                            <th data-column="manager" draggable="true">Email <span
+                                    class="drag-handle">⋮⋮</span></th>
+                            <th data-column="places-limit" draggable="true">телефон<span
+                                    class="drag-handle">⋮⋮</span></th>
+                            <th data-column="group-status" draggable="true">статус оплаты <span
+                                    class="drag-handle">⋮⋮</span></th>
+                            <th style="width: 100px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bed-i-tabel">
+                            <td colspan="5">
+                                <img src="/svg/bed-i.svg"> Двухместный номер / 2 туриста
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-column="pilgrims-count">Петрова А.К.</td>
+                            <td data-column="manager">sdfg@gmail.com</td>
+                            <td data-column="places-limit">+7 123-123-1234</td>
+                            <td data-column="request-status">
+                                <div class="status-item">
+                                    <span class="status-name">В работе</span>
+                                </div>
+                            </td>
+                            <td style="width:100px;">
+                                <div class="actions-container">
+                                    <div class="user-actions">
+                                        <button class="more-btn">
+                                            <svg width="4" height="16" viewBox="0 0 4 16" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z"
+                                                    fill="#6A6E75"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</template>
+<style scoped lang="scss">
+.section {
+    margin-bottom: 30px;
+}
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #353535;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+.filters {
+    background: #fff;
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.customer-info {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+.info-item {
+    margin-bottom: 12px;
+}
+.info-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+    display: block;
+}
+.info-value {
+    font-size: 14px;
+    color: #353535;
+    font-weight: 500;
+}
+.info-grid.grid-n {
+    grid-template-columns: 150px 1fr;
+}
+.input-field {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f8fafc;
+}
+.pilgrims-count-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 120px;
+}
+.pilgrims-count-container .info-label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+.pilgrims-count-container .number-input-container {
+    display: flex;
+    align-items: center;
+    width: auto;
+}
+.pilgrims-count-container .number-input {
+    width: 40px;
+    text-align: center;
+    padding: 0;
+    -moz-appearance: textfield;
+    margin: 0 4px;
+}
+.pilgrims-count-container .number-input::-webkit-inner-spin-button,
+.pilgrims-count-container .number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.number-input-container {
+    position: relative;
+    width: 100%;
+}
+.number-input {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f8fafc;
+    -moz-appearance: textfield;
+}
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.number-controls {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0 7px 7px 0;
+    overflow: hidden;
+}
+.number-down,
+.number-up {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    border: none;
+    padding: 0;
+}
+.number-up {
+    border-bottom: 1px solid #cbd5e1;
+}
+.pilgrims-info-container {
+    background: #f9f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 24px;
+    align-items: center; 
+}
+.placement-options-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.room-types-section {
+    justify-self: center;
+}
+.placement-options-section,
+.room-types-section {
+    margin: 16px 0;
+}
+.placement-options,
+.room-types-options {
+    margin-top: 8px;
+}
+.back-none {
+    background: 0 0 !important;
+    border: none !important;
+}
+.placement-option,
+.room-type-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+.custom-checkbox {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    position: relative;
+}
+input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+}
+input[type="checkbox"]:checked + .custom-checkbox {
+    background-color: rgba(16, 185, 129, 1);
+    border-color: rgba(16, 185, 129, 1);
+}
+input[type="checkbox"]:checked + .custom-checkbox:after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.room-type-text {
+    display: flex;
+    gap: 12px;
+}
+.buttom-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.select-btn {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.table-wrapper2 {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.draggable-table {
+    width: 100%;
+    min-width: 1800px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.draggable-table th {
+    position: sticky;
+    top: 0;
+    background: #f9f9fa;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    color: #6a6e75;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 10;
+}
+.draggable-table td {
+    padding: 12px 15px;
+    font-size: 14px;
+    color: #353535;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.table-wrapper2::-webkit-scrollbar {
+    height: 8px;
+    background-color: #f5f5f5;
+}
+.table-wrapper2::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+}
+.table-wrapper2::-webkit-scrollbar-thumb:hover {
+    background-color: #a8a8a8;
+}
+.draggable-table td:last-child,
+.draggable-table th:last-child {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 20;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
+@media (max-width: 768px) {
+    .table-wrapper2 {
+        border-radius: 0;
+    }
+    .draggable-table td,
+    .draggable-table th {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}
+.draggable-table {
+    min-width: auto !important;
+    width: 100%;
+    table-layout: auto;
+}
+.draggable-table td,
+.draggable-table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    padding: 8px 12px !important;
+}
+.draggable-table td:last-child,
+.draggable-table th:last-child {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 10;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+    min-width: 100px;
+}
+.table-wrapper2 {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+.draggable-table td {
+    font-size: 13px;
+}
+.draggable-table th {
+    font-size: 11px;
+}
+@media (max-width: 768px) {
+    .draggable-table td,
+    .draggable-table th {
+        padding: 6px 8px !important;
+        font-size: 12px;
+    }
+    .draggable-table td:last-child,
+    .draggable-table th:last-child {
+        min-width: 80px;
+    }
+}
+.table-wrapper2::-webkit-scrollbar {
+    height: 6px;
+}
+.table-wrapper2::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+.draggable-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+    background: #f9f9fa;
+}
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.users-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: #f9fafb;
+    font-weight: 500;
+    color: #6a6e75;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+.users-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.bg-header-table {
+    background: rgba(249, 249, 250, 1);
+    -webkit-border-top-left-radius: 14px;
+    -webkit-border-top-right-radius: 14px;
+    -moz-border-radius-topleft: 14px;
+    -moz-border-radius-topright: 14px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+}
+.bg-header-table th {
+    background: rgba(249, 249, 250, 1);
+}
+.bed-icon {
+    margin-top: 3px;
+}
+.bed-icons-inline {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2px;
+    margin: 0 2px;
+}
+
+.bed-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bed-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Стили для вариантов размещения */
+.placement-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.placement-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 70px;
+    background: white;
+}
+
+.placement-option:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.placement-option input[type="checkbox"] {
+    margin-bottom: 5px;
+}
+
+.placement-text {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
+}
+
+.no-options {
+    padding: 10px;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+}
+
+/* Стили для доступных номеров */
+.room-type-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.room-types-options .bed-icons-inline {
+    gap: 1px;
+}
+
+.room-types-options .bed-icon {
+    width: 14px;
+    height: 14px;
+}
+</style>

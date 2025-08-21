@@ -1,36 +1,19 @@
 <script setup>
 import { defineProps, defineEmits, reactive, watch, ref, onMounted } from 'vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import {useAuthStore} from '@/stores/auth'
-import {fetchOperators} from '@/api/operators'
-
-const authStore = useAuthStore()
-
-const props = defineProps({
-    clientTypeList: {
-        type: Array,
-        default: []
-    },
-})
+import {partnerApi} from '@/api/partners'
 
 const emit = defineEmits(['add-item'])
 
 const form = reactive({
-    clientType: '',
-    clientName: '',
+    clientType: 'Выберите тип',
+    clientName: 'Выберите наименование',
     comment: ''
 })
 const clientNameList = ref([])
 
 function pushForm() {
     emit('add-item', { ...form })
-    
-    // Object.assign(form, {
-    //     fullname: '',
-    //     email: '',
-    //     phone: '',
-    //     comment: ''
-    // })
 }
 watch(() => form.clientType, (newVal) => {
     if (isMounted.value) pushForm()
@@ -44,17 +27,8 @@ watch(() => form.comment, (newVal) => {
 
 onMounted(async () => {
     try {
-        clientNameList.value = Object.values(await fetchOperators())
-        
-        // Добавляем проверку на null/undefined
-        if (authStore.operators) {
-            form.clientType = authStore.operators.type || ''
-            form.clientName = authStore.operators.name || ''
-        } else {
-            // Устанавливаем значения по умолчанию
-            form.clientType = ''
-            form.clientName = ''
-        }
+        const response = (await partnerApi.fetchData()).data
+        clientNameList.value = response.map(item => item.name)
     } catch (err) {
         console.error('Ошибка:', err)
         // Также устанавливаем значения по умолчанию при ошибке
@@ -71,17 +45,13 @@ onMounted(async () => {
                 <div class="info-item">
                     <label class="info-label">Тип Заказчика</label>
                     <div class="filter-item">
-                        <div class="custom-select">
-                            <UDropdown v-model="form.clientType" :list="props.clientTypeList"/>
-                        </div>
+                        <UDropdown v-model="form.clientType" :list="['Физ.лицо', 'Юр.лицо']"/>
                     </div>
                 </div>
                 <div class="info-item">
                     <label class="info-label">Наименование Заказчика</label>
                     <div class="filter-item">
-                        <div class="custom-select">
-                            <UDropdown v-model="form.clientName" :list="clientNameList" :withSearch="true"/>
-                        </div>
+                        <UDropdown v-model="form.clientName" :list="clientNameList" :withSearch="true"/>
                     </div>
                 </div>
             </div>
@@ -93,4 +63,59 @@ onMounted(async () => {
         </div>
     </div>
 </template>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.section {
+    margin-bottom: 30px;
+}
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #353535;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+.filters {
+    background: #fff;
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.customer-info {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+.info-item {
+    margin-bottom: 12px;
+}
+.info-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+    display: block;
+}
+.info-value {
+    font-size: 14px;
+    color: #353535;
+    font-weight: 500;
+}
+.info-grid.grid-n {
+    grid-template-columns: 150px 1fr;
+}
+.input-field {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f8fafc;
+}
+</style>
