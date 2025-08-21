@@ -7,6 +7,7 @@ const props = defineProps({
     touristCount: Number,
     maximumCountPlaces: Number
 })
+const emit = defineEmits(['accommodation-selected', 'update:selectedOption']);
 
 const innerTouristCount = ref(props.touristCount || 1)
 const availableRoomTypes = ref([
@@ -127,6 +128,53 @@ function isOptionSelected(option) {
     return selectedOption.value === option;
 }
 
+function emitSelectedOption() {
+    if (selectedOption.value) {
+        // Отправляем выбранный вариант родителю
+        emit('accommodation-selected', selectedOption.value);
+        
+        // Или если используете v-model:
+        emit('update:selectedOption', selectedOption.value);
+        
+        console.log('Отправлено родителю:', selectedOption.value);
+    } else {
+        console.warn('Не выбран вариант размещения');
+        // Можно показать сообщение пользователю
+        alert('Пожалуйста, выберите вариант размещения');
+    }
+}
+
+function getAccommodationString(option) {
+    if (!option) return '';
+    
+    const parts = [];
+    
+    // Проходим по всем типам номеров в варианте
+    Object.entries(option).forEach(([roomType, count]) => {
+        if (count > 0) {
+            const room = availableRoomTypes.value.find(r => r.type === roomType);
+            if (room) {
+                parts.push(`${room.name} ×${count}`);
+            }
+        }
+    });
+    
+    // Добавляем общее количество туристов
+    const totalPeople = calculateTotalPeople(option);
+    if (parts.length > 0) {
+        return `${parts.join(' + ')} / ${totalPeople} турист${getPeopleEnding(totalPeople)}`;
+    }
+    
+    return '';
+}
+
+// Функция для правильного окончания слова "турист"
+function getPeopleEnding(count) {
+    if (count % 10 === 1 && count % 100 !== 11) return '';
+    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'а';
+    return 'ов';
+}
+
 watch(innerTouristCount, (newValue) => {
     if (newValue < 1) innerTouristCount.value = 1;
     calculateOptions();
@@ -191,33 +239,34 @@ onMounted(() => {
                     <label class="info-label">Варианты размещения</label>
                     <div class="placement-options">
                         <!-- Динамические варианты размещения с фильтрацией -->
-                        <label 
-                            class="placement-option"
-                            v-for="(option, index) in filteredAccommodationOptions"
-                            :key="index"
-                            @click="selectOption(option)"
-                        >
-                            <input type="checkbox" :checked="isOptionSelected(option)">
-                            <div class="bed-icons-inline">
-                                <template v-for="roomType in availableRoomTypes" :key="roomType.type">
-                                    <template v-if="option[roomType.type] > 0">
+                            <div class="placement-options">
+                            <label 
+                                class="placement-option"
+                                v-for="(option, index) in filteredAccommodationOptions"
+                                :key="index"
+                            >
+                                <input type="checkbox" :checked="isOptionSelected(option)" @change="selectOption(option)">
+                                <div class="bed-groups-container">
+                                    <!-- Группируем кровати по типам номеров с отступами -->
+                                    <template v-for="roomType in availableRoomTypes" :key="roomType.type">
                                         <div 
-                                            v-for="n in option[roomType.type]" 
-                                            :key="n"
-                                            class="bed-with-tooltip"
-                                            :title="roomType.name"
+                                            v-if="option[roomType.type] > 0"
+                                            class="bed-group"
+                                            :class="`group-${roomType.type}`"
                                         >
-                                            <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
+                                            <div 
+                                                v-for="n in option[roomType.type]" 
+                                                :key="n"
+                                                class="bed-icon"
+                                                :title="roomType.name"
+                                            >
+                                                <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
+                                            </div>
                                         </div>
                                     </template>
-                                </template>
-                            </div>
-                            <span class="placement-text">x{{ getTotalRooms(option) }}</span>
-                        </label>
-                        
-                        <!-- Заглушка если нет вариантов -->
-                        <div v-if="filteredAccommodationOptions.length === 0" class="no-options">
-                            Нет вариантов для {{ innerTouristCount }} туристов
+                                </div>
+                                <span class="placement-text">x{{ getTotalRooms(option) }}</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -225,12 +274,13 @@ onMounted(() => {
                     <UButton 
                         text="Выбрать"
                         size="small"
+                        @click="emitSelectedOption"
                     />
-                    <UButton 
+                    <!-- <UButton 
                         text="Выбрано"
                         size="small"
                         variant="secondary"
-                    />
+                    /> -->
                 </div>
             </div>
         </div>
@@ -252,11 +302,10 @@ onMounted(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="bed-i-tabel">
+                        <!-- <tr class="bed-i-tabel">
                             <td colspan="5">
-                                <img src="/svg/bed-i.svg"> Двухместный номер / 2 туриста
                             </td>
-                        </tr>
+                        </tr> -->
                         <tr>
                             <td data-column="pilgrims-count">Петрова А.К.</td>
                             <td data-column="manager">sdfg@gmail.com</td>
@@ -776,5 +825,67 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     padding: 10px;
     color: #999;
     font-style: italic;
+}
+.bed-groups-container {
+    display: flex;
+    gap: 8px; /* Отступ между группами разных типов номеров */
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 80px;
+}
+
+.bed-group {
+    display: flex;
+    gap: 1px; /* Маленький отступ между кроватями внутри одной группы */
+    align-items: center;
+}
+
+/* Специфичные отступы для разных типов номеров */
+.bed-group.group-single {
+    margin-right: 6px;
+}
+
+.bed-group.group-double {
+    margin: 0 4px;
+}
+
+.bed-group.group-double_extra {
+    margin-left: 6px;
+}
+
+.bed-with-tooltip {
+    position: relative;
+    display: inline-flex;
+}
+
+.bed-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.placement-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 70px;
+}
+
+.placement-option:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.placement-text {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
 }
 </style>
