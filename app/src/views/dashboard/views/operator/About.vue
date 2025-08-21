@@ -3,7 +3,7 @@
 import { defineProps } from 'vue'
 
 const props = defineProps({
-    operator: Object,
+    operator: [Object, String],
 })
 </script>
 <template>
@@ -58,8 +58,6 @@ const props = defineProps({
                 </div>
             </div>
         </div>
-
-        
     </div>
 </template>
 

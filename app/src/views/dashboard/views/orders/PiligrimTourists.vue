@@ -5,7 +5,8 @@ import UButton from '@/components/ui/UButton.vue';
 
 const props = defineProps({
     touristCount: Number,
-    maximumCountPlaces: Number
+    maximumCountPlaces: Number,
+    touristsInfo: Array
 })
 const emit = defineEmits(['accommodation-selected', 'update:selectedOption']);
 
@@ -306,14 +307,14 @@ onMounted(() => {
                             <td colspan="5">
                             </td>
                         </tr> -->
-                        <tr>
-                            <td data-column="pilgrims-count">Петрова А.К.</td>
-                            <td data-column="manager">sdfg@gmail.com</td>
-                            <td data-column="places-limit">+7 123-123-1234</td>
+                        <tr v-for="item in touristsInfo">
+                            <td data-column="pilgrims-count">{{ item.lastname }} {{ item.firstname[0] }}. {{ item.patronymic[0] }}.</td>
+                            <td data-column="manager">{{ item.email }}</td>
+                            <td data-column="places-limit">{{ item.phone }}</td>
                             <td data-column="request-status">
-                                <div class="status-item">
+                                <!-- <div class="status-item">
                                     <span class="status-name">В работе</span>
-                                </div>
+                                </div> -->
                             </td>
                             <td style="width:100px;">
                                 <div class="actions-container">

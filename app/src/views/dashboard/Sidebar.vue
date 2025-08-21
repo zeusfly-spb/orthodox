@@ -3,7 +3,6 @@
 import { catalog, paragraph } from '@/composables/sidebar.js';
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router';
-import EntityForm from '@/components/dashboard/entities/EntityForm.vue'
 
 const selectedItem = ref(5)
 const route = useRoute();

@@ -1,23 +1,68 @@
 <script setup>
-import FilesTable from '@/views/dashboard/FilesTable.vue'
+
+import { onMounted, ref } from 'vue';
+import { filesApi } from '@/api/files'
+import { format } from 'date-fns';
+
+const files = ref('')
+const titleList = ['Наименование документа', 'Пользователи, имеющие доступ', 'Дата загрузки', '']
+
+onMounted(async() => {
+    files.value = await filesApi.fetchData()
+})
 </script>
 <template>
-<div class="tab-content" id="files-tab">
-    <div class="profile-section">
-        <div class="table-wrapper2">
-            <FilesTable />
-        </div>
-        <!-- <div class="pagination-all">
-            <div class="nmumber-itt">1/2</div>
-            <div class="pagination">
-                <button class="page-btn">Назад</button>
-                <button class="page-btn active">Далее</button>
-            </div>
-        </div> -->
-    </div>
-</div>
+    <table class="users-table">
+        <thead class="users-table__head">
+            <tr class="users-table__title">
+                <th v-for="title in titleList" >{{ title }}</th>
+            </tr>
+        </thead>
+        <tbody class="users-table__body">
+            <tr v-for="file in files" class="users-table__body-row">
+                <td>
+                    <div class="name-dog">
+                        <div><img src="/svg/dog.svg"></div>
+                        <div>
+                            <div class="name-dogov-tab">{{ file.original_name }}</div>
+                            <!-- <div class="avtor-dog-tab">Автор: Олег Киселев </div> -->
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <!-- <div class="stacked-avatars2">
+                        <div class="avatar3">MK</div>
+                        <div class="avatar3">OB</div>
+                        <div class="avatar3">MM</div>
+                        <span class="plus-count">+4</span>
+                    </div> -->
+                </td>
+                <td>
+                    <div class="date-rekz">{{ format(new Date(file.updated_at), 'dd.MM.yyyy') }}</div>
+                </td>
+                <td>
+                    <div class="actions-container">
+                        <div class="user-actions">
+                            <button class="edit-btn">
+                                <img src="/svg/pencil.svg" alt="edit">
+                            </button>
+                            <button class="more-btn">
+                                <img src="/svg/more-horiz.svg" alt="edit">
+                            </button>
+                        </div>
+                        <!-- <div class="actions-dropdown">
+                            <a href="#" class="dropdown-item">Очистить сессию</a>
+                            <a href="#" class="dropdown-item">Войти как</a>
+                            <a href="#" class="dropdown-item">Изменить пароль</a>
+                            <a href="#" class="dropdown-item">Деактивировать</a>
+                            <a href="#" class="dropdown-item">Удалить пользователя</a>
+                        </div> -->
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </template>
-
 <style scoped lang="scss">
 /*FAQ*/
 .date-rekz {

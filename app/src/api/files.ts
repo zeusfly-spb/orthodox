@@ -1,7 +1,3 @@
-import api from './httpClient'
-import type { File } from '@/types/file'
+import { createApiClient } from '@/api/generic'
 
-export const fetchFiles = async (): Promise<{ data: File[] }> => {
-  const { data } = await api.get<{ data: File[] }>('/manage/operator/uploads')
-  return data
-}
+export const filesApi = createApiClient('operator/uploads')

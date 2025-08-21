@@ -43,6 +43,9 @@ const props = defineProps({
 </template>
 <style lang="scss" scoped>
 .btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-weight: 500;
     font-size: 16px;
     cursor: pointer;

@@ -118,7 +118,7 @@ onMounted(() => {
         <div class="users-toolbar">
             <div class="search-container">
                 <UInput
-                    inputHeightPx="48"
+                    :inputHeightPx="48"
                     placeholder="Поиск по пользователям"
                     svgPath="/svg/search.svg" 
                     v-model="searchQuery"
