@@ -146,6 +146,7 @@ onMounted(() => matchRouteName())
 }
 
 .menu-text {
+    margin-top: 3px;
     white-space: nowrap;
 }
 

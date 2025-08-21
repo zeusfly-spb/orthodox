@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, watch, computed } from 'vue';
+import { ref, defineProps, watch, computed, defineEmits } from 'vue';
 
 const props = defineProps({
     name: String,
@@ -11,14 +11,11 @@ const props = defineProps({
     imgSrc: String
 })
 
+const emit = defineEmits(['update:inputValue']);
+
 // Всегда начинаем с полной оплаты, нельзя быть null
 const payType = ref('full')
 const inputValue = ref('');
-
-// Функция установки типа оплаты - нельзя снять выбор
-function setPayType(type) {
-    payType.value = type;
-}
 
 const displayValue = computed({
     get: () => {
