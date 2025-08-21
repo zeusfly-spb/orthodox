@@ -1,30 +1,68 @@
 <script setup>
 import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed } from 'vue';
-import UDropdown from '@/components/ui/UDropdown.vue';
 import UInput from '@/components/ui/UInput.vue';
 import UButton from '@/components/ui/UButton.vue';
 
 const props = defineProps({
     touristCount: Number,
+    maximumCountPlaces: Number
 })
 
-const innerTouristCount = ref(props.touristCount || 0)
+const innerTouristCount = ref(props.touristCount || 1)
 const availableRoomTypes = ref([
     { type: 'single', name: 'Одноместный', capacity: 1, available: 10 },
     { type: 'double', name: 'Двухместный', capacity: 2, available: 5 },
     { type: 'double_extra', name: 'Двухместный с доп. местом', capacity: 3, available: 3 }
 ])
+
+// Добавляем состояние для выбранных типов номеров
+const enabledRoomTypes = ref(['single', 'double', 'double_extra']) // По умолчанию все включены
+
 const accommodationOptions = ref([])
+const selectedOption = ref(null)
+
+// Вычисляемое свойство для отфильтрованных вариантов
+const filteredAccommodationOptions = computed(() => {
+    return accommodationOptions.value.filter(option => {
+        // Проверяем, что вариант использует только включенные типы номеров
+        return Object.keys(option).every(roomType => 
+            option[roomType] === 0 || enabledRoomTypes.value.includes(roomType)
+        )
+    })
+})
 
 function calculateOptions() {
+    if (innerTouristCount.value < 1) {
+        accommodationOptions.value = [];
+        return;
+    }
     accommodationOptions.value = findAccommodationOptions(
         innerTouristCount.value,
-        availableRoomTypes.value
+        availableRoomTypes.value.filter(room => enabledRoomTypes.value.includes(room.type))
     );
-    console.log('Options calculated:', accommodationOptions.value);
 }
 
-// Исправленная функция
+// Функции для работы с типами номеров
+function isRoomTypeEnabled(roomType) {
+    return enabledRoomTypes.value.includes(roomType);
+}
+
+function toggleRoomType(roomType, isEnabled) {
+    if (isEnabled) {
+        // Добавляем тип, если его нет в списке
+        if (!enabledRoomTypes.value.includes(roomType)) {
+            enabledRoomTypes.value.push(roomType);
+        }
+    } else {
+        // Удаляем тип из списка
+        enabledRoomTypes.value = enabledRoomTypes.value.filter(type => type !== roomType);
+    }
+    
+    // Пересчитываем варианты при изменении фильтра
+    calculateOptions();
+}
+
+// Остальные функции остаются без изменений
 function findAccommodationOptions(people, roomTypes, currentCombination = {}, index = 0) {
     if (people === 0) {
         return [{ ...currentCombination }];
@@ -41,7 +79,6 @@ function findAccommodationOptions(people, roomTypes, currentCombination = {}, in
         room.available
     );
     
-    // Пробуем все возможные количества текущего типа комнаты (включая 0)
     for (let count = 0; count <= maxRooms; count++) {
         const peopleCovered = count * room.capacity;
         
@@ -51,7 +88,6 @@ function findAccommodationOptions(people, roomTypes, currentCombination = {}, in
                 [room.type]: count
             };
             
-            // Рекурсивно ищем варианты для оставшихся людей и комнат
             const remainingResults = findAccommodationOptions(
                 people - peopleCovered,
                 roomTypes,
@@ -71,9 +107,8 @@ function getRoomName(roomType) {
     return room ? room.name : roomType;
 }
 
-function getRoomCapacity(roomType) {
-    const room = availableRoomTypes.value.find(r => r.type === roomType);
-    return room ? room.capacity : 0;
+function getTotalRooms(option) {
+    return Object.values(option).reduce((total, count) => total + count, 0);
 }
 
 function calculateTotalPeople(option) {
@@ -83,25 +118,28 @@ function calculateTotalPeople(option) {
     }, 0);
 }
 
-const maxRooms = computed(() => 
-    Math.ceil(innerTouristCount.value / Math.min(...availableRoomTypes.value.map(r => r.capacity)))
-)
+function selectOption(option) {
+    selectedOption.value = option;
+    console.log('Выбран вариант:', option);
+}
 
-// Исправленные watch
+function isOptionSelected(option) {
+    return selectedOption.value === option;
+}
+
 watch(innerTouristCount, (newValue) => {
-    console.log('innerTouristCount changed:', newValue);
+    if (newValue < 1) innerTouristCount.value = 1;
     calculateOptions();
+    selectedOption.value = null;
 });
 
 watch(() => props.touristCount, (newValue) => {
-    console.log('props.touristCount changed:', newValue);
-    if (newValue !== undefined) {
+    if (newValue !== undefined && newValue >= 1) {
         innerTouristCount.value = newValue;
     }
 });
 
 onMounted(() => {
-    console.log('Component mounted, calculating options...');
     calculateOptions();
 });
 </script>
@@ -127,7 +165,11 @@ onMounted(() => {
                     :key="room.type"
                 >
                     <label class="room-type-option">
-                        <input type="checkbox" :checked="index === 0">
+                        <input 
+                            type="checkbox" 
+                            :checked="isRoomTypeEnabled(room.type)"
+                            @change="toggleRoomType(room.type, $event.target.checked)"
+                        >
                         <span class="custom-checkbox"></span>
                         <span class="room-type-text">
                             <span class="bed-icons-inline">
@@ -148,34 +190,33 @@ onMounted(() => {
                 <div>
                     <label class="info-label">Варианты размещения</label>
                     <div class="placement-options">
-                        <!-- Динамические варианты размещения -->
+                        <!-- Динамические варианты размещения с фильтрацией -->
                         <label 
                             class="placement-option"
-                            v-for="(option, index) in accommodationOptions"
+                            v-for="(option, index) in filteredAccommodationOptions"
                             :key="index"
                             @click="selectOption(option)"
                         >
-                        <!-- :checked="isOptionSelected(option)" -->
-                            <input type="checkbox">
+                            <input type="checkbox" :checked="isOptionSelected(option)">
                             <div class="bed-icons-inline">
-                                <template v-for="(count, roomType) in option" :key="roomType">
-                                    <template v-if="count > 0">
-                                        <img 
-                                            v-for="n in count" 
-                                            :key="`${roomType}-${n}`"
-                                            src="/svg/bedd.svg" 
-                                            alt="кровать"
-                                            class="bed-icon"
-                                            :title="getRoomName(roomType)"
+                                <template v-for="roomType in availableRoomTypes" :key="roomType.type">
+                                    <template v-if="option[roomType.type] > 0">
+                                        <div 
+                                            v-for="n in option[roomType.type]" 
+                                            :key="n"
+                                            class="bed-with-tooltip"
+                                            :title="roomType.name"
                                         >
-                                        <span class="placement-text">x{{ count }}</span>
+                                            <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
+                                        </div>
                                     </template>
                                 </template>
                             </div>
+                            <span class="placement-text">x{{ getTotalRooms(option) }}</span>
                         </label>
                         
                         <!-- Заглушка если нет вариантов -->
-                        <div v-if="accommodationOptions.length === 0" class="no-options">
+                        <div v-if="filteredAccommodationOptions.length === 0" class="no-options">
                             Нет вариантов для {{ innerTouristCount }} туристов
                         </div>
                     </div>
@@ -692,5 +733,48 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
 .room-types-options .bed-icon {
     width: 14px;
     height: 14px;
+}
+
+.room-type-option input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.custom-checkbox {
+    /* Ваши стили для кастомного чекбокса */
+}
+
+/* Остальные стили остаются без изменений */
+.bed-icons-inline {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2px;
+}
+
+.bed-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.placement-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.placement-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.no-options {
+    padding: 10px;
+    color: #999;
+    font-style: italic;
 }
 </style>

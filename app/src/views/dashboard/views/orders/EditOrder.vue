@@ -191,7 +191,7 @@ onMounted(async () => {
                     />
 
                     <Client />
-                    <PiligrimTourists :touristCount="formFields.counts.people" />
+                    <PiligrimTourists :touristCount="formFields.counts.people" :maximumCountPlaces="formFields.counts.freePlaces" />
 
                     <div class="section filters">
                         <h2 class="section-title">Документы</h2>
