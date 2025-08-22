@@ -1,32 +1,42 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {ref, watch, computed} from 'vue'
+import {Card, CardContent, CardFooter} from '@/components/ui/card'
+import {Button} from '@/components/ui/button'
+import {Input} from '@/components/ui/input'
 
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
 
 import DataTable from '@/components/dashboard/tours/DataTable.vue'
 import TourForm from '@/components/dashboard/tours/TourForm.vue'
 
-import { tourApi } from '@/api/tours'
-import { useCrudActions } from '@/composables/useCrudActions'
+import {tourApi} from '@/api/tours'
+import {useCrudActions} from '@/composables/useCrudActions'
 
 import Pagination from '@/components/app/Pagination.vue'
-import { useRoute } from 'vue-router'
+import {useRoute} from 'vue-router'
 
-import { usePaginationFilters } from '@/composables/usePaginationFilters'
+import {usePaginationFilters} from '@/composables/usePaginationFilters'
 import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
-import { ArrowDownToLine, X, ArrowDownUp, Pencil } from 'lucide-vue-next'
+import {ArrowDownToLine, X, ArrowDownUp, Pencil} from 'lucide-vue-next'
 
-import { useRouter } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
+import {useRouter} from 'vue-router'
+import {Badge} from '@/components/ui/badge'
 import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
 import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
+
+import api from '@/api/httpClient';
+
 
 const route = useRoute()
 const router = useRouter()
 const searchString = ref('');
+const params = ref({});
+const dayCount = ref('');
+const pilCount = ref('');
+const tourTypeId = ref(0);
+const tourTypes = ref([]);
+const tourCategories = ref([]);
+const tourCategoryId = ref(0);
 
 // Инициализация с дефолтными фильтрами
 const {
@@ -57,7 +67,29 @@ const {
 } = useCrudActions(tourApi, {
   successMessage: 'Данные сохранены',
   deleteMessage: 'Данные удалены'
-})
+});
+
+const getParams = async () => {
+  const {data} = await api.get('/manage/tours/parameters');
+  tourTypes.value = data.data.find(item => item.slug === 'tour-types').children;
+  tourCategories.value = data.data.find(item => item.slug === 'tour-categories').children;
+  params.value = data.data;
+};
+
+const handleAddTour = () => {
+  router.push({name: 'tour-create'})
+}
+
+const handleEditTour = (id: string | number) => {
+  router
+    .push({
+      name: 'tour-edit',
+      params: {id: String(id)}
+    })
+    .catch((err) => {
+      console.error('Navigation error:', err)
+    })
+}
 
 // Загрузка данных при изменении фильтров
 watch(
@@ -65,23 +97,8 @@ watch(
   (newFilters) => {
     loadCollection(newFilters);
   },
-  { immediate: true }
-)
-
-const handleAddTour = () => {
-  router.push({ name: 'tour-create' })
-}
-
-const handleEditTour = (id: string | number) => {
-  router
-    .push({
-      name: 'tour-edit',
-      params: { id: String(id) }
-    })
-    .catch((err) => {
-      console.error('Navigation error:', err)
-    })
-}
+  {immediate: true}
+);
 
 watch(searchString, val => {
   if (val.length > 2) {
@@ -91,6 +108,26 @@ watch(searchString, val => {
     loadCollection();
   }
 });
+
+watch(tourTypeId, val => {
+  if (val > 0) {
+    const newFilter = {'filter[tourType.id]': val};
+    loadCollection(newFilter);
+  } else {
+    loadCollection();
+  }
+});
+
+watch(tourCategoryId, val => {
+  if (val > 0) {
+    const newFilter = {'filter[tourCategory.id]': val};
+    loadCollection(newFilter);
+  } else {
+    loadCollection();
+  }
+});
+
+getParams();
 </script>
 
 <template>
@@ -110,7 +147,7 @@ watch(searchString, val => {
                 class="bg-white text-emerald-500 border-emerald-500 shadow hover:bg-emerald-500/90 hover:text-white px-8 py-6 touchable"
                 @click="handleAddTour"
               >
-                <ArrowDownToLine />
+                <ArrowDownToLine/>
                 Скачать отчет
               </Button>
               <Button
@@ -125,7 +162,7 @@ watch(searchString, val => {
               <span
                 class="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white mr-4">
               <svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8"
-                                                              fill="gray" /></svg>
+                                                              fill="gray"/></svg>
               </span>
             <div>
               <div class="font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit</div>
@@ -136,7 +173,7 @@ watch(searchString, val => {
             </div>
             <button class="ml-auto text-gray-400 hover:text-gray-600">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" />
+                <path d="M6 18L18 6M6 6l12 12" stroke="currentColor"/>
               </svg>
             </button>
           </div>
@@ -147,15 +184,27 @@ watch(searchString, val => {
               class="border rounded-xl px-3 py-2 w-64"
               v-model="searchString"
             />
-            <select class="border rounded-xl px-2 py-2">
-              <option>1 день</option>
+
+            <select
+              class="border rounded-xl px-2 py-2"
+              v-model="dayCount"
+            >
+              <option value="">Длительность</option>
+              <option value="1">1 день</option>
+              <option value="2">2 дня</option>
             </select>
-            <select class="border rounded-xl px-2 py-2">
-              <option>1 паломник</option>
+
+            <select
+              class="border rounded-xl px-2 py-2"
+              v-model="pilCount"
+            >
+              <option value="">Паломников</option>
+              <option value="1">1 паломник</option>
+              <option value="2">2 паломника</option>
             </select>
-            
+
             <div class="flex border border-gray-300 rounded-[12px] overflow-hidden w-fit h-9">
-              <div class="flex items-center px-3 border-r border-gray-300 bg-white" >
+              <div class="flex items-center px-3 border-r border-gray-300 bg-white">
                 <input
                   type="number"
                   placeholder="Цена от"
@@ -173,16 +222,36 @@ watch(searchString, val => {
               </div>
             </div>
 
-            <select class="border rounded-xl px-2 py-2">
-              <option>Тип тура</option>
+            <select
+              class="border rounded-xl px-2 py-2"
+              v-model="tourTypeId"
+            >
+              <option value="0">Тип тура</option>
+              <option
+                v-for="type in tourTypes"
+                :key="`type-option-${type.id}`"
+                :value="type.id"
+              >
+                {{ type.title }}
+              </option>
             </select>
-            <select class="border rounded-xl px-2 py-2">
-              <option>Категория тура</option>
+            <select
+              class="border rounded-xl px-2 py-2"
+              v-model="tourCategoryId"
+            >
+              <option value="0">Категория тура</option>
+              <option
+                v-for="category in tourCategories"
+                :key="`category-option-${category.id}`"
+                :value="category.id"
+              >
+                {{ category.title }}
+              </option>
             </select>
           </div>
-          <TourListTags />
+          <TourListTags/>
           <TourListSort
-            :items = "items"
+            :items="items"
           />
         </div>
         <DataTable
