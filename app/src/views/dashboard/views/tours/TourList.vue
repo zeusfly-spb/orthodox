@@ -23,11 +23,17 @@ import { ArrowDownToLine, X, ArrowDownUp, Pencil } from 'lucide-vue-next'
 
 
 // Инициализация с дефолтными фильтрами
-const { filters, complexFilters, applyFilters, resetFilters, handlePageChange, currentPage } =
-  usePaginationFilters({
-    search: '',
-    status: ''
-  })
+const {
+  filters,
+  complexFilters,
+  applyFilters,
+  resetFilters,
+  handlePageChange,
+  currentPage
+} = usePaginationFilters({
+  search: '',
+  status: ''
+})
 
 const {
   isLoading,
