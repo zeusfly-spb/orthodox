@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,12 +15,18 @@ import { useCrudActions } from '@/composables/useCrudActions'
 import Pagination from '@/components/app/Pagination.vue'
 import { useRoute } from 'vue-router'
 
-const route = useRoute()
-
 import { usePaginationFilters } from '@/composables/usePaginationFilters'
 import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
 import { ArrowDownToLine, X, ArrowDownUp, Pencil } from 'lucide-vue-next'
 
+import { useRouter } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
+import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
+import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
+
+const route = useRoute()
+const router = useRouter()
+const searchString = ref('');
 
 // Инициализация с дефолтными фильтрами
 const {
@@ -57,17 +63,10 @@ const {
 watch(
   complexFilters,
   (newFilters) => {
-    loadCollection(newFilters)
+    loadCollection(newFilters);
   },
   { immediate: true }
 )
-
-import { useRouter } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
-import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
-import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
-
-const router = useRouter()
 
 const handleAddTour = () => {
   router.push({ name: 'tour-create' })
@@ -83,6 +82,15 @@ const handleEditTour = (id: string | number) => {
       console.error('Navigation error:', err)
     })
 }
+
+watch(searchString, val => {
+  if (val.length > 2) {
+    const newFilter = {'filter[title]': val};
+    loadCollection(newFilter);
+  } else {
+    loadCollection();
+  }
+});
 </script>
 
 <template>
@@ -137,6 +145,7 @@ const handleEditTour = (id: string | number) => {
               type="text"
               placeholder="Поиск по турам..."
               class="border rounded-xl px-3 py-2 w-64"
+              v-model="searchString"
             />
             <select class="border rounded-xl px-2 py-2">
               <option>1 день</option>
@@ -144,7 +153,7 @@ const handleEditTour = (id: string | number) => {
             <select class="border rounded-xl px-2 py-2">
               <option>1 паломник</option>
             </select>
-
+            
             <div class="flex border border-gray-300 rounded-[12px] overflow-hidden w-fit h-9">
               <div class="flex items-center px-3 border-r border-gray-300 bg-white" >
                 <input
