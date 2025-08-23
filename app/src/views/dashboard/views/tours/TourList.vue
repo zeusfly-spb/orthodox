@@ -25,8 +25,6 @@ import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
 import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
 
 import api from '@/api/httpClient';
-import Spinner from "@/components/app/Spinner.vue";
-
 
 const route = useRoute()
 const router = useRouter()
