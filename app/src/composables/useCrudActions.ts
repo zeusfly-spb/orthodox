@@ -22,6 +22,7 @@ export const useCrudActions = <T>(
 
   const loadCollection = async (params?: Record<string, unknown>) => {
     try {
+      isLoading.value = true
       await getAll(params)
       isLoading.value = false
     } catch (error) {

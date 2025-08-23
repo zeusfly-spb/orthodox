@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch, computed} from 'vue'
+import {ref, watch, computed, reactive} from 'vue'
 import {Card, CardContent, CardFooter} from '@/components/ui/card'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
@@ -25,18 +25,25 @@ import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
 import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
 
 import api from '@/api/httpClient';
+import Spinner from "@/components/app/Spinner.vue";
 
 
 const route = useRoute()
 const router = useRouter()
-const searchString = ref('');
 const params = ref({});
-const dayCount = ref('');
-const pilCount = ref('');
-const tourTypeId = ref(0);
+
 const tourTypes = ref([]);
 const tourCategories = ref([]);
-const tourCategoryId = ref(0);
+const tourTransports = ref([]);
+
+const queryParams = reactive({
+  searchString: {param: 'filter[title]', value: ''},
+  dayCount: {param: '', value: ''},
+  pilCount: {param: '', value: ''},
+  tourTypeId: {param: 'filter[tourType.id]', value: 0},
+  tourCategoryId: {param: 'filter[tourCategory.id]', value: 0},
+  tourTransportId: {param: 'filter[tourTransport.id]', value: 0},
+});
 
 // Инициализация с дефолтными фильтрами
 const {
@@ -73,6 +80,7 @@ const getParams = async () => {
   const {data} = await api.get('/manage/tours/parameters');
   tourTypes.value = data.data.find(item => item.slug === 'tour-types').children;
   tourCategories.value = data.data.find(item => item.slug === 'tour-categories').children;
+  tourTransports.value = data.data.find(item => item.slug === 'tour-transports').children;
   params.value = data.data;
 };
 
@@ -100,30 +108,22 @@ watch(
   {immediate: true}
 );
 
-watch(searchString, val => {
-  if (val.length > 2) {
-    const newFilter = {'filter[title]': val};
-    loadCollection(newFilter);
-  } else {
-    loadCollection();
-  }
-});
+watch(queryParams, val => {
+  let filters = {};
+  Object.keys(val).forEach(key => {
+    if (!!val[key].value && val[key].value !== '0') {
+      if (key === 'searchString' && val[key].value.length < 3) {
+        return;
+      }
+      filters[val[key].param] = val[key].value;
+    }
+  });
+  loadCollection(filters);
+}, {immediate: true, deep: true});
 
-watch(tourTypeId, val => {
-  if (val > 0) {
-    const newFilter = {'filter[tourType.id]': val};
-    loadCollection(newFilter);
-  } else {
-    loadCollection();
-  }
-});
-
-watch(tourCategoryId, val => {
-  if (val > 0) {
-    const newFilter = {'filter[tourCategory.id]': val};
-    loadCollection(newFilter);
-  } else {
-    loadCollection();
+watch(isLoading, val => {
+  if (val) {
+    console.log('LOADING...');
   }
 });
 
@@ -182,12 +182,12 @@ getParams();
               type="text"
               placeholder="Поиск по турам..."
               class="border rounded-xl px-3 py-2 w-64"
-              v-model="searchString"
+              v-model="queryParams.searchString.value"
             />
 
             <select
               class="border rounded-xl px-2 py-2"
-              v-model="dayCount"
+              v-model="queryParams.dayCount.value"
             >
               <option value="">Длительность</option>
               <option value="1">1 день</option>
@@ -196,7 +196,7 @@ getParams();
 
             <select
               class="border rounded-xl px-2 py-2"
-              v-model="pilCount"
+              v-model="queryParams.pilCount.value"
             >
               <option value="">Паломников</option>
               <option value="1">1 паломник</option>
@@ -224,7 +224,7 @@ getParams();
 
             <select
               class="border rounded-xl px-2 py-2"
-              v-model="tourTypeId"
+              v-model="queryParams.tourTypeId.value"
             >
               <option value="0">Тип тура</option>
               <option
@@ -235,9 +235,10 @@ getParams();
                 {{ type.title }}
               </option>
             </select>
+            
             <select
               class="border rounded-xl px-2 py-2"
-              v-model="tourCategoryId"
+              v-model="queryParams.tourCategoryId.value"
             >
               <option value="0">Категория тура</option>
               <option
@@ -248,6 +249,21 @@ getParams();
                 {{ category.title }}
               </option>
             </select>
+
+            <select
+              class="border rounded-xl px-2 py-2"
+              v-model="queryParams.tourTransportId.value"
+            >
+              <option value="0">Логистика тура</option>
+              <option
+                v-for="transport in tourTransports"
+                :key="`transport-option-${transport.id}`"
+                :value="transport.id"
+              >
+                {{ transport.title }}
+              </option>
+            </select>
+
           </div>
           <TourListTags/>
           <TourListSort
