@@ -4,7 +4,7 @@ import { Toaster } from 'vue-sonner'
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen app">
     <main class="flex flex-col min-h-screen">
       <RouterView />
     </main>
@@ -13,6 +13,14 @@ import { Toaster } from 'vue-sonner'
 </template>
 
 <style>
+.app {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 .touchable {
   cursor: pointer;
 }

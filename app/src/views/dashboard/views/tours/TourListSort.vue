@@ -19,7 +19,8 @@
 </template>
 
 <script setup>
-import { Badge } from '@/components/ui/badge/index.js'
+import { ArrowDownUp } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge/index.js';
 
 const props = defineProps({
   items: Array,

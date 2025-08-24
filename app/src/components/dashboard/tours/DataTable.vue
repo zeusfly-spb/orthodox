@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreHorizontal, Trash2, SquarePen, Pencil } from 'lucide-vue-next'
+import { MoreHorizontal, Trash2, SquarePen, Pencil, ArrowDownUp } from 'lucide-vue-next'
 import {
   Table,
   TableBody,
@@ -17,11 +17,55 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import Badge from "@/components/app/Badge.vue";
+import {computed, ref} from "vue";
 
 const props = defineProps<{
   isLoading: boolean
   collection?: any[] | undefined
-}>()
+}>();
+
+const priceSortDirection = ref('none');
+
+const tours = computed(() => {
+  let result = JSON.parse(JSON.stringify(props.collection));
+  if (priceSortDirection.value === 'asc') {
+    result.sort((a, b) => a.price - b.price);
+  } else if (priceSortDirection.value === 'desc') {
+    result.sort((a, b) => b.price - a.price);
+  }
+  return result;
+});
+
+const priceSortingTitle = computed(() => {
+  let result;
+  switch (priceSortDirection.value) {
+    case 'none':
+      result = 'Сортировать по возрастанию цены';
+      break;
+    case 'asc':
+      result = 'Сортировать по убыванию цены';
+      break;
+    case 'desc':
+      result = 'Отменить сортировку по цене';
+      break;
+  }
+  return result;
+});
+
+const changePriceSorting = () => {
+  switch (priceSortDirection.value) {
+    case 'none':
+      priceSortDirection.value = 'asc';
+      break;
+    case 'asc':
+      priceSortDirection.value = 'desc';
+      break;
+    case 'desc':
+      priceSortDirection.value = 'none';
+      break;
+  }
+};
 </script>
 
 <template>
@@ -38,12 +82,30 @@ const props = defineProps<{
         <TableHead>Логистика тура</TableHead>
         <TableHead>Кол-во ночей/дней</TableHead>
         <TableHead>Кол-во паломников</TableHead>
+        <TableHead>Статус</TableHead>
+        <TableHead>
+          <div
+            class="flex flex-row"
+          >
+            Цена
+            <div
+              :title="priceSortingTitle"
+            >
+              <ArrowDownUp
+                size="16"
+                class="mt-1 ml-1 touchable"
+                :class="{'text-gray-400': priceSortDirection === 'none'}"
+                @click="changePriceSorting"
+              />
+            </div>
+          </div>
+        </TableHead>
         <TableHead>Действия</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
       <TableRow
-        v-for="item in collection"
+        v-for="item in tours"
         :key="item.id"
         class="hover:bg-green-50/50"
       >
@@ -66,7 +128,17 @@ const props = defineProps<{
           {{ item.night_count || 0 }} / {{ item.night_count || 0 }}
         </TableCell>
         <TableCell>
-          ??
+          {{ item.customers_count }}
+        </TableCell>
+        <TableCell>
+          <Badge
+            v-if="item.tourStatus"
+            :caption="item.tourStatus?.title"
+            :type="item.tourStatus?.slug"
+          />
+        </TableCell>
+        <TableCell>
+          {{ item.price }}
         </TableCell>
         <TableCell>
           <TableCell>
@@ -96,4 +168,10 @@ const props = defineProps<{
       </TableRow>
     </TableBody>
   </Table>
+  <span
+    v-if="!collection?.length && !isLoading"
+    class="flex justify-center text-gray-500 mt-2"
+  >
+    По заданным параметрам туров не найдено
+  </span>
 </template>
