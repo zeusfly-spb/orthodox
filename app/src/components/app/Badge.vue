@@ -1,7 +1,7 @@
 <template>
   <span
     class="inline-flex items-center rounded-full px-3 py-1 mr-1 text-xs font-medium ring-1 ring-inset"
-    :class="`text-${color}-600 bg-${color}-50 ring-${color}-100`"
+    :class="type"
   >
     {{ caption }}
   </span>
@@ -19,5 +19,27 @@ const props = defineProps<{
     type: String
   }
 }>();
-const color = computed(() => ({opublikovano: 'emerald', 'ne-opublikovano': 'rose', bazovyi: 'amber', 'po-zaiavke': 'sky'}[props.type]));
 </script>
+
+<style scoped>
+.opublikovano {
+  color: #059669;
+  background-color: #ecfdf5;
+  --tw-ring-color: #d1fae5;
+}
+.ne-opublikovano {
+  color: #e11d48;
+  background-color: #fff1f2;
+  --tw-ring-color: #ffe4e6;
+}
+.bazovyi {
+  color: #d97706;
+  background-color: #fffbeb;
+  --tw-ring-color: #fed7aa;
+}
+.po-zaiavke {
+  color: #0284c7;
+  background-color: #f0f9ff;
+  --tw-ring-color: #e0f2fe;
+}
+</style>
