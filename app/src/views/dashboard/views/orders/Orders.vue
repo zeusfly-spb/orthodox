@@ -7,9 +7,9 @@ import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
-import { useOrderStore } from '@/stores/orders'
+import { useBookingStore } from '@/stores/booking'
 
-const orders = useOrderStore()
+const booking = useBookingStore()
 
 const isOpenModal = ref(false)
 
@@ -22,11 +22,6 @@ const filters = reactive({
 
 const statusList = ['Новая', 'В обработке', 'Подтверждена', 'Отклонена', 'Завершена']
 
-const state = reactive({
-  tours: [],
-  managers: []
-})
-
 async function loadAllData() {
   try {
     const [toursResponse, managersResponse] = await Promise.all([
@@ -34,7 +29,7 @@ async function loadAllData() {
       managerApi.fetchData()
     ]);
 
-    state.managers = managersResponse.data.map(m => m.name);
+    booking.managers = managersResponse.data.map(m => m.name);
 
     // Загружаем полные данные по каждому туру
     const toursWithDetails = await Promise.all(
@@ -44,12 +39,11 @@ async function loadAllData() {
     );
 
     // Объединяем базовую информацию с bookings
-    state.tours = toursResponse.data.map((tour, index) => ({
+    booking.orders = toursResponse.data.map((tour, index) => ({
       ...tour,
       bookings: toursWithDetails[index].bookings || []
     }));
 
-    orders.orders = state.tours
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
   }
@@ -90,7 +84,7 @@ onMounted(() => {
                     <div class="filters-scroll-container">
                         <div class="filters-grid">
                             <UDropdown :list="statusList" v-model="filters.status"/>
-                            <UDropdown :list="state.managers" v-model="filters.manager"/>
+                            <UDropdown :list="booking.managers" v-model="filters.manager"/>
 
                             <!-- Фильтр по периоду создания -->
                             <div class="filter-item">
@@ -192,7 +186,7 @@ onMounted(() => {
                 </div>
 
 
-                <div class="filters"  v-for="item in state.tours" :key="item.id">
+                <div class="filters"  v-for="item in booking.orders" :key="item.id">
                     <div class="page-header">
                         <div class="title-table-n-za">{{ item.title }}</div>
                         <div>
@@ -218,10 +212,10 @@ onMounted(() => {
                             <tbody>
                                 <tr v-for="(val, index) in item.bookings" :key="index">
                                     <td>
-                                        {{ item.dates[index].date_start }}
+                                        {{ item.dates[0].date_start }}
                                     </td>
                                     <td>
-                                        {{ item.dates[index].date_end }}
+                                        {{ item.dates[0].date_end }}
                                     </td>
                                     <td>
                                         {{ item.bookings[index].customers.length }}
