@@ -2,118 +2,61 @@
 
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { tourApi } from '@/api/tours';
-import { bookingApi } from '@/api/bookings'
 import UInput from '@/components/ui/UInput.vue'
 import UDropdown from '@/components/ui/UDropdown.vue'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover' 
 import { Button } from '@/components/ui/button'
 import { Calendar as CalendarIcon } from 'lucide-vue-next'
 import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { parseISO, min, max, format } from 'date-fns';
 import ContactPerson from './ContactPerson.vue';
 import Client from './Client.vue';
 import PiligrimTourists from './PiligrimTourists.vue';
 import ModalTag from './ModalTag.vue';
 import FilesTable from '../../FilesTable.vue';
 import MainInfo from './MainInfo.vue';
+import { useBookingStore } from '@/stores/booking';
 
+const bookingStore = useBookingStore()
 const route = useRoute();
-const orderId = route.params.id
-const toursTitlesArr = ref([])
+bookingStore.booking.id = route.params.id
+
 const isCalendarOpened = reactive({
     startDate: false,
     finishDate: false
 })
-const hasErrorAlert = ref(false)
-const formFields = reactive({
-    title: '',
-    tourId: '',
-    manager: '',
-    counts: {
-        nights: '',
-        freePlaces: '',
-        people: ''
-    },
-    dates: {
-        start: '',
-        finish: ''
-    },
-    guaranteeType: ''
-})
+
 const contacts = ref([])
 const formCount = ref(1)
-const mainInfo = reactive({
-    touristsInfo: '',
-    tourPrice: '',
-    date: '',
-    time: ''
-})
+
 function handleAddItem(newItem) {
     contacts.value.push(newItem)
     formCount.value++
 }
-function matchFromQuery(key, value) {
-  const keys = key.split('.');
-  let current = formFields;
-  
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!current[keys[i]]) {
-      current[keys[i]] = {}; 
-    }
-    current = current[keys[i]];
-  }
-  current[keys[keys.length - 1]] = value || 0;
-}
 
-onMounted(async () => {
-    try {
-        const [allToursData, bookingsResponse] = await Promise.all([
-          (await tourApi.fetchData())?.data,
-          (await bookingApi.getData(orderId))?.data
-        ]);
-
-        const {customers, status } = bookingsResponse
-        const {title, id, night_count, seats, dates, date, price, time} = bookingsResponse.tour
-
-        // присвоение полученных данных в formFields
-        const match = {'title': title, 'tourId': id, 'counts.nights': night_count, 'counts.people': customers.length, 'counts.freePlaces': seats - customers.length, 'guaranteeType': status, 'dates.start': format(min(dates.map(val => parseISO(val.date_start))), 'yyyy-MM-dd'), 'dates.finish': format(max(dates.map(val => parseISO(val.date_end))), 'yyyy-MM-dd')}
-
-        for(const key in match) {
-            matchFromQuery(key, match[key])
-        }
-
-        toursTitlesArr.value = allToursData.map(val => val.title)
-
-        mainInfo.touristsInfo = customers
-        mainInfo.tourPrice = price
-        mainInfo.date = date
-        mainInfo.time = time
-    }
-    catch(error) {
-        console.error(error)
-    }
+onMounted(() => {
+    bookingStore.fetchBookingData(bookingStore.booking.id)
+    bookingStore.fetchClientNames()
 })
 </script>
 
 <template>
     <div class="main-content">
         <div class="content">
-            <div class="title-bread-com">Мои заявки / Редактирование заявки #{{ orderId }}</div>
+            <div class="title-bread-com">Мои заявки / Редактирование заявки #{{ bookingStore.booking.id }}</div>
             <div class="grid-tours-fd">
                 <div>
                     <div class="section filters">
                         <h2 class="section-title">Общая информация</h2>
                         <label class="info-label">Название паломнического тура</label>
-                        <UDropdown :list="toursTitlesArr" v-model="formFields.title" :withSearch="true"/>
+                        <UDropdown :list="bookingStore.toursTitles" v-model="bookingStore.booking.title" :withSearch="true"/>
                         <div class="info-grid">
                             <div class="info-item">
                                 <label class="info-label">Номер тура</label>
-                                <div class="input-field">{{ formFields.tourId }}</div>
+                                <div class="input-field">{{ bookingStore.booking.tourId }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Номер заявки</label>
-                                <div class="input-field">{{ orderId }}</div>
+                                <div class="input-field">{{ bookingStore.booking.id }}</div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Менеджер</label>
@@ -126,7 +69,7 @@ onMounted(async () => {
                                 <label class="info-label">Кол-во ночей</label>
                                 <UInput 
                                     inputType="number" 
-                                    v-model="formFields.counts.night_count" 
+                                    v-model="bookingStore.booking.counts.night_count" 
                                     :allowNegative="false" 
                                     :inputHeightPx="43"
                                 />
@@ -135,7 +78,7 @@ onMounted(async () => {
                                 <label class="info-label">Кол-во свободных мест</label>
                                 <UInput 
                                     inputType="number" 
-                                    v-model="formFields.counts.freePlaces" 
+                                    v-model="bookingStore.booking.counts.freePlaces" 
                                     :allowNegative="false" 
                                     :inputHeightPx="43"
                                 />
@@ -144,7 +87,7 @@ onMounted(async () => {
                                 <label class="info-label">Кол-во человек</label>
                                 <UInput 
                                     inputType="number" 
-                                    v-model="formFields.counts.people" 
+                                    v-model="bookingStore.booking.counts.people" 
                                     :allowNegative="false" 
                                     :inputHeightPx="43"
                                 />
@@ -159,11 +102,11 @@ onMounted(async () => {
                                         <PopoverTrigger as-child>
                                         <Button variant="outline" class="w-full justify-start text-left font-normal flex gap-2" @click="isCalendarOpened.startDate = true">
                                             <CalendarIcon class="mr-2 h-4 w-4" />
-                                            <span>{{ formFields.dates.start || 'Выберите дату' }}</span>
+                                            <span>{{ bookingStore.booking.dates.start || 'Выберите дату' }}</span>
                                         </Button>
                                         </PopoverTrigger>
                                         <PopoverContent class="w-auto p-0">
-                                            <AppDatePicker v-if="isCalendarOpened.startDate" v-model="formFields.dates.start" @addDate="isCalendarOpened.startDate = false"/>
+                                            <AppDatePicker v-if="isCalendarOpened.startDate" v-model="bookingStore.booking.dates.start" @addDate="isCalendarOpened.startDate = false"/>
                                         </PopoverContent>
                                     </Popover>
                                 </div>
@@ -175,11 +118,11 @@ onMounted(async () => {
                                         <PopoverTrigger as-child>
                                         <Button variant="outline" class="w-full justify-start text-left font-normal flex gap-2" @click="isCalendarOpened.finish = true">
                                             <CalendarIcon class="mr-2 h-4 w-4" />
-                                            <span>{{ formFields.dates.finish || 'Выберите дату' }}</span>
+                                            <span>{{ bookingStore.booking.dates.finish || 'Выберите дату' }}</span>
                                         </Button>
                                         </PopoverTrigger>
                                         <PopoverContent class="w-auto p-0">
-                                            <AppDatePicker v-if="isCalendarOpened.finish" v-model="formFields.dates.finish" @addDate="isCalendarOpened.finish = false"/>
+                                            <AppDatePicker v-if="isCalendarOpened.finish" v-model="bookingStore.booking.dates.finish" @addDate="isCalendarOpened.finish = false"/>
                                         </PopoverContent>
                                     </Popover>
                                 </div>
@@ -188,7 +131,7 @@ onMounted(async () => {
                                 <label class="info-label">Статус</label>
                                 <UDropdown 
                                     :list="['Полная', 'Частичная', 'Без гарантии', 'Гарантийный депозит']" 
-                                    v-model="formFields.guaranteeType" 
+                                    v-model="bookingStore.booking.guaranteeType" 
                                     :withSearch="false"
                                 />
                             </div>
@@ -203,7 +146,7 @@ onMounted(async () => {
                     />
 
                     <Client />
-                    <PiligrimTourists :touristCount="formFields.counts.people" :maximumCountPlaces="formFields.counts.freePlaces" :touristsInfo="mainInfo.touristsInfo"/>
+                    <PiligrimTourists :touristCount="bookingStore.booking.counts.people" :maximumCountPlaces="bookingStore.booking.counts.freePlaces" :touristsInfo="bookingStore.booking.tourists"/>
 
                     <div class="section filters">
                         <h2 class="section-title">Документы</h2>
@@ -215,12 +158,12 @@ onMounted(async () => {
                     </div>
                 </div>
                 <MainInfo  
-                    :name="formFields.title"
-                    :price="mainInfo.tourPrice"
-                    :touristCount="formFields.counts.people"
-                    :nightsCount="formFields.counts.nights"
-                    :date="mainInfo.date"
-                    :time="mainInfo.time"
+                    :name="bookingStore.booking.title"
+                    :price="bookingStore.booking.mainInfo.tourPrice"
+                    :touristCount="bookingStore.booking.counts.people"
+                    :nightsCount="bookingStore.booking.counts.nights"
+                    :date="bookingStore.booking.mainInfo.date"
+                    :time="bookingStore.booking.mainInfo.time"
                 />
             </div>
         </div>

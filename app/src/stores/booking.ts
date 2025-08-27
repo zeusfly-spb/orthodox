@@ -17,7 +17,6 @@ import { format, parseISO, min, max } from 'date-fns'
 export const useBookingStore = defineStore('booking', () => {
   // State
   const booking = reactive<BookingState>({
-    orderId: '',
     id: '',
     title: '',
     tourId: '',
