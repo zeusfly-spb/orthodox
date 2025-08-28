@@ -11,6 +11,8 @@ const blankFilters = {
     tourCategoryId: {param: 'filter[tourCategory.id]', value: 0},
     tourTransportId: {param: 'filter[tourTransport.id]', value: 0},
     tourStatusId: {param: 'filter[tourStatus.id]', value: 0},
+    priceMin: {param: 'filter[price][min]', value: 0},
+    priceMax: {param: 'filter[price][max]', value: 0},
 };
 
 export const useToursStore = defineStore('toursStore', () =>{

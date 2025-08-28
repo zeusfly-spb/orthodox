@@ -29,16 +29,22 @@
       <div class="flex items-center px-3 border-r border-gray-300 bg-white">
         <input
           type="number"
+          min="0"
+          step="100"
           placeholder="Цена от"
           class="outline-none text-gray-500 placeholder-gray-400 bg-transparent w-20 text-sm"
+          v-model="queryFilters.priceMin.value"
         />
         <span class="ml-1 text-gray-400 text-sm">₽</span>
       </div>
       <div class="flex items-center px-3 bg-white">
         <input
           type="number"
+          min="0"
+          step="100"
           placeholder="Цена до"
           class="outline-none text-gray-500 placeholder-gray-400 bg-transparent w-20 text-sm"
+          v-model="queryFilters.priceMax.value"
         />
         <span class="ml-1 text-gray-400 text-sm">₽</span>
       </div>
