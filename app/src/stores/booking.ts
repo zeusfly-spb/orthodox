@@ -9,7 +9,7 @@ import type {
   RoomType,
   AccommodationOption,
 } from '@/types/booking'
-import { bookingApi } from '@/api/bookings'
+import { bookingApi, bookingParams } from '@/api/bookings'
 import { tourApi } from '@/api/tours'
 import { partnerApi } from '@/api/partners'
 import { format, parseISO, min, max } from 'date-fns'
@@ -56,6 +56,9 @@ export const useBookingStore = defineStore('booking', () => {
   const error = ref<string | null>(null)
   const orders = ref<object | null>(null)
   const managers = ref<object | null>(null)
+  const orderSatusList = ref<object | null>(null)
+  const allTours = ref<any[]>([])
+  const selectedTour = ref<any>(null)
 
   // Room types for accommodation
   const roomTypes = ref<RoomType[]>([
@@ -97,22 +100,30 @@ export const useBookingStore = defineStore('booking', () => {
     error.value = null
 
     try {
-      const [allToursData, bookingsResponse] = await Promise.all([
+      const [allToursData, bookingsResponse, bookingStatusList] = await Promise.all([
         tourApi.fetchData(),
-        bookingApi.getData(bookingId)
+        bookingApi.getData(bookingId),
+        bookingParams()
       ])
-
       const { data: toursData } = allToursData
       const { data: bookingData } = bookingsResponse
+      const { data: bookingStatuses } = bookingStatusList
 
       const { customers, status } = bookingData
       const { title, id, night_count, seats, dates, date, price, time } = bookingData.tour
+      
+      const statusObject = bookingStatuses.find(val => val.type === 'status')
 
+      if (statusObject) {
+        orderSatusList.value = Object.values(statusObject.children)
+      }
+
+      allTours.value = toursData
       // Update booking state
       booking.id = bookingId
       booking.title = title
       booking.tourId = id
-      booking.status = status
+      booking.status = statusObject.children[status]
       booking.counts.nights = night_count
       booking.counts.people = customers.length
       booking.counts.freePlaces = seats - customers.length
@@ -125,12 +136,27 @@ export const useBookingStore = defineStore('booking', () => {
 
       // Set tourists
       booking.tourists = customers.map((customer: any) => ({
+        id: customer.id,
         firstname: customer.firstname,
         lastname: customer.lastname,
         patronymic: customer.patronymic,
         email: customer.email,
         phone: customer.phone,
-        payment_status: customer.payment_status
+        payment_status: customer.payment_status,
+        description: customer.description,
+        json_attributes: customer.json_attributes,
+        passport_series: customer.passport_series,
+        passport_number: customer.passport_number,
+        passport_issue_date: customer.passport_issue_date,
+        passport_unit_name: customer.passport_unit_name,
+        passport_unit_code: customer.passport_unit_code,
+        passport_birth_date: customer.passport_birth_date,
+        passport_birth_place: customer.passport_birth_place,
+        passport_address: customer.passport_address,
+        gender: customer.gender,
+        snils: customer.snils,
+        created_at: customer.created_at,
+        updated_at: customer.updated_at
       }))
 
       // Set tours titles
@@ -141,6 +167,31 @@ export const useBookingStore = defineStore('booking', () => {
       console.error('Booking fetch error:', err)
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const findTourByTitle = (title: string) => {
+    const foundTour = allTours.value.find(tour => tour.title === title)
+    if (foundTour) {
+      selectedTour.value = foundTour
+      updateBookingFromTour(foundTour)
+      return foundTour
+    }
+    return null
+  }
+
+  const updateBookingFromTour = (tour: any) => {
+    booking.tourId = tour.id
+    booking.counts.nights = tour.night_count || 0
+    booking.mainInfo.tourPrice = tour.price || 0
+    booking.dates.start = tour.date_start || ''
+    booking.dates.finish = tour.date_end || ''
+    booking.mainInfo.date = tour.date || ''
+    booking.mainInfo.time = tour.time || ''
+    
+    // Обновляем свободные места
+    if (tour.seats && booking.counts.people) {
+      booking.counts.freePlaces = tour.seats - booking.counts.people
     }
   }
 
@@ -260,6 +311,7 @@ export const useBookingStore = defineStore('booking', () => {
     selectedAccommodation,
     accommodationOptions,
     orders,
+    orderSatusList,
     managers,
     // Getters
     totalPrice,
@@ -276,6 +328,7 @@ export const useBookingStore = defineStore('booking', () => {
     toggleRoomType,
     selectAccommodation,
     calculateTotalRooms,
-    calculateTotalPeople
+    calculateTotalPeople,
+    findTourByTitle
   }
 })

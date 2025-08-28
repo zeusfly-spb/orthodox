@@ -36,7 +36,7 @@ const emit = defineEmits(['close'])
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.582);
-    z-index: 5;
+    z-index: 50;
 }
 
 .modal {
@@ -65,8 +65,6 @@ const emit = defineEmits(['close'])
 }
 
 .buttons {
-    display: flex;
-    gap: 20px;
-    align-self: flex-end;
+    width: 100%;
 }
 </style>

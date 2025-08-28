@@ -25,11 +25,16 @@ const isCalendarOpened = reactive({
     finishDate: false
 })
 
-const contacts = ref([])
+const handleTourSelect = (selectedTitle) => {
+  if (selectedTitle) {
+    bookingStore.findTourByTitle(selectedTitle)
+  }
+}
+
 const formCount = ref(1)
 
 function handleAddItem(newItem) {
-    contacts.value.push(newItem)
+    bookingStore.booking.contactPersons.push(newItem)
     formCount.value++
 }
 
@@ -48,7 +53,12 @@ onMounted(() => {
                     <div class="section filters">
                         <h2 class="section-title">Общая информация</h2>
                         <label class="info-label">Название паломнического тура</label>
-                        <UDropdown :list="bookingStore.toursTitles" v-model="bookingStore.booking.title" :withSearch="true"/>
+                        <UDropdown 
+                            :list="bookingStore.toursTitles" 
+                            v-model="bookingStore.booking.title" 
+                            :withSearch="true"
+                            @update:modelValue="handleTourSelect"
+                        />
                         <div class="info-grid">
                             <div class="info-item">
                                 <label class="info-label">Номер тура</label>
@@ -130,8 +140,8 @@ onMounted(() => {
                             <div class="info-item">
                                 <label class="info-label">Статус</label>
                                 <UDropdown 
-                                    :list="['Полная', 'Частичная', 'Без гарантии', 'Гарантийный депозит']" 
-                                    v-model="bookingStore.booking.guaranteeType" 
+                                    :list="bookingStore.orderSatusList" 
+                                    v-model="bookingStore.booking.status" 
                                     :withSearch="false"
                                 />
                             </div>

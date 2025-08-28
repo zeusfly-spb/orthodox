@@ -8,7 +8,7 @@ const props = defineProps({
         default: 'primary',
         validator: (value) => [
         'primary',
-        'secondary'
+        'secondary',
         ].includes(value)
     },
     size: {
@@ -25,7 +25,8 @@ const props = defineProps({
         default: 'normal',
         validator: (value) => [
         'normal',
-        'disabled'
+        'disabled',
+        'warning'
         ].includes(value)
     },
     svgPath: {
@@ -68,6 +69,10 @@ const props = defineProps({
         background-color: #EBEDEF;
         color: #8F95B2;
     }
+    &-warning{
+        background-color: red;
+        color: #EBEDEF;
+    }
 }
 
 .secondary{
@@ -89,6 +94,11 @@ const props = defineProps({
     &-disabled{
         border: 1px solid #D4D6D9;
         color: #9FA6AF;
+    }
+    &-warning{
+        background-color: white;
+        border: 1px solid #D14343;
+        color: #D14343;
     }
 }
 

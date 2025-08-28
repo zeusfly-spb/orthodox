@@ -1,5 +1,9 @@
 <script setup>
 import { ref, defineProps, watch, computed, defineEmits } from 'vue';
+import { useBookingStore } from '@/stores/booking';
+
+const booking = useBookingStore()
+
 
 const props = defineProps({
     name: String,
@@ -20,7 +24,7 @@ const inputValue = ref('');
 const displayValue = computed({
     get: () => {
         if (payType.value === 'full') {
-            return formatCurrency(props.price);
+            return formatCurrency(props.price * booking.booking.counts.people);
         } else {
             return inputValue.value;
         }

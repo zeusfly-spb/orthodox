@@ -2,6 +2,14 @@
 import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed } from 'vue';
 import UInput from '@/components/ui/UInput.vue';
 import UButton from '@/components/ui/UButton.vue';
+import UDropdown from '@/components/ui/UDropdown.vue';
+import UModal from '@/components/ui/UModal.vue';
+import { useCustomerStore } from '@/stores/customer';
+import { useBookingStore } from '@/stores/booking';
+// import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover' 
+// import { Button } from '@/components/ui/button'
+// import { Calendar as CalendarIcon } from 'lucide-vue-next'
+// import AppDatePicker from '@/components/app/AppDatePicker.vue'
 
 const props = defineProps({
     touristCount: Number,
@@ -9,6 +17,11 @@ const props = defineProps({
     touristsInfo: Array
 })
 const emit = defineEmits(['accommodation-selected', 'update:selectedOption']);
+
+const customer = useCustomerStore()
+const booking = useBookingStore()
+
+const isShowModal = ref(false)
 
 const innerTouristCount = ref(props.touristCount || 1)
 const availableRoomTypes = ref([
@@ -22,6 +35,7 @@ const enabledRoomTypes = ref(['single', 'double', 'double_extra']) // По ум�
 
 const accommodationOptions = ref([])
 const selectedOption = ref(null)
+// const isCalendarOpened = ref(false)
 
 // Вычисляемое свойство для отфильтрованных вариантов
 const filteredAccommodationOptions = computed(() => {
@@ -32,6 +46,26 @@ const filteredAccommodationOptions = computed(() => {
         )
     })
 })
+
+function closeModal() {
+    isShowModal.value = false
+}
+
+function selectTourist(tourist) {
+    customer.updateCustomer(tourist)
+    isShowModal.value = true
+}
+
+function handleDeleteTourist(id) {
+    customer.deleteTourist(id)
+    closeModal()
+    booking.fetchBookingData(booking.booking.id)
+}
+function handleSaveTourist(id, data) {
+    customer.updateTourist(id,data)
+    closeModal()
+    booking.fetchBookingData(booking.booking.id)
+}
 
 function calculateOptions() {
     if (innerTouristCount.value < 1) {
@@ -307,7 +341,7 @@ onMounted(() => {
                             <td colspan="5">
                             </td>
                         </tr> -->
-                        <tr v-for="item in touristsInfo">
+                        <tr v-for="(item, index) in touristsInfo" :key="index">
                             <td data-column="pilgrims-count">{{ item.lastname }} {{ item.firstname[0] }}. {{ item.patronymic[0] }}.</td>
                             <td data-column="manager">{{ item.email }}</td>
                             <td data-column="places-limit">{{ item.phone }}</td>
@@ -319,14 +353,10 @@ onMounted(() => {
                             <td style="width:100px;">
                                 <div class="actions-container">
                                     <div class="user-actions">
-                                        <button class="more-btn">
-                                            <svg width="4" height="16" viewBox="0 0 4 16" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z"
-                                                    fill="#6A6E75"></path>
-                                            </svg>
-                                        </button>
+                                        <div class="more-btn">
+                                            <img src="/svg/pencil.svg" alt="edit" @click="selectTourist(item)">
+                                            <img src="/svg/more-horiz.svg" alt="more info">
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -336,6 +366,117 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <UModal v-show="isShowModal" @close="closeModal">
+        <template #headerTitle>
+            Редактировать данные о туристе
+        </template>
+
+        <template #bodyContent>
+            <section class="base-info">
+                <div class="base-info__title">Персональные данные</div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label for="name">Имя<span>*</span></label>
+                        <UInput id="name" v-model="customer.customer.firstname" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label for="secname">Фамилия<span>*</span></label>
+                        <UInput id="secname" v-model="customer.customer.lastname" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label for="surname">Отчество</label>
+                        <UInput id="surname" v-model="customer.customer.patronymic" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                </div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Дата рождения</label>
+                        <UInput v-model="customer.customer.passport_birth_date" :inputHeightPx="36" placeholder=""/>
+                        <!-- <div class="flex">
+                            <Popover>
+                                <PopoverTrigger as-child>
+                                <Button variant="outline" class="w-full justify-start text-left font-normal flex gap-2" @click="isCalendarOpened = true">
+                                    <CalendarIcon class="mr-2 h-4 w-4" />
+                                    <span>{{ customer.customer.passport_birth_date || 'Выберите дату' }}</span>
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent class="w-auto p-0">
+                                    <AppDatePicker v-if="isCalendarOpened" v-model="customer.customer.passport_birth_date" @addDate="isCalendarOpened = false"/>
+                                </PopoverContent>
+                            </Popover>
+                        </div> -->
+                    </div>
+                    <div class="base-info__column">
+                        <label for="name">Пол</label>
+                        <UDropdown 
+                            :list="['Мужской', 'Женский']" 
+                            v-model="customer.customer.gender" 
+                            :withSearch="false"
+                        />
+                    </div>
+                </div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Серия документа</label>
+                        <UInput v-model="customer.customer.passport_series" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label>Номер документа</label>
+                        <UInput v-model="customer.customer.passport_number" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label>Дата выдачи документа</label>
+                        <UInput v-model="customer.customer.passport_issue_date" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                </div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Код подразделения</label>
+                        <UInput v-model="customer.customer.passport_unit_code" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__block">
+                        <div class="base-info__column">
+                            <label>Кем выдан</label>
+                            <UInput v-model="customer.customer.passport_unit_name" :inputHeightPx="36" placeholder=""/>
+                        </div>
+                    </div>
+                </div>
+                <div class="base-info__column">
+                    <label>Адрес регистрации</label>
+                    <UInput v-model="customer.customer.passport_address" :inputHeightPx="36" placeholder=""/>
+                </div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Email</label>
+                        <UInput v-model="customer.customer.email" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label>Телефон</label>
+                        <UInput v-model="customer.customer.phone" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                </div>
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Статус оплаты</label>
+                        <UDropdown 
+                            :list="['Оплачено', 'Не оплачено']" 
+                            v-model="customer.customer.payment_status" 
+                            :withSearch="false"
+                        />
+                    </div>
+                    <!-- <label>Теги туриста</label> -->
+                    <!-- <UInput v-model="modalFields.name" :inputHeightPx="26" placeholder=""/> -->
+                </div>
+            </section>
+        </template>
+        
+        <template #buttons>
+            <div class="footer-buttons">
+                <UButton text="Удалить туриста" size="big" variant="secondary" action="warning" @click="handleDeleteTourist(customer.customer.id)"/>
+                <UButton text="Сохранить" size="big" @click="handleSaveTourist(customer.customer.id, customer.customer)"/>
+            </div>
+        </template>
+    </UModal>
 </template>
 <style scoped lang="scss">
 .section {
@@ -355,42 +496,11 @@ onMounted(() => {
     margin-bottom: 30px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-.customer-info {
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-    margin-top: 10px;
-}
-.info-item {
-    margin-bottom: 12px;
-}
 .info-label {
     font-size: 12px;
     color: #64748b;
     margin-bottom: 4px;
     display: block;
-}
-.info-value {
-    font-size: 14px;
-    color: #353535;
-    font-weight: 500;
-}
-.info-grid.grid-n {
-    grid-template-columns: 150px 1fr;
-}
-.input-field {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-    background-color: #f8fafc;
 }
 .pilgrims-count-container {
     display: flex;
@@ -402,11 +512,7 @@ onMounted(() => {
     margin-bottom: 0;
     white-space: nowrap;
 }
-.pilgrims-count-container .number-input-container {
-    display: flex;
-    align-items: center;
-    width: auto;
-}
+
 .pilgrims-count-container .number-input {
     width: 40px;
     text-align: center;
@@ -419,10 +525,7 @@ onMounted(() => {
     -webkit-appearance: none;
     margin: 0;
 }
-.number-input-container {
-    position: relative;
-    width: 100%;
-}
+
 .number-input {
     width: 100%;
     padding: 10px 36px 10px 14px;
@@ -436,30 +539,6 @@ onMounted(() => {
 .number-input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-.number-controls {
-    position: absolute;
-    right: 1px;
-    top: 1px;
-    bottom: 1px;
-    width: 24px;
-    display: flex;
-    flex-direction: column;
-    border-radius: 0 7px 7px 0;
-    overflow: hidden;
-}
-.number-down,
-.number-up {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e2e8f0;
-    border: none;
-    padding: 0;
-}
-.number-up {
-    border-bottom: 1px solid #cbd5e1;
 }
 .pilgrims-info-container {
     background: #f9f9fa;
@@ -534,12 +613,6 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-.select-btn {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 .table-wrapper2 {
     width: 100%;
@@ -761,14 +834,6 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     text-align: center;
 }
 
-.no-options {
-    padding: 10px;
-    color: #999;
-    font-style: italic;
-    text-align: center;
-    width: 100%;
-}
-
 /* Стили для доступных номеров */
 .room-type-text {
     display: flex;
@@ -788,12 +853,6 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
 .room-type-option input[type="checkbox"] {
     margin-right: 8px;
 }
-
-.custom-checkbox {
-    /* Ваши стили для кастомного чекбокса */
-}
-
-/* Остальные стили остаются без изменений */
 .bed-icons-inline {
     display: flex;
     flex-wrap: nowrap;
@@ -822,11 +881,6 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     cursor: pointer;
 }
 
-.no-options {
-    padding: 10px;
-    color: #999;
-    font-style: italic;
-}
 .bed-groups-container {
     display: flex;
     gap: 8px; /* Отступ между группами разных типов номеров */
@@ -888,5 +942,36 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     color: #666;
     margin-top: 4px;
     text-align: center;
+}
+.more-btn {
+    display: flex;
+    justify-content: space-evenly;
+
+    & img {
+        cursor: pointer;
+    }
+}
+.base-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    &__block {
+        display: flex;
+        gap: 12px;
+    }
+    &__column {
+        display: flex;
+        flex-direction: column;
+
+        & label {
+            font-size: 12px;
+            color: #6A6E75;
+        }
+    }
+}
+
+.footer-buttons {
+    display: flex;
+    justify-content: space-between;
 }
 </style>

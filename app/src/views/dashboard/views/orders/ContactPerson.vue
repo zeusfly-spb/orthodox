@@ -35,7 +35,6 @@ function pushForm() {
 </script>
 <template>
     <div class="section filters">
-        <h2 class="section-title">Контактное лицо</h2>
         <div class="contact-person">
             <div class="contact-title">Контактное лицо {{ props.countContacts }}</div>
             <div class="info-grid">
