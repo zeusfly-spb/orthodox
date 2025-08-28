@@ -31,11 +31,33 @@ const handleTourSelect = (selectedTitle) => {
   }
 }
 
-const formCount = ref(1)
+const contactPersons = ref([{ 
+    id: Date.now(),
+    fullname: '',
+    email: '',
+    phone: '',
+    comment: ''
+}])
 
 function handleAddItem(newItem) {
     bookingStore.booking.contactPersons.push(newItem)
-    formCount.value++
+    // Добавляем новый пустой контакт
+    contactPersons.value.push({
+        id: Date.now(),
+        fullname: '',
+        email: '',
+        phone: '',
+        comment: ''
+    })
+}
+
+// Функция для удаления контакта
+function handleRemoveItem(index) {
+    if (contactPersons.value.length > 1) {
+        contactPersons.value.splice(index, 1)
+        // Также удаляем из store если нужно
+        bookingStore.booking.contactPersons.splice(index, 1)
+    }
 }
 
 onMounted(() => {
@@ -148,11 +170,17 @@ onMounted(() => {
                         </div>
                     </div>
                     <ContactPerson 
-                        v-for="(item, index) in formCount" 
-                        :key="index"
-                        :showAddButton="index + 1 === formCount"
-                        :countContacts="index + 1" 
-                        @add-item="handleAddItem" 
+                        v-for="(contact, index) in contactPersons" 
+                        :key="contact.id"
+                        :showAddButton="index === contactPersons.length - 1"
+                        :countContacts="index + 1"
+                        :index="index"
+                        @add-item="handleAddItem"
+                        @remove-item="handleRemoveItem"
+                        v-model:fullname="contact.fullname"
+                        v-model:email="contact.email"
+                        v-model:phone="contact.phone"
+                        v-model:comment="contact.comment"
                     />
 
                     <Client />

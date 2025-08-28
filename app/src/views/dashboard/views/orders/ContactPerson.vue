@@ -10,10 +10,14 @@ const props = defineProps({
     showAddButton: {
         type: Boolean,
         default: true
+    },
+    index: {
+        type: Number,
+        required: true
     }
 })
 
-const emit = defineEmits(['add-item'])
+const emit = defineEmits(['add-item', 'remove-item'])
 
 const form = reactive({
     fullname: '',
@@ -24,19 +28,28 @@ const form = reactive({
 
 function pushForm() {
     emit('add-item', { ...form })
-    
-    // Object.assign(form, {
-    //     fullname: '',
-    //     email: '',
-    //     phone: '',
-    //     comment: ''
-    // })
+}
+
+function removeContact() {
+    emit('remove-item', props.index)
 }
 </script>
 <template>
     <div class="section filters">
         <div class="contact-person">
-            <div class="contact-title">Контактное лицо {{ props.countContacts }}</div>
+            <div class="contact-title">
+                Контактное лицо {{ props.countContacts }}
+                <div 
+                    class="contact-person__remove-block" 
+                    title="Удалить контакт" 
+                    @click="removeContact"
+                >
+                    <div 
+                        v-if="props.countContacts !== 1" 
+                        class="contact-person__remove" 
+                    />
+                </div>
+            </div>
             <div class="info-grid">
                 <div class="info-item">
                     <label class="info-label">ФИО</label>
@@ -100,8 +113,25 @@ function pushForm() {
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
+
+    &__remove {
+        width: 15px;
+        height: 2px;
+        background-color: red;
+
+        &-block {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
 }
 .contact-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
     font-weight: 500;
     margin-bottom: 16px;
 }

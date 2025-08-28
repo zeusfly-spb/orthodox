@@ -62,7 +62,7 @@ function handleDeleteTourist(id) {
     booking.fetchBookingData(booking.booking.id)
 }
 function handleSaveTourist(id, data) {
-    customer.updateTourist(id,data)
+    customer.updateTourist(id, data)
     closeModal()
     booking.fetchBookingData(booking.booking.id)
 }
