@@ -1,76 +1,26 @@
 <script setup lang="ts">
-import {ref, watch, computed, reactive, onBeforeMount} from 'vue';
-import api from '@/api/httpClient';
-
-import {Card, CardContent, CardFooter} from '@/components/ui/card'
-import {Button} from '@/components/ui/button'
-import {Input} from '@/components/ui/input'
-
-import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
-
-import DataTable from '@/components/dashboard/tours/DataTable.vue'
-import TourForm from '@/components/dashboard/tours/TourForm.vue'
-
-import {tourApi} from '@/api/tours'
-import {useCrudActions} from '@/composables/useCrudActions'
-
-import Pagination from '@/components/app/Pagination.vue'
-import {useRoute} from 'vue-router'
-
-import {usePaginationFilters} from '@/composables/usePaginationFilters'
-import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
-
-import {useRouter} from 'vue-router'
-import {Badge} from '@/components/ui/badge'
-
-import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
-import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
-import TourListHead from "@/components/dashboard/tours/TourListHead.vue";
-
+import {ref, watch, computed } from 'vue';
+import {useRoute} from 'vue-router';
+import {useRouter} from 'vue-router';
 import {useToursStore} from "@/stores/tours.ts";
 import {storeToRefs} from "pinia";
-import TourListFilters from "@/components/dashboard/tours/TourListFilters.vue";
+import {Card, CardContent, CardFooter} from '@/components/ui/card';
+import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
+import DataTable from '@/components/dashboard/tours/DataTable.vue';
+import Pagination from '@/components/app/Pagination.vue';
+;import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
+import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
+import TourListHead from "@/components/dashboard/tours/TourListHead.vue";
+;import TourListFilters from "@/components/dashboard/tours/TourListFilters.vue";
 
-const route = useRoute()
-const router = useRouter()
-const params = ref({});
+const route = useRoute();
+const router = useRouter();
+const {handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel}  = useToursStore();
 
-const {queryFilters} = storeToRefs(useToursStore());
-const tourTypes = computed(() => useToursStore().tourTypes);
-const tourCategories = computed(() => useToursStore().tourCategories);
-const tourTransports = computed(() => useToursStore().tourTransports);
-const tourStatuses = computed(() => useToursStore().tourStatuses);
-
-// Инициализация с дефолтными фильтрами
-const {
-  filters,
-  complexFilters,
-  applyFilters,
-  resetFilters,
-  handlePageChange,
-  currentPage
-} = usePaginationFilters({
-  search: '',
-  status: ''
-})
-
-const {
-  isLoading,
-  showConfirm,
-
-  handledItemId,
-  items,
-  currentItem,
-  pagination,
-  loadCollection,
-  handleSubmit,
-  handleDelete,
-  onDeleteConfirm,
-  onCancel
-} = useCrudActions(tourApi, {
-  successMessage: 'Данные сохранены',
-  deleteMessage: 'Данные удалены'
-});
+const tours = computed<any>(() => useToursStore().items);
+const isLoading = computed<boolean>(() => useToursStore().isLoading);
+const currentPage = computed(() => useToursStore().currentPage);
+const pagination = computed(() => useToursStore().pagination);
 
 const handleAddTour = () => {
   router.push({name: 'tour-create'})
@@ -89,30 +39,7 @@ const handleEditTour = (id: string | number) => {
     .catch((err) => {
       console.error('Navigation error:', err)
     })
-}
-
-// Загрузка данных при изменении фильтров
-watch(
-  complexFilters,
-  (newFilters) => {
-    loadCollection(newFilters);
-  },
-  {immediate: true}
-);
-
-watch(queryFilters, val => {
-  let filters = {};
-  Object.keys(val).forEach(key => {
-    if (!!val[key].value && val[key].value !== '0') {
-      if (key === 'searchString' && val[key].value.length < 3) {
-        return;
-      }
-      filters[val[key].param] = val[key].value;
-    }
-  });
-  loadCollection(filters);
-}, {immediate: true, deep: true});
-
+};
 </script>
 
 <template>
@@ -126,13 +53,9 @@ watch(queryFilters, val => {
           />
           <TourListFilters />
           <TourListTags />
-          <TourListSort
-            :items="items"
-          />
+          <TourListSort />
         </div>
         <DataTable
-          :isLoading="isLoading"
-          :collection="items"
           @edit="handleEditTour"
           @delete="handleDelete"
         />

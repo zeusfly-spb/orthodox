@@ -21,8 +21,8 @@
 <script setup>
 import { ArrowDownUp } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge/index.js';
+import { useToursStore } from '@/stores/tours.js';
+import { storeToRefs } from 'pinia';
 
-const props = defineProps({
-  items: Array,
-});
+const {items} = storeToRefs(useToursStore());
 </script>

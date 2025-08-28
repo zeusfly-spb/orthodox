@@ -9,20 +9,30 @@
 
     <select
       class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.dayCount.value"
+      v-model="dayCount"
     >
-      <option value="">Длительность</option>
-      <option value="1">1 день</option>
-      <option value="2">2 дня</option>
+      <option value="0">Длительность (дней)</option>
+      <option
+        v-for="day in tourDays"
+        :key="`duration-option-${day}`"
+        :value="day"
+      >
+        {{ day }}
+      </option>
     </select>
 
     <select
       class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.pilCount.value"
+      v-model="customerCount"
     >
-      <option value="">Паломников</option>
-      <option value="1">1 паломник</option>
-      <option value="2">2 паломника</option>
+      <option value="0">Паломников</option>
+      <option
+        v-for="item in customerNumbers"
+        :key="`customer-number-option-${item}`" 
+        :value="item"
+      >
+        {{ item }}
+      </option>
     </select>
 
     <div class="flex border border-gray-300 rounded-[12px] overflow-hidden w-fit h-9">
@@ -125,12 +135,14 @@ import {useToursStore} from "@/stores/tours.ts";
 import {storeToRefs} from "pinia";
 import {computed} from "vue";
 
-const {queryFilters} = storeToRefs(useToursStore());
+const {queryFilters, dayCount, customerCount} = storeToRefs(useToursStore());
 const tourTypes = computed(() => useToursStore().tourTypes);
 const tourCategories = computed(() => useToursStore().tourCategories);
 const tourTransports = computed(() => useToursStore().tourTransports);
 const tourStatuses = computed(() => useToursStore().tourStatuses);
 const filtered = computed(() => useToursStore().filtered);
+const tourDays = computed(() => useToursStore().tourDays);
+const customerNumbers = computed(() => useToursStore().customerNumbers);
 
 const {resetQueryFilters} = useToursStore();
 const resetQueryParams = () => resetQueryFilters();

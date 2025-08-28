@@ -19,16 +19,14 @@ import {
 import { Button } from '@/components/ui/button'
 import Badge from "@/components/app/Badge.vue";
 import {computed, ref} from "vue";
-
-const props = defineProps<{
-  isLoading: boolean
-  collection?: any[] | undefined
-}>();
+import { useToursStore } from '@/stores/tours.ts';
 
 const priceSortDirection = ref('none');
 
+const isLoading = computed(() => useToursStore().isLoading);
+const items = computed(() => useToursStore().items);
 const tours = computed(() => {
-  let result = JSON.parse(JSON.stringify(props.collection));
+  let result = JSON.parse(JSON.stringify(items.value));
   if (priceSortDirection.value === 'asc') {
     result.sort((a, b) => a.price - b.price);
   } else if (priceSortDirection.value === 'desc') {
@@ -125,7 +123,7 @@ const changePriceSorting = () => {
           {{ item?.tourTransport?.title }}
         </TableCell>
         <TableCell>
-          {{ item.night_count || 0 }} / {{ item.night_count || 0 }}
+          {{ item.duration || 0 }} / {{ item.duration - 1 || 0 }}
         </TableCell>
         <TableCell>
           {{ item.customers_count }}
@@ -169,7 +167,7 @@ const changePriceSorting = () => {
     </TableBody>
   </Table>
   <span
-    v-if="!collection?.length && !isLoading"
+    v-if="!tours?.length && !isLoading"
     class="flex justify-center text-gray-500 mt-2"
   >
     По заданным параметрам туров не найдено
