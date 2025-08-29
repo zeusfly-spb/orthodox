@@ -1,14 +1,20 @@
 import axios from 'axios'
+import type { AxiosError, AxiosInstance, AxiosRequestHeaders, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-const DEFAULT_TIMEOUT = import.meta.env.VITE_REQUEST_TIMEOUT || 20000
-
-let retryCount = 0
-const maxRetries = 2
+const DEFAULT_TIMEOUT = Number(import.meta.env.VITE_REQUEST_TIMEOUT) || 20000
+const MAX_RETRIES = 2
 let isRefreshing = false
 
-const handleRetry = (config, token) => {
-  config.headers['Authorization'] = `Bearer ${token}`
+type RetryableConfig = InternalAxiosRequestConfig & { _retryCount?: number }
+
+const handleRetry = (config: RetryableConfig, token: string | null) => {
+  if (!token) return Promise.reject(new Error('Missing token for retry'))
+
+  const headers: AxiosRequestHeaders = (config.headers || {}) as AxiosRequestHeaders
+  headers['Authorization'] = `Bearer ${token}`
+  config.headers = headers
+  config._retryCount = (config._retryCount ?? 0) + 1
   return api.request(config)
 }
 
@@ -17,7 +23,7 @@ const handleExit = () => {
   return authStore.logout()
 }
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   withCredentials: false,
   headers: {
@@ -52,56 +58,46 @@ api.interceptors.response.use(
       config: response.config,
     }
   },
-  async (error) => {
+  async (rawError) => {
     const authStore = useAuthStore()
-    //console.log('All error headers:', error.response?.headers)
+    const error = rawError as AxiosError
+    const response = error.response
+    const config = (error.config || {}) as RetryableConfig
 
     if (error.code === 'ECONNABORTED') {
-      error.response = {
+      const timeoutMs = config.timeout ?? DEFAULT_TIMEOUT
+      const seconds = Math.ceil(timeoutMs / 1000)
+      const syntheticResponse: AxiosResponse = {
+        data: { message: `The server did not respond within ${seconds} seconds` },
         status: 408,
         statusText: 'Request Timeout',
-        data: {
-          message:
-            'The server did not respond within ' +
-            error.config.timeout / DEFAULT_TIMEOUT +
-            '  seconds',
-        },
+        headers: {},
+        config,
       }
+      ;(error as AxiosError).response = syntheticResponse
     }
 
-    if (error.response?.headers?.authorization && !isRefreshing) {
+    if (response?.headers?.authorization && !isRefreshing) {
       isRefreshing = true
-      const token = await authStore.checkToken(error.response?.headers)
-
+      const token = await authStore.checkToken(response.headers)
       try {
-        return handleRetry(error.config, token)
-      } catch (err) {
-        throw err
+        return handleRetry(config, token)
       } finally {
         isRefreshing = false
       }
     }
 
-    if (error.response.status === 401) {
+    if (response?.status === 401) {
       return handleExit()
     }
 
-    if (
-      error.response.status === 403
-      // || error.response.status === 429
-    ) {
-      const authStore = useAuthStore()
+    if (response?.status === 403) {
       const accessToken = authStore.accessToken
-
-      if (retryCount < maxRetries) {
-        try {
-          return handleRetry(error.config, accessToken)
-        } finally {
-          retryCount++
-        }
-      } else {
-        return handleExit()
+      const currentRetries = config._retryCount ?? 0
+      if (currentRetries < MAX_RETRIES) {
+        return handleRetry(config, accessToken)
       }
+      return handleExit()
     }
 
     return Promise.reject(error)
