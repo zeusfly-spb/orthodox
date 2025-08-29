@@ -3,7 +3,6 @@ import { MoreHorizontal, Trash2, SquarePen, Pencil, ArrowDownUp } from 'lucide-v
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -21,21 +20,28 @@ import Badge from "@/components/app/Badge.vue";
 import {computed, ref} from "vue";
 import { useToursStore } from '@/stores/tours.ts';
 
-const priceSortDirection = ref('none');
+const emit = defineEmits<{
+  (e: 'edit', id: number | string): void
+  (e: 'delete', id: number | string): void
+}>()
 
-const isLoading = computed(() => useToursStore().isLoading);
-const items = computed(() => useToursStore().items);
-const tours = computed(() => {
-  let result = JSON.parse(JSON.stringify(items.value));
+const priceSortDirection = ref<'none' | 'asc' | 'desc'>('none');
+
+const store = useToursStore();
+const isLoading = computed(() => store.isLoading);
+const items = computed(() => store.items);
+const tours = computed<any[]>(() => {
+  let result = [...items.value];
+  const getPrice = (t: any) => Number.isFinite(t?.price) ? t.price : 0;
   if (priceSortDirection.value === 'asc') {
-    result.sort((a, b) => a.price - b.price);
+    result.sort((a, b) => getPrice(a) - getPrice(b));
   } else if (priceSortDirection.value === 'desc') {
-    result.sort((a, b) => b.price - a.price);
+    result.sort((a, b) => getPrice(b) - getPrice(a));
   }
-  return result;
+  return result as any[];
 });
 
-const priceSortingTitle = computed(() => {
+const priceSortingTitle = computed<string>(() => {
   let result;
   switch (priceSortDirection.value) {
     case 'none':
@@ -90,7 +96,7 @@ const changePriceSorting = () => {
               :title="priceSortingTitle"
             >
               <ArrowDownUp
-                size="16"
+                :size="16"
                 class="mt-1 ml-1 touchable"
                 :class="{'text-gray-400': priceSortDirection === 'none'}"
                 @click="changePriceSorting"
@@ -139,29 +145,27 @@ const changePriceSorting = () => {
           {{ item.price }}
         </TableCell>
         <TableCell>
-          <TableCell>
-            <DropdownMenu title="Редактировать">
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" class="h-8 w-8 p-0  touchable">
-                  <Pencil /> <MoreHorizontal class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right">
-                <DropdownMenuItem @click="() => $emit('edit', item.id)">
-                  <div class="flex items-center justify-between gap-4 w-full">
-                    <span>Редактировать</span>
-                    <SquarePen class="ml-2 h-4 w-4" />
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem @click="() => $emit('delete', item.id)">
-                  <div class="flex items-center justify-between w-full">
-                    <span>Удалить</span>
-                    <Trash2 class="ml-2 h-4 w-4" />
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TableCell>
+          <DropdownMenu title="Редактировать">
+            <DropdownMenuTrigger as-child>
+              <Button variant="ghost" class="h-8 w-8 p-0  touchable">
+                <Pencil /> <MoreHorizontal class="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right">
+              <DropdownMenuItem @click="() => $emit('edit', item.id)">
+                <div class="flex items-center justify-between gap-4 w-full">
+                  <span>Редактировать</span>
+                  <SquarePen class="ml-2 h-4 w-4" />
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="() => $emit('delete', item.id)">
+                <div class="flex items-center justify-between w-full">
+                  <span>Удалить</span>
+                  <Trash2 class="ml-2 h-4 w-4" />
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TableCell>
       </TableRow>
     </TableBody>

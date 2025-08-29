@@ -4,12 +4,12 @@
       type="text"
       placeholder="Поиск по турам..."
       class="border rounded-xl px-3 py-2 w-64"
-      v-model="queryFilters.searchString.value"
+      v-model.trim="queryFilters.searchString.value"
     />
 
     <select
       class="border rounded-xl px-2 py-2"
-      v-model="dayCount"
+      v-model.number="dayCount"
     >
       <option value="0">Длительность (дней)</option>
       <option
@@ -23,7 +23,7 @@
 
     <select
       class="border rounded-xl px-2 py-2"
-      v-model="customerCount"
+      v-model.number="customerCount"
     >
       <option value="0">Паломников</option>
       <option
@@ -115,35 +115,36 @@
         {{ status.title }}
       </option>
     </select>
-    <div
-      v-if="filtered"
-      title="Сбросить фильтры"
+    <button
+    v-if="filtered"
+    title="Сбросить фильтры"
+    type="button" 
+    class="p-2 rounded hover:bg-gray-100 touchable" 
+    @click="resetQueryParams" 
+    aria-label="Сбросить фильтры"
     >
-      <FunnelX
-        class="text-gray-500 touchable"
-        @click="resetQueryParams"
-      />
-    </div>
+      <FunnelX class="text-gray-500" />
+    </button>
   </div>
 
 </template>
 
 <script setup lang="ts">
 import {FunnelX} from "lucide-vue-next";
-import {Input} from "@/components/ui/input";
 import {useToursStore} from "@/stores/tours.ts";
 import {storeToRefs} from "pinia";
 import {computed} from "vue";
 
-const {queryFilters, dayCount, customerCount} = storeToRefs(useToursStore());
-const tourTypes = computed(() => useToursStore().tourTypes);
-const tourCategories = computed(() => useToursStore().tourCategories);
-const tourTransports = computed(() => useToursStore().tourTransports);
-const tourStatuses = computed(() => useToursStore().tourStatuses);
-const filtered = computed(() => useToursStore().filtered);
-const tourDays = computed(() => useToursStore().tourDays);
-const customerNumbers = computed(() => useToursStore().customerNumbers);
+const toursStore = useToursStore();
+const {queryFilters, dayCount, customerCount} = storeToRefs(toursStore);
+const tourTypes = computed(() => toursStore.tourTypes);
+const tourCategories = computed(() => toursStore.tourCategories);
+const tourTransports = computed(() => toursStore.tourTransports);
+const tourStatuses = computed(() => toursStore.tourStatuses);
+const filtered = computed(() => toursStore.filtered);
+const tourDays = computed(() => toursStore.tourDays);
+const customerNumbers = computed(() => toursStore.customerNumbers);
 
-const {resetQueryFilters} = useToursStore();
+const {resetQueryFilters} = toursStore;
 const resetQueryParams = () => resetQueryFilters();
 </script>
