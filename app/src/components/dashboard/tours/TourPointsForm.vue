@@ -19,14 +19,19 @@ import {
 import type { Entity } from '@/types/entity.ts'
 
 interface PointItem {
+  id: string | number
+  title?: string | null
+  description?: string | null
+  address?: string | null
+  location?: object
+  time: string
+  order_column: number
   entity: {
     id: number
     title?: string
     description?: string | null
     location?: object
   }
-  time: string
-  order_column: number
 }
 
 const props = defineProps<{
@@ -189,7 +194,7 @@ const removePoint = (index: number) => {
         <div class="space-y-4">
           <div>
             <Label>Объект {{ index + 1 }}</Label>
-            <h3 class="font-medium mt-1">{{ point.entity.title }}</h3>
+            <h3 class="font-medium mt-1">{{ point.title || point.entity.title }}</h3>
             <div class="mt-2">
               <Label>Время посещения</Label>
               <input
@@ -200,9 +205,13 @@ const removePoint = (index: number) => {
               />
             </div>
           </div>
-          <div v-if="point.entity.description">
+          <div v-if="point.entity?.description">
             <Label>Описание</Label>
             <p class="mt-1 whitespace-pre-wrap">{{ point.entity.description }}</p>
+          </div>
+          <div v-if="point?.description">
+            <Label>Описание</Label>
+            <p class="mt-1 whitespace-pre-wrap">{{ point.description }}</p>
           </div>
         </div>
       </Card>
