@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch, computed } from 'vue';
+import {ref, watch, computed} from 'vue';
 import {useRoute} from 'vue-router';
 import {useRouter} from 'vue-router';
 import {useToursStore} from "@/stores/tours.ts";
@@ -8,37 +8,43 @@ import {Card, CardContent, CardFooter} from '@/components/ui/card';
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
 import DataTable from '@/components/dashboard/tours/DataTable.vue';
 import Pagination from '@/components/app/Pagination.vue';
-;import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue'
-import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue'
+import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue';
+import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue';
 import TourListHead from "@/components/dashboard/tours/TourListHead.vue";
-;import TourListFilters from "@/components/dashboard/tours/TourListFilters.vue";
+import TourListFilters from "@/components/dashboard/tours/TourListFilters.vue";
 
 const route = useRoute();
 const router = useRouter();
-const {handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel}  = useToursStore();
+const toursStore = useToursStore();
+const {handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel} = toursStore;
 
-const tours = computed<any>(() => useToursStore().items);
-const isLoading = computed<boolean>(() => useToursStore().isLoading);
-const currentPage = computed(() => useToursStore().currentPage);
-const pagination = computed(() => useToursStore().pagination);
+const tours = computed<Array<{ id: string | number; [key: string]: unknown }>>(() => toursStore.items);
+const isLoading = computed<boolean>(() => toursStore.isLoading);
+const currentPage = computed<number>(() => toursStore.currentPage);
+const pagination = computed<{
+  currentPage?: number | null;
+  lastPage?: number | null;
+  perPage?: number | null;
+  total?: number | null;
+}>(() => toursStore.pagination);
 
-const handleAddTour = () => {
-  router.push({name: 'tour-create'})
+const handleAddTour = (): void => {
+  router.push({name: 'tour-create'});
 };
 
-const handleDownloadReport = () => {
+const handleDownloadReport = (): void => {
   console.log('DOWNLOAD REPORT');
 };
 
-const handleEditTour = (id: string | number) => {
+const handleEditTour = (id: string | number): void => {
   router
     .push({
       name: 'tour-edit',
       params: {id: String(id)}
     })
-    .catch((err) => {
-      console.error('Navigation error:', err)
-    })
+    .catch((err: Error) => {
+      console.error('Navigation error:', err);
+    });
 };
 </script>
 
@@ -62,13 +68,13 @@ const handleEditTour = (id: string | number) => {
       </CardContent>
       <CardFooter
         class="muted border-t"
-        v-if="pagination.currentPage && pagination.lastPage > 1"
+        v-if="pagination?.currentPage && pagination?.lastPage && pagination.lastPage > 1"
       >
         <Pagination
-          :current-page="currentPage"
-          :per-page="pagination.perPage"
-          :total="pagination.total"
-          :last-page="pagination.lastPage"
+          :current-page="currentPage || 1"
+          :per-page="pagination?.perPage || 10"
+          :total="pagination?.total || 0"
+          :last-page="pagination?.lastPage || 1"
           @update:current-page="handlePageChange"
         />
       </CardFooter>

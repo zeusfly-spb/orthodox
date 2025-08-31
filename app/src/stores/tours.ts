@@ -29,13 +29,11 @@ interface TourFilters {
 interface Tour {
     duration: number;
     customers_count?: number;
-    [key: string]: any;
 }
 
 interface TourParameter {
     slug: string;
     children: any[];
-    [key: string]: any;
 }
 
 const blankFilters: TourFilters = {
@@ -104,6 +102,16 @@ export const useToursStore = defineStore('toursStore', () =>{
     const isInitialized = ref<boolean>(false);
 
     const filtered = computed(() => !deepEqual(queryFilters.value, blankFilters));
+    const formattedDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+
+        })
+        .replace(/\./g, '-');
+    };
 
     function findParameterBySlug(data: TourParameter[], slug: string): TourParameter | undefined {
         return data.find(item => item.slug === slug);
@@ -143,8 +151,8 @@ export const useToursStore = defineStore('toursStore', () =>{
         customerCount.value = 0;
     }
 
-    function createFiltersFromQueryFilters(val: TourFilters): Record<string, any> {
-        const filters: Record<string, any> = {};
+    function createFiltersFromQueryFilters(val: TourFilters): Record<string, string | number> {
+        const filters: Record<string, string | number> = {};
         
         for (const [key, filterItem] of Object.entries(val)) {
             const { value, param } = filterItem;
@@ -225,6 +233,7 @@ export const useToursStore = defineStore('toursStore', () =>{
         dayCount,
         customerCount,
         customerNumbers,
+        formattedDate,
         handleDelete,
         onDeleteConfirm,
         onCancel,

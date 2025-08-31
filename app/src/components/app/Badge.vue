@@ -9,15 +9,10 @@
 
 <script setup lang="ts">
 import {computed} from "vue";
-type Kind = 'opublikovano' | 'ne-opublikovano' | 'bazovyi' | 'po-zaiavke';
-const props = defineProps<{
-  type: {
-    type: Kind,
-    required: true,
-  },
-  caption: {
-    type: String
-  }
+type Kind = 'opublikovano' | 'ne-opublikovano' | 'bazovyi' | 'po-zaiavke' | string;
+defineProps<{
+  type: Kind;
+  caption: string;
 }>();
 </script>
 

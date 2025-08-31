@@ -8,7 +8,7 @@ export function createApiClient<T>(endpoint: string) {
       const response = await api.get(`${route}`, { params })
       return response?.data
     },
-    getData: async (id: number | string): Promise<T> => {
+    getData: async (id: number | string): Promise<{ data: T }> => {
       const response = await api.get(`${route}/${id}`)
       return response?.data
     },

@@ -11,7 +11,7 @@
     <div class="flex flex-wrap items-center gap-3 text-gray-400 flex-row touchable">
       <ArrowDownUp
         class="text-gray-600"
-        @click="items = items.reverse()"
+        @click="items.reverse()"
       />
       Сортировка
     </div>

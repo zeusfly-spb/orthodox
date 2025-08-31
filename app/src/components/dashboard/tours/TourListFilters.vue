@@ -126,7 +126,6 @@
       <FunnelX class="text-gray-500" />
     </button>
   </div>
-
 </template>
 
 <script setup lang="ts">

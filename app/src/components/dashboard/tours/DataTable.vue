@@ -23,7 +23,7 @@ import { useToursStore } from '@/stores/tours.ts';
 const emit = defineEmits<{
   (e: 'edit', id: number | string): void
   (e: 'delete', id: number | string): void
-}>()
+}>();
 
 const priceSortDirection = ref<'none' | 'asc' | 'desc'>('none');
 
@@ -42,7 +42,7 @@ const tours = computed<any[]>(() => {
 });
 
 const priceSortingTitle = computed<string>(() => {
-  let result;
+  let result: string;
   switch (priceSortDirection.value) {
     case 'none':
       result = 'Сортировать по возрастанию цены';
