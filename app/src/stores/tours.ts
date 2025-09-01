@@ -112,6 +112,13 @@ export const useToursStore = defineStore('toursStore', () =>{
         })
         .replace(/\./g, '-');
     };
+    const formatCurrency = (amount: number): string => {
+        return new Intl.NumberFormat('ru-RU', {
+            style: 'currency',
+            currency: 'RUB',
+            minimumFractionDigits: 2
+        }).format(amount);
+    };
 
     function findParameterBySlug(data: TourParameter[], slug: string): TourParameter | undefined {
         return data.find(item => item.slug === slug);
@@ -234,6 +241,7 @@ export const useToursStore = defineStore('toursStore', () =>{
         customerCount,
         customerNumbers,
         formattedDate,
+        formatCurrency,
         handleDelete,
         onDeleteConfirm,
         onCancel,

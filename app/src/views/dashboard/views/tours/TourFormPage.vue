@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import TourFormHeader from '@/views/dashboard/views/tours/TourFormHeader.vue';
 import TourFormOverview from '@/views/dashboard/views/tours/TourFormOverview.vue';
 import { tourApi } from '@/api/tours';
 import { toast } from 'vue-sonner';
 import type { Tour } from '@/types/tour';
+import { useToursStore } from '@/stores/tours';
+
 
 const router = useRouter();
+const { formatCurrency } = useToursStore();
 const id = ref<string | null>(null);
 const currentItem = ref<Tour | null>(null);
 
@@ -48,14 +51,7 @@ const handleCancel = (): void => {
   router.push({ name: 'tours-list' });
 };
 
-// Форматирование валюты
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 2
-  }).format(amount);
-};
+
 
 // Моковые данные для демонстрации
 const mockTourData = {
@@ -126,22 +122,30 @@ const mockTourData = {
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p class="text-sm text-gray-500 mb-1">Количество мест в туре</p>
-        <p class="text-lg font-semibold text-gray-900">{{ mockTourData.seats.taken }}/{{ mockTourData.seats.total }}</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ mockTourData.seats.taken }}/{{ mockTourData.seats.total }}
+        </p>
       </div>
 
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p class="text-sm text-gray-500 mb-1">Время в пути</p>
-        <p class="text-lg font-semibold text-gray-900">{{ mockTourData.travelTime }}</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ mockTourData.travelTime }}
+        </p>
       </div>
 
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p class="text-sm text-gray-500 mb-1">Гид</p>
-        <p class="text-lg font-semibold text-gray-900">{{ mockTourData.guide }}</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ mockTourData.guide }}
+        </p>
       </div>
 
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p class="text-sm text-gray-500 mb-1">Стоимость</p>
-        <p class="text-sm text-gray-600 mb-1">{{ mockTourData.price.tourType }}, {{ mockTourData.price.category }}, {{ mockTourData.price.accommodation }} / {{ formatCurrency(mockTourData.price.amount) }}</p>
+        <p class="text-sm text-gray-600 mb-1">
+          {{ mockTourData.price.tourType }}, {{ mockTourData.price.category }}, {{ mockTourData.price.accommodation }} / {{ formatCurrency(mockTourData.price.amount) }}
+        </p>
       </div>
     </div>
 
