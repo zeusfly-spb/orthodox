@@ -4,6 +4,8 @@ export interface Tour {
   route: string
   price: number
   duration: number
+  seats: number
+  customers_count: number
   description: string
   is_active: boolean
   dates: string[]

@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import TourFormHeader from '@/views/dashboard/views/tours/TourFormHeader.vue';
 import TourFormOverview from '@/views/dashboard/views/tours/TourFormOverview.vue';
+import TourFormCards from './TourFormCards.vue';
 import { tourApi } from '@/api/tours';
 import { toast } from 'vue-sonner';
 import type { Tour } from '@/types/tour';
@@ -118,36 +119,9 @@ const mockTourData = {
       v-model:currentItem="currentItem"
     />
 
-    <!-- Info Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p class="text-sm text-gray-500 mb-1">Количество мест в туре</p>
-        <p class="text-lg font-semibold text-gray-900">
-          {{ mockTourData.seats.taken }}/{{ mockTourData.seats.total }}
-        </p>
-      </div>
-
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p class="text-sm text-gray-500 mb-1">Время в пути</p>
-        <p class="text-lg font-semibold text-gray-900">
-          {{ mockTourData.travelTime }}
-        </p>
-      </div>
-
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p class="text-sm text-gray-500 mb-1">Гид</p>
-        <p class="text-lg font-semibold text-gray-900">
-          {{ mockTourData.guide }}
-        </p>
-      </div>
-
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p class="text-sm text-gray-500 mb-1">Стоимость</p>
-        <p class="text-sm text-gray-600 mb-1">
-          {{ mockTourData.price.tourType }}, {{ mockTourData.price.category }}, {{ mockTourData.price.accommodation }} / {{ formatCurrency(mockTourData.price.amount) }}
-        </p>
-      </div>
-    </div>
+    <TourFormCards 
+      v-model:currentItem="currentItem" 
+    /> 
 
     <!-- Logistics -->
     <div class="space-y-4 mb-8">
