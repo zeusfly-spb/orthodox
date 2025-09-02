@@ -17,13 +17,13 @@ const customerStore = useCustomerStore()
 const isShowModal = ref(false)
 const innerTouristCount = ref(bookingStore.booking.counts.people || 1)
 const selectedOption = ref(null)
+const isSaving = ref(false)
 
 // Используем данные из сторов
 const availableRoomTypes = computed(() => accommodationStore.roomTypes)
 const enabledRoomTypes = computed(() => accommodationStore.enabledRoomTypes)
 const accommodationOptions = computed(() => accommodationStore.accommodationOptions)
 const touristsInfo = computed(() => bookingStore.booking.tourists || [])
-const maximumCountPlaces = computed(() => bookingStore.booking.counts.freePlaces)
 
 const filteredAccommodationOptions = computed(() => {
   if (!accommodationOptions.value) return []
@@ -45,30 +45,78 @@ function selectTourist(tourist) {
 
 async function handleDeleteTourist(id) {
     try {
-        await customerStore.deleteTourist(id)
+        // Удаляем туриста из локального массива
+        bookingStore.removeTourist(id)
+        
+        // Сохраняем обновленный массив на сервер
+        isSaving.value = true
+        await bookingStore.updateBooking()
+        
         closeModal()
-        await bookingStore.fetchBookingData(bookingStore.booking.id)
     } catch (error) {
         console.error('Error deleting tourist:', error)
+    } finally {
+        isSaving.value = false
     }
 }
 
 async function handleSaveTourist(id, data) {
     try {
-        await customerStore.updateTourist(id, data)
+        // Обновляем данные туриста в локальном массиве
+        bookingStore.updateTouristData(id, data)
+        
+        // Сохраняем обновленный массив на сервер
+        isSaving.value = true
+        await bookingStore.updateBooking()
+        
         closeModal()
-        await bookingStore.fetchBookingData(bookingStore.booking.id)
     } catch (error) {
         console.error('Error updating tourist:', error)
+    } finally {
+        isSaving.value = false
     }
 }
 
-function calculateOptions() {
-    // Обновляем количество людей в сторе
-    accommodationStore.updatePeopleCount(innerTouristCount.value)
+// Функция для синхронизации количества туристов
+const syncTouristsCount = async (newCount) => {
+    const currentCount = bookingStore.booking.tourists.length;
     
-    // Теперь варианты будут автоматически пересчитаны через computed свойство
-    // accommodationOptions обновится автоматически
+    if (newCount > currentCount) {
+        // Добавляем новых туристов
+        const touristsToAdd = newCount - currentCount;
+        for (let i = 0; i < touristsToAdd; i++) {
+            bookingStore.addTourist({
+                firstname: 'Новый',
+                lastname: 'Турист',
+                payment_status: 'Не оплачено'
+            });
+        }
+    } else if (newCount < currentCount) {
+        // Удаляем лишних туристов (с конца)
+        const touristsToRemove = currentCount - newCount;
+        for (let i = 0; i < touristsToRemove; i++) {
+            const lastTourist = bookingStore.booking.tourists[bookingStore.booking.tourists.length - 1];
+            if (lastTourist) {
+                bookingStore.removeTourist(lastTourist.id);
+            }
+        }
+    }
+    
+    // Сохраняем изменения на сервер
+    if (newCount !== currentCount) {
+        try {
+            isSaving.value = true;
+            await bookingStore.updateBooking();
+        } catch (error) {
+            console.error('Error syncing tourists count:', error);
+        } finally {
+            isSaving.value = false;
+        }
+    }
+};
+
+function calculateOptions() {
+    accommodationStore.updatePeopleCount(innerTouristCount.value)
 }
 
 function isRoomTypeEnabled(roomType) {
@@ -77,16 +125,11 @@ function isRoomTypeEnabled(roomType) {
 
 function toggleRoomType(roomType, isEnabled) {
     accommodationStore.toggleRoomType(roomType, isEnabled)
-    // После изменения типов комнат пересчитываем варианты
     calculateOptions()
 }
 
 function getTotalRooms(option) {
     return accommodationStore.calculateTotalRooms(option)
-}
-
-function calculateTotalPeople(option) {
-    return accommodationStore.calculateTotalPeople(option)
 }
 
 function selectOption(option) {
@@ -106,8 +149,16 @@ function emitSelectedOption() {
     }
 }
 
-watch(innerTouristCount, (newValue) => {
-    if (newValue < 1) innerTouristCount.value = 1;
+// Следим за изменением количества туристов
+watch(innerTouristCount, async (newValue, oldValue) => {
+    if (newValue < 1) {
+        innerTouristCount.value = 1;
+        return;
+    }
+    
+    // Синхронизируем количество туристов
+    await syncTouristsCount(newValue);
+    
     calculateOptions();
     selectedOption.value = null;
 });
@@ -120,7 +171,6 @@ watch(() => bookingStore.booking.counts.people, (newValue) => {
 });
 
 onMounted(() => {
-    // Инициализируем количество людей при монтировании
     accommodationStore.updatePeopleCount(innerTouristCount.value)
 });
 </script>
@@ -128,17 +178,24 @@ onMounted(() => {
 <template>
     <div class="section filters">
         <h2 class="section-title">Паломники / Туристы</h2>
-        <div class="pilgrims-count-container">
-            <label class="info-label">Количество туристов</label>
-            <UInput 
-                class="number-input back-none" 
-                v-model="innerTouristCount" 
-                inputType="number"
-                :inputHeightPx="43"
-                :min="1"
-                @update:modelValue="calculateOptions"
-            />
+        
+        <div class="pilgrims-header">
+            <div class="pilgrims-count-container">
+                <label class="info-label">Количество туристов</label>
+                <UInput 
+                    class="number-input back-none" 
+                    v-model="innerTouristCount" 
+                    inputType="number"
+                    :inputHeightPx="43"
+                    :min="1"
+                    :loading="isSaving"
+                />
+                <div v-if="isSaving" class="saving-indicator">
+                    Сохранение...
+                </div>
+            </div>
         </div>
+
         <div class="pilgrims-info-container">
             <div class="room-types-section">
                 <label class="info-label">Доступные типы номеров</label>
@@ -211,37 +268,36 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
         <div class="tourists-data-section">
             <label class="info-label">Данные о туристах</label>
             <div class="table-wrapper2">
                 <table class="users-table draggable-table">
                     <thead>
                         <tr class="bg-header-table">
-                            <th data-column="pilgrims-count" draggable="true">ФИО туриста <span
-                                    class="drag-handle">⋮⋮</span></th>
-                            <th data-column="manager" draggable="true">Email <span
-                                    class="drag-handle">⋮⋮</span></th>
-                            <th data-column="places-limit" draggable="true">телефон<span
-                                    class="drag-handle">⋮⋮</span></th>
-                            <th data-column="group-status" draggable="true">статус оплаты <span
-                                    class="drag-handle">⋮⋮</span></th>
-                            <th style="width: 100px;"></th>
+                            <th>ФИО туриста</th>
+                            <th>Email</th>
+                            <th>Телефон</th>
+                            <th>Статус оплаты</th>
+                            <th style="width: 100px;">Действия</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in touristsInfo" :key="index">
-                            <td data-column="pilgrims-count">{{ item.lastname }} {{ item.firstname?.[0] || '' }}. {{ item.patronymic?.[0] || '' }}.</td>
-                            <td data-column="manager">{{ item.email || '' }}</td>
-                            <td data-column="places-limit">{{ item.phone || '' }}</td>
-                            <td data-column="request-status">
-                                {{ item.payment_status || '' }}
+                            <td>{{ item.lastname }} {{ item.firstname }} {{ item.patronymic }}</td>
+                            <td>{{ item.email || '-' }}</td>
+                            <td>{{ item.phone || '-' }}</td>
+                            <td>
+                                <span :class="`status-${item.payment_status}`">
+                                    {{ item.payment_status }}
+                                </span>
                             </td>
-                            <td style="width:100px;">
+                            <td>
                                 <div class="actions-container">
                                     <div class="user-actions">
                                         <div class="more-btn">
                                             <img src="/svg/pencil.svg" alt="edit" @click="selectTourist(item)">
-                                            <img src="/svg/more-horiz.svg" alt="more info">
+                                            <!-- <img src="/svg/trash.svg" alt="delete" @click="handleDeleteTourist(item.id)"> -->
                                         </div>
                                     </div>
                                 </div>
@@ -351,11 +407,13 @@ onMounted(() => {
                     action="warning" 
                     @click="handleDeleteTourist(customerStore.currentTourist.id)"
                     :disabled="!customerStore.currentTourist.id"
+                    :loading="isSaving"
                 />
                 <UButton 
                     text="Сохранить" 
                     size="big" 
                     @click="handleSaveTourist(customerStore.currentTourist.id, customerStore.currentTourist)"
+                    :loading="isSaving"
                 />
             </div>
         </template>

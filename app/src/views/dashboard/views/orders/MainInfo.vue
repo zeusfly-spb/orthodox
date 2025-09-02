@@ -45,6 +45,10 @@ function formatValue() {
     }
 }
 
+function save() {
+    // bookingStore.updateBooking()
+}
+
 watch(() => payType.value, (newValue) => {
     if (newValue === 'full') {
         inputValue.value = formatCurrency(totalPrice.value);
@@ -131,7 +135,7 @@ watch(totalPrice, (newPrice) => {
 
             <div class="action-buttons3">
                 <button class="btn btn-outline t-center">В архив</button>
-                <button class="btn btn-primary t-center">Сохранить</button>
+                <button class="btn btn-primary t-center" @click="save">Сохранить</button>
             </div>
         </div>
     </div>

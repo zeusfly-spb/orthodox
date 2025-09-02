@@ -38,7 +38,7 @@ export const useTourStore = defineStore('tour', () => {
   }
 
   const updateBookingFromTour = (tour: any) => {
-    bookingStore.booking.tourId = tour.id
+    bookingStore.booking.tourId = tour.id.toString()
     bookingStore.booking.counts.nights = tour.night_count || 0
     bookingStore.booking.mainInfo.tourPrice = tour.price || 0
     bookingStore.booking.dates.start = tour.date_start || ''

@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
+import type { BookingState, ContactPerson, Tourist, PaymentInfo, Customer } from '@/types'
 import { bookingApi } from '@/api/bookings'
 import { format, parseISO, min, max } from 'date-fns'
 
 export const useBookingStore = defineStore('booking', () => {
-  const booking = reactive({
+  const booking = reactive<BookingState>({
     id: '',
     title: '',
     tourId: '',
@@ -41,7 +42,6 @@ export const useBookingStore = defineStore('booking', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // Добавляем метод fetchBookingData
   const fetchBookingData = async (bookingId: string | number) => {
     isLoading.value = true
     error.value = null
@@ -96,25 +96,25 @@ export const useBookingStore = defineStore('booking', () => {
     } catch (err) {
       error.value = 'Ошибка при загрузке данных заявки'
       console.error('Booking fetch error:', err)
-      throw err // Пробрасываем ошибку дальше
+      throw err
     } finally {
       isLoading.value = false
     }
   }
 
-  const addContactPerson = (contact) => {
+  const addContactPerson = (contact: ContactPerson) => {
     booking.contactPersons.push(contact)
   }
 
-  const updateClient = (clientData: Partial) => {
+  const updateClient = (clientData: Partial<Customer>) => {
     Object.assign(booking.client, clientData)
   }
 
-  const updatePayment = (paymentData: Partial) => {
+  const updatePayment = (paymentData: Partial<PaymentInfo>) => {
     Object.assign(booking.payment, paymentData)
   }
 
-  const updateTourists = (tourists) => {
+  const updateTourists = (tourists: Tourist[]) => {
     booking.tourists = tourists
   }
 
@@ -126,6 +126,128 @@ export const useBookingStore = defineStore('booking', () => {
     } catch (err) {
       error.value = 'Ошибка при сохранении заявки'
       console.error('Save booking error:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Метод для удаления туриста из массива
+  const removeTourist = (touristId: number) => {
+    const index = booking.tourists.findIndex(t => t.id === touristId)
+    if (index !== -1) {
+      booking.tourists.splice(index, 1)
+      booking.counts.people = booking.tourists.length
+      
+      // Обновляем свободные места
+      if (booking.tourists.length > 0) {
+        const tourSeats = booking.counts.freePlaces + booking.tourists.length
+        booking.counts.freePlaces = tourSeats - booking.tourists.length
+      }
+    }
+  }
+
+  // Метод для обновления данных туриста
+  const updateTouristData = (touristId: number, data: Partial<Tourist>) => {
+    const tourist = booking.tourists.find(t => t.id === touristId)
+    if (tourist) {
+      Object.assign(tourist, data)
+    }
+  }
+
+  // Метод для добавления нового туриста
+  const addTourist = (touristData: Partial<Tourist>) => {
+    const newTourist: Tourist = {
+      id: Date.now(), // временный ID
+      firstname: '',
+      lastname: '',
+      patronymic: '',
+      email: '',
+      phone: '',
+      payment_status: 'Не оплачено',
+      description: '',
+      json_attributes: null,
+      passport_series: '',
+      passport_number: '',
+      passport_issue_date: '',
+      passport_unit_name: '',
+      passport_unit_code: '',
+      passport_birth_date: '',
+      passport_birth_place: '',
+      passport_address: '',
+      gender: '',
+      snils: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ...touristData
+    }
+    
+    booking.tourists.push(newTourist)
+    booking.counts.people = booking.tourists.length
+    
+    // Обновляем свободные места
+    const tourSeats = booking.counts.freePlaces + booking.tourists.length
+    booking.counts.freePlaces = Math.max(0, tourSeats - booking.tourists.length)
+  }
+
+  // Метод для преобразования туристов в формат API
+  const formatTouristsForApi = (tourists: Tourist[]) => {
+    return tourists.map(tourist => ({
+      firstname: tourist.firstname,
+      lastname: tourist.lastname,
+      patronymic: tourist.patronymic,
+      email: tourist.email,
+      phone: tourist.phone,
+      passport_series: tourist.passport_series,
+      passport_number: tourist.passport_number,
+      passport_issue_date: tourist.passport_issue_date,
+      passport_unit_name: tourist.passport_unit_name,
+      passport_unit_code: tourist.passport_unit_code,
+      passport_birth_date: tourist.passport_birth_date,
+      passport_birth_place: tourist.passport_birth_place,
+      passport_address: tourist.passport_address,
+      payment_status: tourist.payment_status,
+      gender: tourist.gender,
+      snils: tourist.snils
+    }));
+  };
+
+  // Метод для полного обновления заявки
+  const updateBooking = async () => {
+    isLoading.value = true
+    try {
+      const requestData = {
+        tour_id: parseInt(booking.tourId),
+        status: booking.status,
+        payment_status: booking.payment.type === 'full' ? 'paid' : 'partial',
+        description: booking.client.comment,
+        customers: formatTouristsForApi(booking.tourists)
+      };
+
+      await bookingApi.patchData(booking.id, requestData)
+      console.log('Booking updated successfully')
+    } catch (err) {
+      error.value = 'Ошибка при обновлении заявки'
+      console.error('Update booking error:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Метод для сохранения только туристов
+  const saveTourists = async () => {
+    isLoading.value = true
+    try {
+      const requestData = {
+        customers: formatTouristsForApi(booking.tourists)
+      };
+
+      await bookingApi.patchData(booking.id, requestData)
+      console.log('Tourists saved successfully')
+    } catch (err) {
+      error.value = 'Ошибка при сохранении данных туристов'
+      console.error('Save tourists error:', err)
       throw err
     } finally {
       isLoading.value = false
@@ -144,6 +266,11 @@ export const useBookingStore = defineStore('booking', () => {
     updateClient,
     updatePayment,
     updateTourists,
-    saveBooking
+    saveBooking,
+    removeTourist,
+    updateTouristData,
+    addTourist,
+    saveTourists,
+    updateBooking
   }
 })
