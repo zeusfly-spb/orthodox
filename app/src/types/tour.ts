@@ -1,3 +1,4 @@
+import type { Service } from "./service"
 export interface Tour {
   id: number | string
   title: string
@@ -10,6 +11,7 @@ export interface Tour {
   is_active: boolean
   dates: string[]
   days: string[]
+  services: Service[]
   ownerable_id: number
   ownerable_type: string
   created_at: string
