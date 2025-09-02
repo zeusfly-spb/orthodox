@@ -1,20 +1,23 @@
 <script setup>
-import { defineProps, defineEmits, reactive, watch, ref, onMounted } from 'vue';
+import { reactive, watch, ref, onMounted } from 'vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import {partnerApi} from '@/api/partners'
+import { useCustomerStore } from '@/stores/customer'
 
 const emit = defineEmits(['add-item'])
+
+const customerStore = useCustomerStore()
+const isMounted = ref(false)
 
 const form = reactive({
     clientType: 'Выберите тип',
     clientName: 'Выберите наименование',
     comment: ''
 })
-const clientNameList = ref([])
 
 function pushForm() {
     emit('add-item', { ...form })
 }
+
 watch(() => form.clientType, (newVal) => {
     if (isMounted.value) pushForm()
 })
@@ -27,16 +30,16 @@ watch(() => form.comment, (newVal) => {
 
 onMounted(async () => {
     try {
-        const response = (await partnerApi.fetchData()).data
-        clientNameList.value = response.map(item => item.name)
+        await customerStore.fetchClientNames()
+        isMounted.value = true
     } catch (err) {
         console.error('Ошибка:', err)
-        // Также устанавливаем значения по умолчанию при ошибке
         form.clientType = ''
         form.clientName = ''
     }
 })
 </script>
+
 <template>
     <div class="section filters">
         <h2 class="section-title">Заказчик</h2>
@@ -51,7 +54,7 @@ onMounted(async () => {
                 <div class="info-item">
                     <label class="info-label">Наименование Заказчика</label>
                     <div class="filter-item">
-                        <UDropdown v-model="form.clientName" :list="clientNameList" :withSearch="true"/>
+                        <UDropdown v-model="form.clientName" :list="customerStore.clientNames" :withSearch="true"/>
                     </div>
                 </div>
             </div>

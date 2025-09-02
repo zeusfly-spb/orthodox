@@ -41,7 +41,7 @@ function removeContact() {
                 Контактное лицо {{ props.countContacts }}
                 <div 
                     class="contact-person__remove-block" 
-                    title="Удалить контакт" 
+                    title="Удалить контактное лицо" 
                     @click="removeContact"
                 >
                     <div 
@@ -125,6 +125,7 @@ function removeContact() {
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: pointer;
         }
     }
 }

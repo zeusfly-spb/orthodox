@@ -1,5 +1,4 @@
 <script setup>
-
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import UInput from '@/components/ui/UInput.vue'
@@ -14,11 +13,18 @@ import PiligrimTourists from './PiligrimTourists.vue';
 import ModalTag from './ModalTag.vue';
 import FilesTable from '../../FilesTable.vue';
 import MainInfo from './MainInfo.vue';
-import { useBookingStore } from '@/stores/booking';
+import { useBookingStore } from '@/stores/booking'
+import { useTourStore } from '@/stores/tour'
+import { useCustomerStore } from '@/stores/customer'
+import { useOrderStore } from '@/stores/order'
+
+const route = useRoute();
+const bookingId = route.params.id
 
 const bookingStore = useBookingStore()
-const route = useRoute();
-bookingStore.booking.id = route.params.id
+const tourStore = useTourStore()
+const customerStore = useCustomerStore()
+const orderStore = useOrderStore()
 
 const isCalendarOpened = reactive({
     startDate: false,
@@ -27,7 +33,7 @@ const isCalendarOpened = reactive({
 
 const handleTourSelect = (selectedTitle) => {
   if (selectedTitle) {
-    bookingStore.findTourByTitle(selectedTitle)
+    tourStore.findTourByTitle(selectedTitle)
   }
 }
 
@@ -41,7 +47,6 @@ const contactPersons = ref([{
 
 function handleAddItem(newItem) {
     bookingStore.booking.contactPersons.push(newItem)
-    // Добавляем новый пустой контакт
     contactPersons.value.push({
         id: Date.now(),
         fullname: '',
@@ -51,18 +56,18 @@ function handleAddItem(newItem) {
     })
 }
 
-// Функция для удаления контакта
 function handleRemoveItem(index) {
     if (contactPersons.value.length > 1) {
         contactPersons.value.splice(index, 1)
-        // Также удаляем из store если нужно
         bookingStore.booking.contactPersons.splice(index, 1)
     }
 }
 
-onMounted(() => {
-    bookingStore.fetchBookingData(bookingStore.booking.id)
-    bookingStore.fetchClientNames()
+onMounted(async () => {
+    await bookingStore.fetchBookingData(bookingId)
+    await customerStore.fetchClientNames()
+    await orderStore.fetchOrderStatuses()
+    await tourStore.fetchTours()
 })
 </script>
 
@@ -76,7 +81,7 @@ onMounted(() => {
                         <h2 class="section-title">Общая информация</h2>
                         <label class="info-label">Название паломнического тура</label>
                         <UDropdown 
-                            :list="bookingStore.toursTitles" 
+                            :list="tourStore.toursTitles" 
                             v-model="bookingStore.booking.title" 
                             :withSearch="true"
                             @update:modelValue="handleTourSelect"
@@ -101,7 +106,7 @@ onMounted(() => {
                                 <label class="info-label">Кол-во ночей</label>
                                 <UInput 
                                     inputType="number" 
-                                    v-model="bookingStore.booking.counts.night_count" 
+                                    v-model="bookingStore.booking.counts.nights" 
                                     :allowNegative="false" 
                                     :inputHeightPx="43"
                                 />
@@ -162,13 +167,14 @@ onMounted(() => {
                             <div class="info-item">
                                 <label class="info-label">Статус</label>
                                 <UDropdown 
-                                    :list="bookingStore.orderSatusList" 
+                                    :list="orderStore.orderStatusList" 
                                     v-model="bookingStore.booking.status" 
                                     :withSearch="false"
                                 />
                             </div>
                         </div>
                     </div>
+                    
                     <ContactPerson 
                         v-for="(contact, index) in contactPersons" 
                         :key="contact.id"
@@ -184,7 +190,7 @@ onMounted(() => {
                     />
 
                     <Client />
-                    <PiligrimTourists :touristCount="bookingStore.booking.counts.people" :maximumCountPlaces="bookingStore.booking.counts.freePlaces" :touristsInfo="bookingStore.booking.tourists"/>
+                    <PiligrimTourists />
 
                     <div class="section filters">
                         <h2 class="section-title">Документы</h2>
@@ -195,25 +201,11 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
-                <MainInfo  
-                    :name="bookingStore.booking.title"
-                    :price="bookingStore.booking.mainInfo.tourPrice"
-                    :touristCount="bookingStore.booking.counts.people"
-                    :nightsCount="bookingStore.booking.counts.nights"
-                    :date="bookingStore.booking.mainInfo.date"
-                    :time="bookingStore.booking.mainInfo.time"
-                />
+                <MainInfo />
             </div>
         </div>
-        <!-- Модальное окно для добавления тегов -->
         <ModalTag v-if="false" />
     </div>
-        <!-- <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
-            <AlertTitle>Ошибка!</AlertTitle>
-            <AlertDescription>
-                {{ profile.error }}
-            </AlertDescription>
-        </Alert> -->
 </template>
 <style scoped lang="scss">
 .main-content {

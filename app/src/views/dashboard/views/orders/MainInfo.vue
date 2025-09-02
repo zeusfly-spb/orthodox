@@ -1,30 +1,20 @@
 <script setup>
-import { ref, defineProps, watch, computed, defineEmits } from 'vue';
-import { useBookingStore } from '@/stores/booking';
+import { ref, watch, computed } from 'vue';
+import { useBookingStore } from '@/stores/booking'
 
-const booking = useBookingStore()
+const bookingStore = useBookingStore()
 
-
-const props = defineProps({
-    name: String,
-    price: Number,
-    touristCount: Number,
-    nightsCount: [Number, String],
-    date: [Date, String],
-    time: [Date, String],
-    imgSrc: String
-})
-
-const emit = defineEmits(['update:inputValue']);
-
-// Всегда начинаем с полной оплаты, нельзя быть null
 const payType = ref('full')
 const inputValue = ref('');
+
+// Получаем данные из стора
+const bookingData = computed(() => bookingStore.booking)
+const totalPrice = computed(() => bookingData.value.mainInfo.tourPrice * bookingData.value.counts.people)
 
 const displayValue = computed({
     get: () => {
         if (payType.value === 'full') {
-            return formatCurrency(props.price * booking.booking.counts.people);
+            return formatCurrency(totalPrice.value);
         } else {
             return inputValue.value;
         }
@@ -36,22 +26,18 @@ const displayValue = computed({
     }
 });
 
-// Форматирование валюты
 function formatCurrency(value) {
     if (!value && value !== 0) return '';
     return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
 }
 
-// Обработка ввода
 function handleInput(event) {
     if (payType.value === 'partial') {
-        // Убираем все нецифры
         let value = event.target.value.replace(/[^\d]/g, '');
         inputValue.value = value;
     }
 }
 
-// Форматирование при потере фокуса
 function formatValue() {
     if (payType.value === 'partial' && inputValue.value) {
         const numericValue = parseInt(inputValue.value) || 0;
@@ -59,53 +45,52 @@ function formatValue() {
     }
 }
 
-// Следим за изменениями
 watch(() => payType.value, (newValue) => {
     if (newValue === 'full') {
-        inputValue.value = formatCurrency(props.price);
+        inputValue.value = formatCurrency(totalPrice.value);
     } else if (newValue === 'partial') {
-        // При переключении на частичную оплату очищаем поле или устанавливаем минимальное значение
         if (!inputValue.value) {
-            inputValue.value = ''; // или можно установить минимальную сумму
+            inputValue.value = '';
         }
     }
 });
 
-watch(() => props.price, (newPrice) => {
+watch(totalPrice, (newPrice) => {
     if (payType.value === 'full') {
         inputValue.value = formatCurrency(newPrice);
     }
 });
 </script>
+
 <template>
     <div class="section">
         <div class="filters">
             <h2 class="section-title">Детали заказа</h2>
             <div class="order-item">
                 <div class="header-sec-right-col">
-                    <div><img :src="props.imgSrc || '/img/mini-sob.png'"></div>
+                    <div><img :src="'/img/mini-sob.png'"></div>
                     <div>
-                        <div class="order-title3">{{ props.name }}</div>
-                        <div class="order-meta">{{ props.date }} {{ props.time }} МСК / {{ props.nightsCount }}</div>
-                        <div class="order-price-3">от {{ props.price }} ₽</div>
+                        <div class="order-title3">{{ bookingData.title }}</div>
+                        <div class="order-meta">{{ bookingData.mainInfo.date }} {{ bookingData.mainInfo.time }} МСК / {{ bookingData.counts.nights }}</div>
+                        <div class="order-price-3">от {{ bookingData.mainInfo.tourPrice }} ₽</div>
                     </div>
-
                 </div>
-                <div v-for="(item, index) in props.touristCount">
+                
+                <div v-for="(item, index) in bookingData.counts.people" :key="index">
                     <div class="tourist-item2">
                         <div class="tourist-name2">Турист {{ index + 1 }}</div>
-                        <div class="tourist-price2">{{ props.price }} ₽</div>
+                        <div class="tourist-price2">{{ bookingData.mainInfo.tourPrice }} ₽</div>
                     </div>
                 </div>
 
                 <div class="total-price2">
                     <div>Общая стоимость:</div>
-                    <div class="tot-pr">{{ props.price * props.touristCount }} ₽</div>
+                    <div class="tot-pr">{{ totalPrice }} ₽</div>
                 </div>
 
                 <hr>
 
-                 <div class="payment-options2">
+                <div class="payment-options2">
                     <label class="payment-option">
                         <input 
                             type="radio" 
@@ -130,17 +115,17 @@ watch(() => props.price, (newPrice) => {
 
                 <div class="partial-payment-section">
                     <label class="info-label">Сумма частичной оплаты</label>
-                        <input 
-                            type="text" 
-                            class="amount-input" 
-                            v-model="displayValue"
-                            :disabled="payType === 'full'"
-                            @input="handleInput"
-                            @blur="formatValue"
-                        >
+                    <input 
+                        type="text" 
+                        class="amount-input" 
+                        v-model="displayValue"
+                        :disabled="payType === 'full'"
+                        @input="handleInput"
+                        @blur="formatValue"
+                    >
 
                     <label class="info-label">Дата полной оплаты</label>
-                    
+                    <!-- Добавьте date picker здесь -->
                 </div>
             </div>
 

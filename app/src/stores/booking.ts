@@ -1,22 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref, reactive, computed } from 'vue'
-import type { Customer } from '@/types/customer'
-import type { 
-  BookingState, 
-  ContactPerson, 
-  Tourist, 
-  PaymentInfo,
-  RoomType,
-  AccommodationOption,
-} from '@/types/booking'
-import { bookingApi, bookingParams } from '@/api/bookings'
-import { tourApi } from '@/api/tours'
-import { partnerApi } from '@/api/partners'
+import { reactive, ref } from 'vue'
+import { bookingApi } from '@/api/bookings'
 import { format, parseISO, min, max } from 'date-fns'
 
 export const useBookingStore = defineStore('booking', () => {
-  // State
-  const booking = reactive<BookingState>({
+  const booking = reactive({
     id: '',
     title: '',
     tourId: '',
@@ -50,80 +38,26 @@ export const useBookingStore = defineStore('booking', () => {
     }
   })
 
-  const toursTitles = ref<string[]>([])
-  const clientNames = ref<string[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-  const orders = ref<object | null>(null)
-  const managers = ref<object | null>(null)
-  const orderSatusList = ref<object | null>(null)
-  const allTours = ref<any[]>([])
-  const selectedTour = ref<any>(null)
 
-  // Room types for accommodation
-  const roomTypes = ref<RoomType[]>([
-    { type: 'single', name: 'Одноместный', capacity: 1, available: 10 },
-    { type: 'double', name: 'Двухместный', capacity: 2, available: 5 },
-    { type: 'double_extra', name: 'Двухместный с доп. местом', capacity: 3, available: 3 }
-  ])
-
-  const enabledRoomTypes = ref(['single', 'double', 'double_extra'])
-  const selectedAccommodation = ref<AccommodationOption | null>(null)
-
-  // Getters
-  const totalPrice = computed(() => {
-    return booking.mainInfo.tourPrice * booking.counts.people
-  })
-
-  const paymentAmount = computed({
-    get: () => {
-      if (booking.payment.type === 'full') {
-        return totalPrice.value
-      }
-      return booking.payment.amount
-    },
-    set: (value: number) => {
-      booking.payment.amount = value
-    }
-  })
-
-  const accommodationOptions = computed(() => {
-    return findAccommodationOptions(
-      booking.counts.people,
-      roomTypes.value.filter(room => enabledRoomTypes.value.includes(room.type))
-    )
-  })
-
-  // Actions
+  // Добавляем метод fetchBookingData
   const fetchBookingData = async (bookingId: string | number) => {
     isLoading.value = true
     error.value = null
 
     try {
-      const [allToursData, bookingsResponse, bookingStatusList] = await Promise.all([
-        tourApi.fetchData(),
-        bookingApi.getData(bookingId),
-        bookingParams()
-      ])
-      const { data: toursData } = allToursData
+      const bookingsResponse = await bookingApi.getData(bookingId)
       const { data: bookingData } = bookingsResponse
-      const { data: bookingStatuses } = bookingStatusList
 
       const { customers, status } = bookingData
       const { title, id, night_count, seats, dates, date, price, time } = bookingData.tour
       
-      const statusObject = bookingStatuses.find(val => val.type === 'status')
-
-      if (statusObject) {
-        orderSatusList.value = Object.values(statusObject.children)
-      }
-
-      allTours.value = toursData
       // Update booking state
-      booking.id = bookingId
+      booking.id = bookingId.toString()
       booking.title = title
       booking.tourId = id
-      booking.status = statusObject.children[status]
+      booking.status = status
       booking.counts.nights = night_count
       booking.counts.people = customers.length
       booking.counts.freePlaces = seats - customers.length
@@ -159,176 +93,57 @@ export const useBookingStore = defineStore('booking', () => {
         updated_at: customer.updated_at
       }))
 
-      // Set tours titles
-      toursTitles.value = toursData.map((tour: any) => tour.title)
-
     } catch (err) {
       error.value = 'Ошибка при загрузке данных заявки'
       console.error('Booking fetch error:', err)
+      throw err // Пробрасываем ошибку дальше
     } finally {
       isLoading.value = false
     }
   }
 
-  const findTourByTitle = (title: string) => {
-    const foundTour = allTours.value.find(tour => tour.title === title)
-    if (foundTour) {
-      selectedTour.value = foundTour
-      updateBookingFromTour(foundTour)
-      return foundTour
-    }
-    return null
-  }
-
-  const updateBookingFromTour = (tour: any) => {
-    booking.tourId = tour.id
-    booking.counts.nights = tour.night_count || 0
-    booking.mainInfo.tourPrice = tour.price || 0
-    booking.dates.start = tour.date_start || ''
-    booking.dates.finish = tour.date_end || ''
-    booking.mainInfo.date = tour.date || ''
-    booking.mainInfo.time = tour.time || ''
-    
-    // Обновляем свободные места
-    if (tour.seats && booking.counts.people) {
-      booking.counts.freePlaces = tour.seats - booking.counts.people
-    }
-  }
-
-  const fetchClientNames = async () => {
-    try {
-      const response = await partnerApi.fetchData()
-      clientNames.value = response.data.map((item: any) => item.name)
-    } catch (err) {
-      console.error('Client names fetch error:', err)
-    }
-  }
-
-  const addContactPerson = (contact: ContactPerson) => {
+  const addContactPerson = (contact) => {
     booking.contactPersons.push(contact)
   }
 
-  const updateClient = (clientData: Partial<Customer>) => {
+  const updateClient = (clientData: Partial) => {
     Object.assign(booking.client, clientData)
   }
 
-  const updatePayment = (paymentData: Partial<PaymentInfo>) => {
+  const updatePayment = (paymentData: Partial) => {
     Object.assign(booking.payment, paymentData)
   }
 
-  const updateTourists = (tourists: Tourist[]) => {
+  const updateTourists = (tourists) => {
     booking.tourists = tourists
   }
 
   const saveBooking = async () => {
     isLoading.value = true
     try {
-      // Здесь будет логика сохранения заявки
       console.log('Saving booking:', booking)
       // await bookingApi.updateData(booking.id, booking)
     } catch (err) {
       error.value = 'Ошибка при сохранении заявки'
       console.error('Save booking error:', err)
+      throw err
     } finally {
       isLoading.value = false
     }
   }
 
-  // Accommodation functions
-  const findAccommodationOptions = (people: number, roomTypes: RoomType[], currentCombination: AccommodationOption = {}, index = 0): AccommodationOption[] => {
-    if (people === 0) {
-      return [{ ...currentCombination }]
-    }
-    
-    if (index >= roomTypes.length) {
-      return []
-    }
-    
-    const results: AccommodationOption[] = []
-    const room = roomTypes[index]
-    const maxRooms = Math.min(
-      Math.floor(people / room.capacity),
-      room.available
-    )
-    
-    for (let count = 0; count <= maxRooms; count++) {
-      const peopleCovered = count * room.capacity
-      
-      if (peopleCovered <= people) {
-        const newCombination = {
-          ...currentCombination,
-          [room.type]: count
-        }
-        
-        const remainingResults = findAccommodationOptions(
-          people - peopleCovered,
-          roomTypes,
-          newCombination,
-          index + 1
-        )
-        
-        results.push(...remainingResults)
-      }
-    }
-    
-    return results
-  }
-
-  const toggleRoomType = (roomType: string, isEnabled: boolean) => {
-    if (isEnabled) {
-      if (!enabledRoomTypes.value.includes(roomType)) {
-        enabledRoomTypes.value.push(roomType)
-      }
-    } else {
-      enabledRoomTypes.value = enabledRoomTypes.value.filter(type => type !== roomType)
-    }
-  }
-
-  const selectAccommodation = (option: AccommodationOption) => {
-    selectedAccommodation.value = option
-  }
-
-  const calculateTotalRooms = (option: AccommodationOption) => {
-    return Object.values(option).reduce((total, count) => total + count, 0)
-  }
-
-  const calculateTotalPeople = (option: AccommodationOption) => {
-    return Object.entries(option).reduce((total, [roomType, count]) => {
-      const room = roomTypes.value.find(r => r.type === roomType)
-      return total + (count * (room?.capacity || 0))
-    }, 0)
-  }
-
   return {
     // State
     booking,
-    toursTitles,
-    clientNames,
     isLoading,
     error,
-    roomTypes,
-    enabledRoomTypes,
-    selectedAccommodation,
-    accommodationOptions,
-    orders,
-    orderSatusList,
-    managers,
-    // Getters
-    totalPrice,
-    paymentAmount,
-
+    
     // Actions
     fetchBookingData,
-    fetchClientNames,
     addContactPerson,
     updateClient,
     updatePayment,
     updateTourists,
-    saveBooking,
-    toggleRoomType,
-    selectAccommodation,
-    calculateTotalRooms,
-    calculateTotalPeople,
-    findTourByTitle
+    saveBooking
   }
 })

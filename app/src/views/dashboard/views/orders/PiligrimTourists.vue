@@ -1,50 +1,37 @@
 <script setup>
-import { defineProps, defineEmits, reactive, watch, ref, onMounted, computed } from 'vue';
+import { defineEmits, ref, onMounted, computed, watch } from 'vue';
 import UInput from '@/components/ui/UInput.vue';
 import UButton from '@/components/ui/UButton.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
 import UModal from '@/components/ui/UModal.vue';
-import { useCustomerStore } from '@/stores/customer';
-import { useBookingStore } from '@/stores/booking';
-// import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover' 
-// import { Button } from '@/components/ui/button'
-// import { Calendar as CalendarIcon } from 'lucide-vue-next'
-// import AppDatePicker from '@/components/app/AppDatePicker.vue'
+import { useAccommodationStore } from '@/stores/accommodation'
+import { useBookingStore } from '@/stores/booking'
+import { useCustomerStore } from '@/stores/customer'
 
-const props = defineProps({
-    touristCount: Number,
-    maximumCountPlaces: Number,
-    touristsInfo: Array
-})
 const emit = defineEmits(['accommodation-selected', 'update:selectedOption']);
 
-const customer = useCustomerStore()
-const booking = useBookingStore()
+const accommodationStore = useAccommodationStore()
+const bookingStore = useBookingStore()
+const customerStore = useCustomerStore()
 
 const isShowModal = ref(false)
-
-const innerTouristCount = ref(props.touristCount || 1)
-const availableRoomTypes = ref([
-    { type: 'single', name: 'Одноместный', capacity: 1, available: 10 },
-    { type: 'double', name: 'Двухместный', capacity: 2, available: 5 },
-    { type: 'double_extra', name: 'Двухместный с доп. местом', capacity: 3, available: 3 }
-])
-
-// Добавляем состояние для выбранных типов номеров
-const enabledRoomTypes = ref(['single', 'double', 'double_extra']) // По умолчанию все включены
-
-const accommodationOptions = ref([])
+const innerTouristCount = ref(bookingStore.booking.counts.people || 1)
 const selectedOption = ref(null)
-// const isCalendarOpened = ref(false)
 
-// Вычисляемое свойство для отфильтрованных вариантов
+// Используем данные из сторов
+const availableRoomTypes = computed(() => accommodationStore.roomTypes)
+const enabledRoomTypes = computed(() => accommodationStore.enabledRoomTypes)
+const accommodationOptions = computed(() => accommodationStore.accommodationOptions)
+const touristsInfo = computed(() => bookingStore.booking.tourists || [])
+const maximumCountPlaces = computed(() => bookingStore.booking.counts.freePlaces)
+
 const filteredAccommodationOptions = computed(() => {
-    return accommodationOptions.value.filter(option => {
-        // Проверяем, что вариант использует только включенные типы номеров
-        return Object.keys(option).every(roomType => 
-            option[roomType] === 0 || enabledRoomTypes.value.includes(roomType)
-        )
-    })
+  if (!accommodationOptions.value) return []
+  return accommodationOptions.value.filter(option => {
+      return Object.keys(option).every(roomType => 
+          option[roomType] === 0 || enabledRoomTypes.value.includes(roomType)
+      )
+  })
 })
 
 function closeModal() {
@@ -52,111 +39,58 @@ function closeModal() {
 }
 
 function selectTourist(tourist) {
-    customer.updateCustomer(tourist)
+    customerStore.updateCustomer(tourist)
     isShowModal.value = true
 }
 
-function handleDeleteTourist(id) {
-    customer.deleteTourist(id)
-    closeModal()
-    booking.fetchBookingData(booking.booking.id)
+async function handleDeleteTourist(id) {
+    try {
+        await customerStore.deleteTourist(id)
+        closeModal()
+        await bookingStore.fetchBookingData(bookingStore.booking.id)
+    } catch (error) {
+        console.error('Error deleting tourist:', error)
+    }
 }
-function handleSaveTourist(id, data) {
-    customer.updateTourist(id, data)
-    closeModal()
-    booking.fetchBookingData(booking.booking.id)
+
+async function handleSaveTourist(id, data) {
+    try {
+        await customerStore.updateTourist(id, data)
+        closeModal()
+        await bookingStore.fetchBookingData(bookingStore.booking.id)
+    } catch (error) {
+        console.error('Error updating tourist:', error)
+    }
 }
 
 function calculateOptions() {
-    if (innerTouristCount.value < 1) {
-        accommodationOptions.value = [];
-        return;
-    }
-    accommodationOptions.value = findAccommodationOptions(
-        innerTouristCount.value,
-        availableRoomTypes.value.filter(room => enabledRoomTypes.value.includes(room.type))
-    );
+    // Обновляем количество людей в сторе
+    accommodationStore.updatePeopleCount(innerTouristCount.value)
+    
+    // Теперь варианты будут автоматически пересчитаны через computed свойство
+    // accommodationOptions обновится автоматически
 }
 
-// Функции для работы с типами номеров
 function isRoomTypeEnabled(roomType) {
     return enabledRoomTypes.value.includes(roomType);
 }
 
 function toggleRoomType(roomType, isEnabled) {
-    if (isEnabled) {
-        // Добавляем тип, если его нет в списке
-        if (!enabledRoomTypes.value.includes(roomType)) {
-            enabledRoomTypes.value.push(roomType);
-        }
-    } else {
-        // Удаляем тип из списка
-        enabledRoomTypes.value = enabledRoomTypes.value.filter(type => type !== roomType);
-    }
-    
-    // Пересчитываем варианты при изменении фильтра
-    calculateOptions();
-}
-
-// Остальные функции остаются без изменений
-function findAccommodationOptions(people, roomTypes, currentCombination = {}, index = 0) {
-    if (people === 0) {
-        return [{ ...currentCombination }];
-    }
-    
-    if (index >= roomTypes.length) {
-        return [];
-    }
-    
-    const results = [];
-    const room = roomTypes[index];
-    const maxRooms = Math.min(
-        Math.floor(people / room.capacity),
-        room.available
-    );
-    
-    for (let count = 0; count <= maxRooms; count++) {
-        const peopleCovered = count * room.capacity;
-        
-        if (peopleCovered <= people) {
-            const newCombination = {
-                ...currentCombination,
-                [room.type]: count
-            };
-            
-            const remainingResults = findAccommodationOptions(
-                people - peopleCovered,
-                roomTypes,
-                newCombination,
-                index + 1
-            );
-            
-            results.push(...remainingResults);
-        }
-    }
-    
-    return results;
-}
-
-function getRoomName(roomType) {
-    const room = availableRoomTypes.value.find(r => r.type === roomType);
-    return room ? room.name : roomType;
+    accommodationStore.toggleRoomType(roomType, isEnabled)
+    // После изменения типов комнат пересчитываем варианты
+    calculateOptions()
 }
 
 function getTotalRooms(option) {
-    return Object.values(option).reduce((total, count) => total + count, 0);
+    return accommodationStore.calculateTotalRooms(option)
 }
 
 function calculateTotalPeople(option) {
-    return Object.entries(option).reduce((total, [roomType, count]) => {
-        const room = availableRoomTypes.value.find(r => r.type === roomType);
-        return total + (count * (room?.capacity || 0));
-    }, 0);
+    return accommodationStore.calculateTotalPeople(option)
 }
 
 function selectOption(option) {
     selectedOption.value = option;
-    console.log('Выбран вариант:', option);
 }
 
 function isOptionSelected(option) {
@@ -165,49 +99,11 @@ function isOptionSelected(option) {
 
 function emitSelectedOption() {
     if (selectedOption.value) {
-        // Отправляем выбранный вариант родителю
         emit('accommodation-selected', selectedOption.value);
-        
-        // Или если используете v-model:
         emit('update:selectedOption', selectedOption.value);
-        
-        console.log('Отправлено родителю:', selectedOption.value);
     } else {
-        console.warn('Не выбран вариант размещения');
-        // Можно показать сообщение пользователю
         alert('Пожалуйста, выберите вариант размещения');
     }
-}
-
-function getAccommodationString(option) {
-    if (!option) return '';
-    
-    const parts = [];
-    
-    // Проходим по всем типам номеров в варианте
-    Object.entries(option).forEach(([roomType, count]) => {
-        if (count > 0) {
-            const room = availableRoomTypes.value.find(r => r.type === roomType);
-            if (room) {
-                parts.push(`${room.name} ×${count}`);
-            }
-        }
-    });
-    
-    // Добавляем общее количество туристов
-    const totalPeople = calculateTotalPeople(option);
-    if (parts.length > 0) {
-        return `${parts.join(' + ')} / ${totalPeople} турист${getPeopleEnding(totalPeople)}`;
-    }
-    
-    return '';
-}
-
-// Функция для правильного окончания слова "турист"
-function getPeopleEnding(count) {
-    if (count % 10 === 1 && count % 100 !== 11) return '';
-    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'а';
-    return 'ов';
 }
 
 watch(innerTouristCount, (newValue) => {
@@ -216,16 +112,19 @@ watch(innerTouristCount, (newValue) => {
     selectedOption.value = null;
 });
 
-watch(() => props.touristCount, (newValue) => {
+watch(() => bookingStore.booking.counts.people, (newValue) => {
     if (newValue !== undefined && newValue >= 1) {
         innerTouristCount.value = newValue;
+        calculateOptions();
     }
 });
 
 onMounted(() => {
-    calculateOptions();
+    // Инициализируем количество людей при монтировании
+    accommodationStore.updatePeopleCount(innerTouristCount.value)
 });
 </script>
+
 <template>
     <div class="section filters">
         <h2 class="section-title">Паломники / Туристы</h2>
@@ -237,6 +136,7 @@ onMounted(() => {
                 inputType="number"
                 :inputHeightPx="43"
                 :min="1"
+                @update:modelValue="calculateOptions"
             />
         </div>
         <div class="pilgrims-info-container">
@@ -269,40 +169,37 @@ onMounted(() => {
                     </label>
                 </div>
             </div>
+            
             <div class="placement-options-section">
                 <div>
                     <label class="info-label">Варианты размещения</label>
                     <div class="placement-options">
-                        <!-- Динамические варианты размещения с фильтрацией -->
-                            <div class="placement-options">
-                            <label 
-                                class="placement-option"
-                                v-for="(option, index) in filteredAccommodationOptions"
-                                :key="index"
-                            >
-                                <input type="checkbox" :checked="isOptionSelected(option)" @change="selectOption(option)">
-                                <div class="bed-groups-container">
-                                    <!-- Группируем кровати по типам номеров с отступами -->
-                                    <template v-for="roomType in availableRoomTypes" :key="roomType.type">
+                        <label 
+                            class="placement-option"
+                            v-for="(option, index) in filteredAccommodationOptions"
+                            :key="index"
+                        >
+                            <input type="checkbox" :checked="isOptionSelected(option)" @change="selectOption(option)">
+                            <div class="bed-groups-container">
+                                <template v-for="roomType in availableRoomTypes" :key="roomType.type">
+                                    <div 
+                                        v-if="option[roomType.type] > 0"
+                                        class="bed-group"
+                                        :class="`group-${roomType.type}`"
+                                    >
                                         <div 
-                                            v-if="option[roomType.type] > 0"
-                                            class="bed-group"
-                                            :class="`group-${roomType.type}`"
+                                            v-for="n in option[roomType.type]" 
+                                            :key="n"
+                                            class="bed-icon"
+                                            :title="roomType.name"
                                         >
-                                            <div 
-                                                v-for="n in option[roomType.type]" 
-                                                :key="n"
-                                                class="bed-icon"
-                                                :title="roomType.name"
-                                            >
-                                                <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
-                                            </div>
+                                            <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
                                         </div>
-                                    </template>
-                                </div>
-                                <span class="placement-text">x{{ getTotalRooms(option) }}</span>
-                            </label>
-                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <span class="placement-text">x{{ getTotalRooms(option) }}</span>
+                        </label>
                     </div>
                 </div>
                 <div class="buttom-right">
@@ -311,11 +208,6 @@ onMounted(() => {
                         size="small"
                         @click="emitSelectedOption"
                     />
-                    <!-- <UButton 
-                        text="Выбрано"
-                        size="small"
-                        variant="secondary"
-                    /> -->
                 </div>
             </div>
         </div>
@@ -337,18 +229,12 @@ onMounted(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- <tr class="bed-i-tabel">
-                            <td colspan="5">
-                            </td>
-                        </tr> -->
                         <tr v-for="(item, index) in touristsInfo" :key="index">
-                            <td data-column="pilgrims-count">{{ item.lastname }} {{ item.firstname[0] }}. {{ item.patronymic[0] }}.</td>
-                            <td data-column="manager">{{ item.email }}</td>
-                            <td data-column="places-limit">{{ item.phone }}</td>
+                            <td data-column="pilgrims-count">{{ item.lastname }} {{ item.firstname?.[0] || '' }}. {{ item.patronymic?.[0] || '' }}.</td>
+                            <td data-column="manager">{{ item.email || '' }}</td>
+                            <td data-column="places-limit">{{ item.phone || '' }}</td>
                             <td data-column="request-status">
-                                <!-- <div class="status-item">
-                                    <span class="status-name">В работе</span>
-                                </div> -->
+                                {{ item.payment_status || '' }}
                             </td>
                             <td style="width:100px;">
                                 <div class="actions-container">
@@ -366,6 +252,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    
     <UModal v-show="isShowModal" @close="closeModal">
         <template #headerTitle>
             Редактировать данные о туристе
@@ -377,40 +264,27 @@ onMounted(() => {
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label for="name">Имя<span>*</span></label>
-                        <UInput id="name" v-model="customer.customer.firstname" :inputHeightPx="36" placeholder=""/>
+                        <UInput id="name" v-model="customerStore.currentTourist.firstname" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label for="secname">Фамилия<span>*</span></label>
-                        <UInput id="secname" v-model="customer.customer.lastname" :inputHeightPx="36" placeholder=""/>
+                        <UInput id="secname" v-model="customerStore.currentTourist.lastname" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label for="surname">Отчество</label>
-                        <UInput id="surname" v-model="customer.customer.patronymic" :inputHeightPx="36" placeholder=""/>
+                        <UInput id="surname" v-model="customerStore.currentTourist.patronymic" :inputHeightPx="36" placeholder=""/>
                     </div>
                 </div>
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label>Дата рождения</label>
-                        <UInput v-model="customer.customer.passport_birth_date" :inputHeightPx="36" placeholder=""/>
-                        <!-- <div class="flex">
-                            <Popover>
-                                <PopoverTrigger as-child>
-                                <Button variant="outline" class="w-full justify-start text-left font-normal flex gap-2" @click="isCalendarOpened = true">
-                                    <CalendarIcon class="mr-2 h-4 w-4" />
-                                    <span>{{ customer.customer.passport_birth_date || 'Выберите дату' }}</span>
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent class="w-auto p-0">
-                                    <AppDatePicker v-if="isCalendarOpened" v-model="customer.customer.passport_birth_date" @addDate="isCalendarOpened = false"/>
-                                </PopoverContent>
-                            </Popover>
-                        </div> -->
+                        <UInput v-model="customerStore.currentTourist.passport_birth_date" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label for="name">Пол</label>
                         <UDropdown 
                             :list="['Мужской', 'Женский']" 
-                            v-model="customer.customer.gender" 
+                            v-model="customerStore.currentTourist.gender" 
                             :withSearch="false"
                         />
                     </div>
@@ -418,41 +292,41 @@ onMounted(() => {
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label>Серия документа</label>
-                        <UInput v-model="customer.customer.passport_series" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.passport_series" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label>Номер документа</label>
-                        <UInput v-model="customer.customer.passport_number" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.passport_number" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label>Дата выдачи документа</label>
-                        <UInput v-model="customer.customer.passport_issue_date" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.passport_issue_date" :inputHeightPx="36" placeholder=""/>
                     </div>
                 </div>
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label>Код подразделения</label>
-                        <UInput v-model="customer.customer.passport_unit_code" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.passport_unit_code" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__block">
                         <div class="base-info__column">
                             <label>Кем выдан</label>
-                            <UInput v-model="customer.customer.passport_unit_name" :inputHeightPx="36" placeholder=""/>
+                            <UInput v-model="customerStore.currentTourist.passport_unit_name" :inputHeightPx="36" placeholder=""/>
                         </div>
                     </div>
                 </div>
                 <div class="base-info__column">
                     <label>Адрес регистрации</label>
-                    <UInput v-model="customer.customer.passport_address" :inputHeightPx="36" placeholder=""/>
+                    <UInput v-model="customerStore.currentTourist.passport_address" :inputHeightPx="36" placeholder=""/>
                 </div>
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label>Email</label>
-                        <UInput v-model="customer.customer.email" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.email" :inputHeightPx="36" placeholder=""/>
                     </div>
                     <div class="base-info__column">
                         <label>Телефон</label>
-                        <UInput v-model="customer.customer.phone" :inputHeightPx="36" placeholder=""/>
+                        <UInput v-model="customerStore.currentTourist.phone" :inputHeightPx="36" placeholder=""/>
                     </div>
                 </div>
                 <div class="base-info__block">
@@ -460,20 +334,29 @@ onMounted(() => {
                         <label>Статус оплаты</label>
                         <UDropdown 
                             :list="['Оплачено', 'Не оплачено']" 
-                            v-model="customer.customer.payment_status" 
+                            v-model="customerStore.currentTourist.payment_status" 
                             :withSearch="false"
                         />
                     </div>
-                    <!-- <label>Теги туриста</label> -->
-                    <!-- <UInput v-model="modalFields.name" :inputHeightPx="26" placeholder=""/> -->
                 </div>
             </section>
         </template>
         
         <template #buttons>
             <div class="footer-buttons">
-                <UButton text="Удалить туриста" size="big" variant="secondary" action="warning" @click="handleDeleteTourist(customer.customer.id)"/>
-                <UButton text="Сохранить" size="big" @click="handleSaveTourist(customer.customer.id, customer.customer)"/>
+                <UButton 
+                    text="Удалить туриста" 
+                    size="big" 
+                    variant="secondary" 
+                    action="warning" 
+                    @click="handleDeleteTourist(customerStore.currentTourist.id)"
+                    :disabled="!customerStore.currentTourist.id"
+                />
+                <UButton 
+                    text="Сохранить" 
+                    size="big" 
+                    @click="handleSaveTourist(customerStore.currentTourist.id, customerStore.currentTourist)"
+                />
             </div>
         </template>
     </UModal>
