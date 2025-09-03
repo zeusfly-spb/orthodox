@@ -77,13 +77,13 @@ const routes = [
       {
         path: 'tours/new',
         name: 'tour-create',
-        component: () => import('@/views/dashboard/views/tours/TourFormPage.vue'),
+        component: () => import('@/views/dashboard/views/tours/TourFormPage/index.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'tours/:id/edit',
         name: 'tour-edit',
-        component: () => import('@/views/dashboard/views/tours/TourFormPage.vue'),
+        component: () => import('@/views/dashboard/views/tours/TourFormPage/index.vue'),
         meta: { requiresAuth: true },
         props: true,
       },

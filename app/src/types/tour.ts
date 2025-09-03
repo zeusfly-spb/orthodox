@@ -20,4 +20,16 @@ export interface Tour {
     slug: string
     title: string
   }
+  tourType?: {
+    slug: string
+    title: string
+  }
+  tourCategory?: {
+    slug: string
+    title: string
+  }
+  tourTransport?: {
+    slug: string
+    title: string
+  }
 }
