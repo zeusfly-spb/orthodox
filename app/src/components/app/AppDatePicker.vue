@@ -40,7 +40,7 @@ watch(internalDate, (val) => {
       locale="ru-RU"
     />
     <div class="p-2 border-t flex justify-end">
-      <Button type="button" @click="$emit('addDate')" :disabled="!internalDate" size="sm">
+      <Button type="button" @click.stop="$emit('addDate')" :disabled="!internalDate" size="sm">
         Добавить дату
       </Button>
     </div>

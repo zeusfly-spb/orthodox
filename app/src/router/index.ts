@@ -15,22 +15,24 @@ import Login from '@/views/auth/Login.vue'
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: Login,
+    path: '/auth',
+    name: 'auth',
+    component: () => import('@/views/auth/AuthLayout.vue'),
     meta: { guestOnly: true },
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: Login,
-    meta: { guestOnly: true },
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('@/views/auth/Register.vue'),
-    meta: { guestOnly: true },
+    children: [
+      {
+        path: '/login',
+        name: 'login',
+        component: Login,
+        meta: { guestOnly: true },
+      },
+      {
+        path: '/register',
+        name: 'register',
+        component: () => import('@/views/auth/Register.vue'),
+        meta: { guestOnly: true },
+      },
+    ]
   },
   {
     path: '/forgot-password',
@@ -43,6 +45,12 @@ const routes = [
     name: 'reset-password',
     component: () => import('@/views/auth/ResetPassword.vue'),
     meta: { guestOnly: true },
+  },
+  {
+    path: '/email/verify/code',
+    name: 'email-verify-code',
+    component: () => import('@/views/auth/VerificationCode.vue'),
+    meta: { requiresAuth: false },
   },
   {
     path: '/email/verify/:id/:hash',
@@ -59,13 +67,13 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('@/views/dashboard/Dashboard.vue'),
+    component: () => import('@/views/dashboard/MainLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
-        path: '',
-        name: 'dashboard-home',
-        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
+        path: '/',
+        name: 'home',
+        component: () => import('@/views/dashboard/views/operator/Profile.vue'),
         meta: { requiresAuth: true },
       },
       {
@@ -108,7 +116,19 @@ const routes = [
       {
         path: 'operator',
         name: 'operator-view',
-        component: () => import('@/views/dashboard/views/operator/ProfileView.vue'),
+        component: () => import('@/views/dashboard/views/operator/Profile.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'orders',
+        name: 'orders',
+        component: () => import('@/views/dashboard/views/orders/Orders.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'orders/edit/:id',
+        name: 'order-edit',
+        component: () => import('@/views/dashboard/views/orders/EditOrder.vue'),
         meta: { requiresAuth: true },
       },
       {
@@ -128,16 +148,29 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior() {
+    return { top: 0 };
+  },
   routes,
 })
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  if (authStore.accessToken && !authStore.isInitialized) {
+    try {
+      await authStore.initializeAuth()
+    } catch (error) {
+      console.error('Failed to initialize auth:', error)
+    }
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login' })
+  } else if (to.meta.requiresAuth && authStore.isAuthenticated && !authStore.isEmailVerified) {
+    next({ name: 'email-verify-code' })
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    next({ name: 'dashboard' })
+    next({ name: 'dashboard-home' })
   } else {
     next()
   }

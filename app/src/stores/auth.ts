@@ -13,6 +13,21 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!accessToken.value)
+  const isEmailVerified = computed(() => user.value?.email_verified ?? false)
+  const isInitialized = ref(false)
+
+  const initializeAuth = async () => {
+    if (isInitialized.value || !accessToken.value) return
+
+    try {
+      await loadUser()
+      isInitialized.value = true
+    } catch (error) {
+      console.error('Initial user load failed:', error)
+      accessToken.value = null
+      localStorage.removeItem(accessTokenName)
+    }
+  }
 
   const loadUser = async (): Promise<void> => {
     await getUser();
@@ -119,11 +134,14 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     isAuthenticated,
+    isEmailVerified,
     operators,
+    isInitialized,
     login,
     register,
     logout,
     loadUser,
+    initializeAuth,
     checkToken,
     loadOperators,
   }

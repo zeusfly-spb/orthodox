@@ -57,23 +57,16 @@ api.interceptors.response.use(
       config: response.config,
     };
   },
-  async (error: any) => {
-    const authStore = useAuthStore();
-    // TODO: Remove debug log in production
+  async (error) => {
+    const authStore = useAuthStore()
 
     if (error.code === 'ECONNABORTED') {
       error.response = {
         status: 408,
         statusText: 'Request Timeout',
-        data: {
-          message:
-            'The server did not respond within ' +
-            (error.config?.timeout || DEFAULT_TIMEOUT) / DEFAULT_TIMEOUT +
-            '  seconds',
-        },
-        headers: {},
-        config: {},
+        data: { message: 'Превышено время ожидания ответа сервера' },
       }
+      return Promise.reject(error)
     }
 
     if (error.response?.headers?.authorization && !isRefreshing) {
@@ -94,22 +87,10 @@ api.interceptors.response.use(
       return handleExit();
     }
 
-    if (
-      error.response?.status === 403
-      // || error.response.status === 429
-    ) {
-      const authStore = useAuthStore();
-      const accessToken = authStore.accessToken;
-
-      if (retryCount < maxRetries) {
-        try {
-          return handleRetry(error.config, accessToken);
-        } finally {
-          retryCount++;
-        }
-      } else {
-        retryCount = 0; // Сбрасываем счетчик
-        return handleExit();
+    if (error.response?.status === 403) {
+      await authStore.loadUser()
+      if (!authStore.isEmailVerified) {
+        window.location.reload()
       }
     }
 

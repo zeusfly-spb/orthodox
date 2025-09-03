@@ -139,10 +139,6 @@ const handleInput = (event: Event) => {
   debouncedSearchTours(query)
 }
 
-const searchTours = () => {
-  debouncedSearchTours()
-}
-
 const selectTour = (tour: Tour) => {
   form.tour = tour
   form.tour_id = tour.id

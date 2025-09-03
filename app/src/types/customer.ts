@@ -5,6 +5,7 @@ export interface Customer {
   patronymic?: string | null
   email?: string
   phone?: string
+  payment_status: string
   passport_series?: string | null
   passport_number?: string | null
   passport_issue_date?: string | null

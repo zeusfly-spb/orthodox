@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {ref, watch, computed} from 'vue';
-import {useRoute} from 'vue-router';
-import {useRouter} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import {useToursStore} from "@/stores/tours.ts";
 import {storeToRefs} from "pinia";
 import {Card, CardContent, CardFooter} from '@/components/ui/card';
@@ -35,7 +34,6 @@ const handleAddTour = (): void => {
 const handleDownloadReport = (): void => {
   console.log('DOWNLOAD REPORT');
 };
-
 const handleEditTour = (id: string | number): void => {
   router
     .push({

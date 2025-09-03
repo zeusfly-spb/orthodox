@@ -1,245 +1,283 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+<script setup>
+import UButton from '@/components/ui/UButton.vue'
+import Dropdown from '@/components/ui/RegDropdown.vue'
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'vue-sonner'
-import type { LoginCredentials } from '@/types/auth'
-import { Mail, Lock } from 'lucide-vue-next'
-import {
-  SelectContent,
-  SelectGroup,
-  SelectIcon,
-  SelectItem,
-  SelectItemIndicator,
-  SelectLabel,
-  SelectPortal,
-  SelectRoot,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-  SelectViewport,
-} from 'reka-ui'
+import { fetchOperators } from '@/api/operators'
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
-const router = useRouter()
 const authStore = useAuthStore()
+const router = useRouter()
+const pilgrimServiceList = ref([])
+const hasErrorAlert = ref(false)
 
-const form = ref<LoginCredentials>({
-  email: '',
-  password: '',
+const form = reactive({
+    serviceId: {
+        value: ''
+    },
+    email: {
+        value: '',
+        isVisible: true
+    },
+    password: {
+        value: '',
+        isVisible: true
+    }
 })
 
-const handleSubmit = async () => {
-  try {
-    await authStore.login(form.value)
-    router.push({ name: 'dashboard-home' })
-  } catch (error: unknown) {
-    const errorMessage = 'Неверные логин или пароль'
-    toast.error(errorMessage)
-    console.error(error)
-    form.value.password = ''
-  }
+function inFocus(input){
+    form[input].isVisible = false
 }
-import { Icon } from '@iconify/vue'
-import { ComboboxAnchor, ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxSeparator, ComboboxTrigger, ComboboxViewport } from 'reka-ui'
+function outFocus(input){
+    if(!form[input].value){
+        form[input].isVisible = true
+    }
+}
+function selectService(key){
+    form.serviceId.value = key
+}
 
-const options = [
-  { name: 'Fruit', children: [
-      { name: 'Apple' },
-      { name: 'Banana' },
-      { name: 'Orange' },
-      { name: 'Honeydew' },
-      { name: 'Grapes' },
-      { name: 'Watermelon' },
-      { name: 'Cantaloupe' },
-      { name: 'Pear' },
-    ] },
-  { name: 'Vegetable', children: [
-      { name: 'Cabbage' },
-      { name: 'Broccoli' },
-      { name: 'Carrots' },
-      { name: 'Lettuce' },
-      { name: 'Spinach' },
-      { name: 'Bok Choy' },
-      { name: 'Cauliflower' },
-      { name: 'Potatoes' },
-    ] },
-];
+async function login(){
+    for(const key in form){
+        if(!form[key].value){
+            return
+        }
+    }
+    const credentials = {
+        // tour_operator_id: form.serviceId.value,
+        email: form.email.value,
+        password: form.password.value
+    };
+
+    try {
+        await authStore.login(credentials)
+        localStorage.setItem('tour_operator_id', form.serviceId.value)
+        router.push({ name: 'home' })
+    } catch (error) {
+        console.error('Login failed:', authStore.error)
+        hasErrorAlert.value = true
+
+        setTimeout(() => {
+            hasErrorAlert.value = false
+        }, 3000) // Автоскрытие через 3 сек
+    }
+
+}
+
+onMounted(async () => {
+    try {
+        pilgrimServiceList.value = await fetchOperators()
+    } catch (err) {
+        console.error('Ошибка:', err)
+    }
+})
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-gray-50 inter">
-    <div
-      class="mt-[24px] px-[42px]"
-    >
-      <div
-        class="w-full text-gray-500"
-        style="display: flex; flex-direction: row;"
-      >
-        <img
-          src="@/assets/images/app-logo.png"
-          alt="App Logo"
-          style="height: 46px"
-        />
-        <div
-          class="w-full desk-text ml-4"
-        >
-          Автономная Некоммерческая <br>
-          Организация Паломнический Центр
-        </div>
-        <template>
-          <SelectRoot>
-            <SelectTrigger>…</SelectTrigger>
-            <SelectPortal>
-              <SelectContent
-                class="SelectContent"
-                position="popper"
-                :side-offset="5"
-              >
-                …
-              </SelectContent>
-            </SelectPortal>
-          </SelectRoot>
-        </template>
-        <div
-          class="flex items-center underlined"
-        >
-          <a href="">
-            Помощь
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex grow items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card class="w-full max-w-md">
-        <CardHeader>
-          <CardTitle class="text-3xl mb-2">
-            Войти в систему
-          </CardTitle>
-          <CardDescription class="text-gray-800">
-            Введите свою электронную почту и пароль
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form @submit.prevent="handleSubmit" class="space-y-6">
-
-            <div class="space-y-2">
-              <div class="relative">
-
-              </div>
+    <div class="login-wrapper">
+        <div class="header">
+            <div class="header-title">
+                Войти в систему
             </div>
-
-            <div class="space-y-2">
-              <div class="relative">
-                <Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                <Input
-                  id="email"
-                  v-model="form.email"
-                  type="email"
-                  placeholder="E-mail"
-                  required
-                  class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
+            <div class="header-description">
+                Введите свою электронную почту и пароль.
+            </div>
+        </div>
+        <div class="inputs">
+            <Dropdown
+                :list="pilgrimServiceList"
+                @update="selectService"
+            />
+            <div class="input-login-wrapper">
+                <input
+                    type="email"
+                    class="input email"
+                    v-model="form.email.value"
+                    id="email-input"
+                    @focus="inFocus('email')"
+                    @blur="outFocus('email')"
                 />
-              </div>
+                <label
+                    class="input-login-wrapper__placeholder-item"
+                    v-show="form.email.isVisible"
+                    for="email-input"
+                >
+                    <img src="/svg/mail.svg" />
+                    <span>E-mail</span>
+                </label>
             </div>
-
-            <div class="space-y-2">
-              <div class="relative">
-                <Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                <Input
-                  id="password"
-                  v-model="form.password"
-                  type="password"
-                  required
-                  class="mt-1 px-5 py-6 h-12 pl-10 block w-full"
-                  placeholder="Пароль"
+            <div class="input-login-wrapper">
+                <input
+                    type="password"
+                    class="input password"
+                    v-model="form.password.value"
+                    id="password-input"
+                    @focus="inFocus('password')"
+                    @blur="outFocus('password')"
                 />
-              </div>
+                <label
+                    class="input-login-wrapper__placeholder"
+                    v-show="form.password.isVisible"
+                    for="password-input"
+                >
+                    <div class="input-login-wrapper__placeholder-block">
+                        <img src="/svg/lock.svg" />
+                        <span>Пароль</span>
+                    </div>
+                    <img src="/svg/eye.svg" />
+                </label>
             </div>
-
-            <div class="flex items-center justify-between">
-              <RouterLink
-                :to="{ name: 'forgot-password' }"
-                class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
-              >
-                Забыли пароль?
-              </RouterLink>
-            </div>
-
-            <div>
-              <Button
-                type="submit"
-                class="w-full py-6 bg-emerald-500 text-white shadow hover:bg-emerald-500/90"
-                :disabled="authStore.isLoading"
-              >
-                Вход
-              </Button>
-            </div>
-          </form>
-
-          <div class="mt-6 text-center">
-            <RouterLink
-              :to="{ name: 'register' }"
-              class="text-sm font-medium text-gray-500 hover:text-gray-500/80"
-            >
-              У вас нет аккаунта?
-              <span
-                class="text-emerald-500 underlined"
-              >
-                Регистрация
-              </span>
-            </RouterLink>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-    <div class="mb-[24px] px-[42px]">
-      <div
-        class="flex items-center w-full justify-between text-gray-500"
-      >
-        <div>
-          2025 @ АНО "Паломнический центр"
+            <router-link to="/" class="forget">Забыли пароль?</router-link>
         </div>
-        <div>
-          <a
-            href=""
-            class="underlined"
-          >
-            Публичная оферта
-          </a>
-          <span
-            class="ml-2 mr-1"
-          >
-            |
-          </span>
-          <a
-            href=""
-            class="underlined"
-          >
-            Политика конфиденциальности
-          </a>
+        <div class="enter">
+            <UButton
+                variant="primary"
+                size="medium"
+                action="normal"
+                text="Вход"
+                class="enter__button"
+                @click="login"
+            />
+            <div class="enter__description">
+                У вас нет аккаунта? <router-link :to="{name:'register'}" class="forget">Регистрация</router-link>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+    <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
+        <AlertTitle>Ошибка!</AlertTitle>
+        <AlertDescription>
+            {{ authStore.error }}
+        </AlertDescription>
+    </Alert>
 </template>
 
-<style>
-.desk-text {
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  vertical-align: middle;
+<style lang="scss" scoped>
+.login-wrapper {
+    width: 520px;
+    height: 100%;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background-color: #fff;
+    border-radius: 24px;
 }
-.underlined {
-  text-decoration: underline;
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &-title {
+        font-weight: 500;
+        font-size: 32px;
+        background-color: #fff;
+    }
+
+    &-description {
+        font-weight: 400;
+        font-size: 14px;
+        background-color: #fff;
+        color: #717173;
+    }
 }
-.inter {
-  font-family: Inter, sans-serif;
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input {
+    width: 100%;
+    height: 56px;
+    position: relative;
+    padding: 0 23px;
+    outline: 1px solid #D4D6D9;
+    border: none;
+    border-radius: 12px;
+    font-weight: 400;
+    font-size: 16px;
+
+    &:focus {
+        border: none
+    }
+
+    &-login-wrapper {
+        position: relative;
+        width: 100%;
+
+        &__placeholder {
+            width: calc(100% - 48px);
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            top: calc(100% / 2 - 9px);
+            left: 24px;
+            color: #6A6E75;
+
+            &-block {
+                display: flex;
+                gap: 12px;
+                top: calc(100% / 2 - 9px);
+                left: 24px;
+            }
+
+            &-item {
+                position: absolute;
+                display: flex;
+                gap: 12px;
+                left: 24px;
+                top: calc(100% / 2 - 9px);
+                color: #6A6E75;
+            }
+        }
+    }
+
+    input {
+        display: block;
+    }
+}
+
+.forget {
+    font-weight: 400;
+    font-size: 14px;
+    width: 115px;
+    color: #768187;
+}
+
+.enter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    &__button {
+        width: 100%;
+    }
+
+    &__description {
+        font-weight: 400;
+        font-size: 16px;
+
+        & .forget {
+            font-weight: 600;
+            font-size: 16px;
+            color: #10B981;
+        }
+    }
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.3s ease-in;
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
