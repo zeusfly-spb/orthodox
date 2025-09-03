@@ -137,7 +137,11 @@ const onSubmit = () => {
 
   // Prepare points data for backend
   const pointsForBackend = form.points.map((point) => ({
-    entity_id: point.entity.id,
+    entity_id: Number.isInteger(point.entity?.id) ? Number(point.entity.id) : null,
+    title: point.title,
+    description: point.description,
+    latitude: point.location?.coordinates[1],
+    longitude: point.location?.coordinates[0],
     time: point.time,
     order_column: point.order_column,
   }))
@@ -156,7 +160,7 @@ const openPoint = (id) => {
 }
 
 const handleMarkerClick = (id) => {
-  console.log('Клик по маркеру с entity ID:', id)
+  console.log('Клик по маркеру с ID:', id)
 }
 
 const resetMapView = () => {
@@ -269,10 +273,10 @@ const resetMapView = () => {
               variant="outline"
               type="button"
               v-for="point in form.points"
-              :key="point.entity.id"
-              @click="openPoint(point.entity.id)"
+              :key="point.id"
+              @click="openPoint(point.id)"
             >
-              {{ point.entity.title }}
+              {{ point.title || point.entity.title }}
             </Button>
           </div>
           <div class="flex items-center gap-2">

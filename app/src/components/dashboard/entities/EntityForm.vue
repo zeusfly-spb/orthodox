@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { watch, nextTick, ref, onMounted, reactive } from 'vue'
-import { Button } from '@/components/ui/button'
+import { watch, nextTick, ref, onMounted, onUnmounted, reactive } from 'vue'
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -16,18 +16,19 @@ import { toast } from 'vue-sonner'
 import { entityApi } from '@/api/entities.ts'
 import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
 import MarkerMap from '@/components/maps/MarkerMap.vue'
-import { MapPinHouse } from 'lucide-vue-next'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import api from '@/api/httpClient'
+import { debounce } from 'lodash-es'
+import type { AddressSuggestion } from '@/types/addressSuggestion.ts'
+import type { Requisite } from '@/types/requisite.ts'
 
 interface FormFields {
   title: string
   description: string
   email: string
   phone: string
-  address: string
   latitude: number | null
   longitude: number | null
+  requisite: Requisite | null
 }
 
 const props = withDefaults(
@@ -60,12 +61,33 @@ const formTemplate: FormFields = {
   description: '',
   email: '',
   phone: '',
-  address: '',
+  latitude: null,
+  longitude: null,
+  requisite: {
+    title: null,
+    type: null,
+    description: null,
+    legal_name: null,
+    opf_short: null,
+    inn: null,
+    ogrn: null,
+    ogrn_date: null,
+    kpp: null,
+    okpo: null,
+    legal_address: null,
+    real_address: null,
+    postal_address: null,
+    email: null,
+    phone: null,
+  },
 }
 
 const requiredFields: Array<keyof FormFields> = ['title', 'description']
 
 const parametersData = ref<any>([])
+const addressSuggestions = ref<AddressSuggestion[]>([])
+const showSuggestions = ref(false)
+const isLoadingSuggestions = ref(false)
 
 const fetchParameters = async () => {
   try {
@@ -79,6 +101,11 @@ const fetchParameters = async () => {
 
 onMounted(() => {
   fetchParameters()
+  document.addEventListener('mousedown', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside)
 })
 
 const form = reactive<Omit<FormFields, 'id'>>({
@@ -86,70 +113,157 @@ const form = reactive<Omit<FormFields, 'id'>>({
   description: '',
   phone: '',
   email: '',
-  address: '',
   latitude: null,
   longitude: null,
   parameters: {},
+  requisite: {},
 })
 
 const resetForm = () => {
   markerData.value = null
+  addressSuggestions.value = []
+  showSuggestions.value = false
 
-  Object.assign(form, {
-    title: '',
-    description: '',
-    phone: '',
-    email: '',
-    address: '',
-    latitude: null,
-    longitude: null,
-    parameters: {},
+  Object.keys(form).forEach((key) => {
+    form[key] = formTemplate[key]
   })
-}
-
-const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
-  form.latitude = lat
-  form.longitude = lng
+  form.parameters = {}
+  form.requisite = {}
 }
 
 const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
 
-const findPoint = async (address: string) => {
+const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
+  form.latitude = lat
+  form.longitude = lng
+
+  fetchMarkerSuggestions(lat, lng)
+}
+
+const suggestionsRef = ref<HTMLElement | null>(null)
+const addressInputRef = ref<HTMLElement | null>(null)
+
+const handleClickOutside = (event: MouseEvent) => {
+  const addressInputElement = addressInputRef.value?.$el || addressInputRef.value
+  const suggestionsElement = suggestionsRef.value
+
+  if (
+    suggestionsElement &&
+    !suggestionsElement.contains(event.target as Node) &&
+    addressInputElement &&
+    !addressInputElement.contains(event.target as Node)
+  ) {
+    showSuggestions.value = false
+  }
+}
+
+const fetchSuggestions = debounce(async (address: string) => {
+  if (address.length < 5) {
+    addressSuggestions.value = []
+    showSuggestions.value = false
+    return
+  }
+
   try {
-    const response = await api.post('/manage/suggestions/address', { address })
-    const lat = response.data.data.latitude
-    const lng = response.data.data.longitude
+    isLoadingSuggestions.value = true
+    const { data } = await api.post('/manage/suggestions/address', { address })
+    addressSuggestions.value = data.data
+    showSuggestions.value = true
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
+    console.error(error)
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } finally {
+    isLoadingSuggestions.value = false
+  }
+}, 500)
+
+const fetchMarkerSuggestions = debounce(async (lat: number, lng: number) => {
+  try {
+    isLoadingSuggestions.value = true
+    const { data } = await api.post('/manage/suggestions/geo/reverse', { lat, lng })
+    addressSuggestions.value = data.data
+    showSuggestions.value = true
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
+    console.error(error)
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } finally {
+    isLoadingSuggestions.value = false
+  }
+}, 500)
+
+const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
+  if (!form.requisite) {
+    form.requisite = { ...formTemplate.requisite! }
+  }
+  const postal_code = suggestion.postal_code || ''
+  const country = suggestion.country || ''
+  form.requisite.real_address = suggestion.value
+
+  if (suggestion.latitude && suggestion.longitude) {
+    form.latitude = suggestion.latitude
+    form.longitude = suggestion.longitude
 
     markerData.value = {
       type: 'Point',
-      coordinates: [lat, lng],
+      coordinates: [form.latitude, form.longitude],
     }
-
-    handleMarkerUpdate({ lat, lng })
-  } catch (error) {
-    toast.error(error.response.data.message || 'Ошибка при загрузке координат')
-    console.error(error)
   }
+
+  addressSuggestions.value = []
+  showSuggestions.value = false
+}
+
+const handleAddressInput = () => {
+  if (!form.requisite) return
+
+  // Clear coordinates if real_address is changed
+  if (form.requisite.real_address.length < 5) {
+    form.latitude = null
+    form.longitude = null
+    markerData.value = null
+    addressSuggestions.value = []
+    showSuggestions.value = false
+  } else {
+    fetchSuggestions(form.requisite.real_address)
+  }
+}
+
+const handleAddressFocus = () => {
+  if (addressSuggestions.value.length > 0) {
+    showSuggestions.value = true
+  }
+}
+
+const handleAddressBlur = () => {
+  setTimeout(() => {
+    if (!showSuggestions.value) return
+    showSuggestions.value = false
+  }, 200)
 }
 
 watch(
   () => props.item,
   (newEntity) => {
     if (newEntity) {
-      const parameters = {
+      resetForm()
+
+      form.title = newEntity.title || ''
+      form.description = newEntity.description || ''
+      form.phone = newEntity.phone || ''
+      form.email = newEntity.email || ''
+      form.latitude = newEntity.location?.coordinates[1] || null
+      form.longitude = newEntity.location?.coordinates[0] || null
+      form.parameters = {
         entityType: newEntity.entityType?.id,
       }
 
-      Object.assign(form, {
-        title: newEntity.title,
-        description: newEntity.description,
-        phone: newEntity.phone,
-        email: newEntity.email,
-        address: newEntity.requisite?.real_address,
-        latitude: newEntity.location?.coordinates[1],
-        longitude: newEntity.location?.coordinates[0],
-        parameters,
-      })
+      if (newEntity.requisite) {
+        form.requisite = { ...newEntity.requisite }
+      }
 
       if (newEntity.location) {
         markerData.value = {
@@ -159,7 +273,7 @@ watch(
       }
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 watch(
@@ -207,7 +321,7 @@ const onSubmit = () => {
               <Input id="title" v-model="form.title" />
             </div>
             <div class="space-y-2">
-              <Label for="description" required>Описание</Label>
+              <Label for="description">Описание</Label>
               <Textarea id="description" v-model="form.description" />
             </div>
           </div>
@@ -219,36 +333,50 @@ const onSubmit = () => {
             </div>
             <div class="space-y-2">
               <Label for="phone">Телефон</Label>
-              <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
+              <Input id="phone" v-model="form.phone" placeholder="" />
             </div>
           </div>
 
-          <div class="grid gap-4">
-            <Label for="address">Адрес</Label>
+          <div class="grid gap-4 relative">
+            <Label for="real_address">Адрес</Label>
             <div class="flex items-center flex-row gap-4">
-              <div class="flex grow gap-2 space-y-2">
-                <Input id="address" v-model="form.address" />
-              </div>
-              <div class="flex shrink space-y-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        class="border-emerald-500 text-emerald-500 hover:text-emerald-600"
-                        :disabled="form.address?.length <= 10"
-                        @click="findPoint(form.address)"
-                      >
-                        <MapPinHouse class="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <span>Найти на карте</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div class="flex grow gap-2 space-y-2 relative">
+                <Input
+                  ref="addressInputRef"
+                  type="text"
+                  id="real_address"
+                  :model-value="form.requisite?.real_address || ''"
+                  @update:model-value="
+                    (value) => {
+                      if (form.requisite) {
+                        form.requisite.real_address = value
+                      } else {
+                        form.requisite = { ...formTemplate.requisite!, real_address: value }
+                      }
+                      handleAddressInput()
+                    }
+                  "
+                  @focus="handleAddressFocus"
+                  @blur="handleAddressBlur"
+                  @keydown.enter.prevent="fetchSuggestions(form.requisite?.real_address || '')"
+                  :clearable="false"
+                />
+
+                <!-- Dropdown for address suggestions -->
+                <div
+                  ref="suggestionsRef"
+                  v-if="showSuggestions && addressSuggestions.length > 0"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+                >
+                  <div
+                    v-for="(suggestion, index) in addressSuggestions"
+                    :key="index"
+                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    @mousedown.prevent="selectAddressSuggestion(suggestion)"
+                  >
+                    <div class="text-sm font-medium text-gray-500">{{ suggestion.value }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -257,11 +385,11 @@ const onSubmit = () => {
           <div class="grid grid-cols-2 gap-4 mt-4">
             <div class="space-y-2">
               <Label for="latitude">Широта</Label>
-              <Input id="latitude" v-model="form.latitude" type="number" disabled />
+              <Input id="latitude" :model-value="form.latitude" type="number" disabled />
             </div>
             <div class="space-y-2">
               <Label for="longitude">Долгота</Label>
-              <Input id="longitude" v-model="form.longitude" type="number" disabled />
+              <Input id="longitude" :model-value="form.longitude" type="number" disabled />
             </div>
           </div>
 
