@@ -16,7 +16,6 @@ const customerStore = useCustomerStore()
 
 const isShowModal = ref(false)
 const innerTouristCount = ref(bookingStore.booking.counts.people || 1)
-const selectedOption = ref(null)
 const isSaving = ref(false)
 
 // Используем данные из сторов
@@ -24,6 +23,8 @@ const availableRoomTypes = computed(() => accommodationStore.roomTypes)
 const enabledRoomTypes = computed(() => accommodationStore.enabledRoomTypes)
 const accommodationOptions = computed(() => accommodationStore.accommodationOptions)
 const touristsInfo = computed(() => bookingStore.booking.tourists || [])
+const noAccommodationSelected = computed(() => accommodationStore.noAccommodationSelected)
+const selectedAccommodation = computed(() => accommodationStore.selectedAccommodation)
 
 const filteredAccommodationOptions = computed(() => {
   if (!accommodationOptions.value) return []
@@ -48,15 +49,13 @@ async function handleDeleteTourist(id) {
         // Удаляем туриста из локального массива
         bookingStore.removeTourist(id)
         
-        // Сохраняем обновленный массив на сервер
-        isSaving.value = true
-        await bookingStore.updateBooking()
+        // Обновляем счетчик локально
+        innerTouristCount.value = bookingStore.booking.tourists.length
         
+        calculateOptions()
         closeModal()
     } catch (error) {
         console.error('Error deleting tourist:', error)
-    } finally {
-        isSaving.value = false
     }
 }
 
@@ -64,25 +63,18 @@ async function handleSaveTourist(id, data) {
     try {
         // Обновляем данные туриста в локальном массиве
         bookingStore.updateTouristData(id, data)
-        
-        // Сохраняем обновленный массив на сервер
-        isSaving.value = true
-        await bookingStore.updateBooking()
-        
         closeModal()
     } catch (error) {
         console.error('Error updating tourist:', error)
-    } finally {
-        isSaving.value = false
     }
 }
 
-// Функция для синхронизации количества туристов
-const syncTouristsCount = async (newCount) => {
+// Функция для синхронизации количества туристов (только локально)
+const syncTouristsCount = (newCount) => {
     const currentCount = bookingStore.booking.tourists.length;
     
     if (newCount > currentCount) {
-        // Добавляем новых туристов
+        // Добавляем новых туристов локально
         const touristsToAdd = newCount - currentCount;
         for (let i = 0; i < touristsToAdd; i++) {
             bookingStore.addTourist({
@@ -92,25 +84,13 @@ const syncTouristsCount = async (newCount) => {
             });
         }
     } else if (newCount < currentCount) {
-        // Удаляем лишних туристов (с конца)
+        // Удаляем лишних туристов локально (с конца)
         const touristsToRemove = currentCount - newCount;
         for (let i = 0; i < touristsToRemove; i++) {
             const lastTourist = bookingStore.booking.tourists[bookingStore.booking.tourists.length - 1];
             if (lastTourist) {
                 bookingStore.removeTourist(lastTourist.id);
             }
-        }
-    }
-    
-    // Сохраняем изменения на сервер
-    if (newCount !== currentCount) {
-        try {
-            isSaving.value = true;
-            await bookingStore.updateBooking();
-        } catch (error) {
-            console.error('Error syncing tourists count:', error);
-        } finally {
-            isSaving.value = false;
         }
     }
 };
@@ -128,39 +108,57 @@ function toggleRoomType(roomType, isEnabled) {
     calculateOptions()
 }
 
+function toggleNoAccommodation(isEnabled) {
+    accommodationStore.toggleNoAccommodation(isEnabled)
+    calculateOptions()
+}
+
 function getTotalRooms(option) {
     return accommodationStore.calculateTotalRooms(option)
 }
 
+function getAccommodationName(option) {
+    return accommodationStore.getAccommodationName(option)
+}
+
 function selectOption(option) {
-    selectedOption.value = option;
+    accommodationStore.selectAccommodation(option)
 }
 
 function isOptionSelected(option) {
-    return selectedOption.value === option;
+    if (!selectedAccommodation.value || !option) return false;
+    
+    // Сравниваем объекты по содержимому
+    const selectedKeys = Object.keys(selectedAccommodation.value);
+    const optionKeys = Object.keys(option);
+    
+    if (selectedKeys.length !== optionKeys.length) return false;
+    
+    return selectedKeys.every(key => 
+        selectedAccommodation.value[key] === option[key]
+    );
 }
 
 function emitSelectedOption() {
-    if (selectedOption.value) {
-        emit('accommodation-selected', selectedOption.value);
-        emit('update:selectedOption', selectedOption.value);
+    if (selectedAccommodation.value) {
+        emit('accommodation-selected', selectedAccommodation.value);
+        emit('update:selectedOption', selectedAccommodation.value);
+        console.log('Выбран вариант размещения:', selectedAccommodation.value);
     } else {
         alert('Пожалуйста, выберите вариант размещения');
     }
 }
 
-// Следим за изменением количества туристов
-watch(innerTouristCount, async (newValue, oldValue) => {
+// Следим за изменением количества туристов (только локальная синхронизация)
+watch(innerTouristCount, (newValue, oldValue) => {
     if (newValue < 1) {
         innerTouristCount.value = 1;
         return;
     }
     
-    // Синхронизируем количество туристов
-    await syncTouristsCount(newValue);
-    
+    // Синхронизируем количество туристов только локально
+    syncTouristsCount(newValue);
     calculateOptions();
-    selectedOption.value = null;
 });
 
 watch(() => bookingStore.booking.counts.people, (newValue) => {
@@ -188,10 +186,9 @@ onMounted(() => {
                     inputType="number"
                     :inputHeightPx="43"
                     :min="1"
-                    :loading="isSaving"
                 />
-                <div v-if="isSaving" class="saving-indicator">
-                    Сохранение...
+                <div class="local-changes-info" v-if="innerTouristCount !== bookingStore.booking.counts.people">
+                    Изменения сохранены локально
                 </div>
             </div>
         </div>
@@ -199,16 +196,35 @@ onMounted(() => {
         <div class="pilgrims-info-container">
             <div class="room-types-section">
                 <label class="info-label">Доступные типы номеров</label>
+                
+                <!-- Вариант "Без размещения в номерах" -->
+                <div class="room-types-options">
+                    <label class="room-type-option no-accommodation">
+                        <input 
+                            type="checkbox" 
+                            :checked="noAccommodationSelected"
+                            @change="toggleNoAccommodation($event.target.checked)"
+                        >
+                        <span class="custom-checkbox"></span>
+                        <span class="room-type-text">
+                            <span class="no-accommodation-icon">🚫</span>
+                            Без размещения в номерах
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Обычные типы номеров -->
                 <div 
                     class="room-types-options" 
-                    v-for="(room, index) in availableRoomTypes" 
+                    v-for="room in availableRoomTypes.filter(r => r.type !== 'no_accommodation')" 
                     :key="room.type"
                 >
-                    <label class="room-type-option">
+                    <label class="room-type-option" :class="{ disabled: noAccommodationSelected }">
                         <input 
                             type="checkbox" 
                             :checked="isRoomTypeEnabled(room.type)"
                             @change="toggleRoomType(room.type, $event.target.checked)"
+                            :disabled="noAccommodationSelected"
                         >
                         <span class="custom-checkbox"></span>
                         <span class="room-type-text">
@@ -236,26 +252,43 @@ onMounted(() => {
                             v-for="(option, index) in filteredAccommodationOptions"
                             :key="index"
                         >
-                            <input type="checkbox" :checked="isOptionSelected(option)" @change="selectOption(option)">
+                            <input 
+                                type="radio" 
+                                name="accommodation" 
+                                :checked="isOptionSelected(option)" 
+                                @change="selectOption(option)"
+                            >
                             <div class="bed-groups-container">
-                                <template v-for="roomType in availableRoomTypes" :key="roomType.type">
-                                    <div 
-                                        v-if="option[roomType.type] > 0"
-                                        class="bed-group"
-                                        :class="`group-${roomType.type}`"
-                                    >
-                                        <div 
-                                            v-for="n in option[roomType.type]" 
-                                            :key="n"
-                                            class="bed-icon"
-                                            :title="roomType.name"
-                                        >
-                                            <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
-                                        </div>
+                                <template v-if="option.no_accommodation">
+                                    <!-- Для варианта "без размещения" -->
+                                    <div class="no-accommodation-group">
+                                        <span class="no-accommodation-icon">🚫</span>
+                                        Без размещения
                                     </div>
                                 </template>
+                                <template v-else>
+                                    <!-- Для обычных вариантов размещения -->
+                                    <template v-for="roomType in availableRoomTypes" :key="roomType.type">
+                                        <div 
+                                            v-if="option[roomType.type] > 0"
+                                            class="bed-group"
+                                            :class="`group-${roomType.type}`"
+                                        >
+                                            <div 
+                                                v-for="n in option[roomType.type]" 
+                                                :key="n"
+                                                class="bed-icon"
+                                                :title="roomType.name"
+                                            >
+                                                <img src="/svg/bedd.svg" alt="кровать" class="bed-icon">
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
                             </div>
-                            <span class="placement-text">x{{ getTotalRooms(option) }}</span>
+                            <span class="placement-text">
+                                {{ option.no_accommodation ? 'Все туристы' : `x${getTotalRooms(option)}` }}
+                            </span>
                         </label>
                     </div>
                 </div>
@@ -407,18 +440,17 @@ onMounted(() => {
                     action="warning" 
                     @click="handleDeleteTourist(customerStore.currentTourist.id)"
                     :disabled="!customerStore.currentTourist.id"
-                    :loading="isSaving"
                 />
                 <UButton 
                     text="Сохранить" 
                     size="big" 
                     @click="handleSaveTourist(customerStore.currentTourist.id, customerStore.currentTourist)"
-                    :loading="isSaving"
                 />
             </div>
         </template>
     </UModal>
 </template>
+
 <style scoped lang="scss">
 .section {
     margin-bottom: 30px;

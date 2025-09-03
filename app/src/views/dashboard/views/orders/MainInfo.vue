@@ -45,8 +45,12 @@ function formatValue() {
     }
 }
 
-function save() {
-    // bookingStore.updateBooking()
+async function handleSaveTourist() {
+    try {
+        await bookingStore.updateBooking()
+    } catch (error) {
+        console.error('Error updating tourist:', error)
+    }
 }
 
 watch(() => payType.value, (newValue) => {
@@ -135,7 +139,7 @@ watch(totalPrice, (newPrice) => {
 
             <div class="action-buttons3">
                 <button class="btn btn-outline t-center">В архив</button>
-                <button class="btn btn-primary t-center" @click="save">Сохранить</button>
+                <button class="btn btn-primary t-center" @click="handleSaveTourist">Сохранить</button>
             </div>
         </div>
     </div>

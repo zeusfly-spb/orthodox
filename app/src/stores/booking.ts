@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 import type { BookingState, ContactPerson, Tourist, PaymentInfo, Customer } from '@/types'
-import { bookingApi } from '@/api/bookings'
+import { bookingApi, bookingParams } from '@/api/bookings'
 import { format, parseISO, min, max } from 'date-fns'
 
 export const useBookingStore = defineStore('booking', () => {
@@ -42,11 +42,31 @@ export const useBookingStore = defineStore('booking', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
+  const fetchBookingStatuses = async () => {
+      isLoading.value = true
+      try {
+        const response = await bookingParams()
+        const { data: bookingStatuses } = response
+        
+        const statusObject = bookingStatuses.find((val: any) => val.type === 'status')
+        if (statusObject) {
+          return statusObject.children
+        }
+      } catch (err) {
+        error.value = 'Ошибка при загрузке статусов'
+        console.error('Order status fetch error:', err)
+        throw err
+      } finally {
+        isLoading.value = false
+      }
+    }
+
   const fetchBookingData = async (bookingId: string | number) => {
     isLoading.value = true
     error.value = null
 
     try {
+      const statuses = await fetchBookingStatuses()
       const bookingsResponse = await bookingApi.getData(bookingId)
       const { data: bookingData } = bookingsResponse
 
@@ -57,7 +77,7 @@ export const useBookingStore = defineStore('booking', () => {
       booking.id = bookingId.toString()
       booking.title = title
       booking.tourId = id
-      booking.status = status
+      booking.status = statuses[status]
       booking.counts.nights = night_count
       booking.counts.people = customers.length
       booking.counts.freePlaces = seats - customers.length

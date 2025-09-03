@@ -17,6 +17,8 @@ import { useBookingStore } from '@/stores/booking'
 import { useTourStore } from '@/stores/tour'
 import { useCustomerStore } from '@/stores/customer'
 import { useOrderStore } from '@/stores/order'
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+
 
 const route = useRoute();
 const bookingId = route.params.id
@@ -205,6 +207,12 @@ onMounted(async () => {
             </div>
         </div>
         <ModalTag v-if="false" />
+        <Alert variant="destructive" v-show="bookingStore.error" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
+            <AlertTitle>Ошибка!</AlertTitle>
+            <AlertDescription>
+                {{ bookingStore.error }}
+            </AlertDescription>
+        </Alert>
     </div>
 </template>
 <style scoped lang="scss">
