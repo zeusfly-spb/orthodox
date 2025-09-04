@@ -33,6 +33,7 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue';
 import { Download, Plus, Pencil, X } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 

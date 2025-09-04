@@ -1,32 +1,23 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import TourFormHeader from '@/views/dashboard/views/tours/TourFormHeader.vue';
-import TourFormOverview from '@/views/dashboard/views/tours/TourFormOverview.vue';
-import TourFormCards from './TourFormCards.vue';
-import TourFormLogistics from './TourFormLogistics.vue';
-import TourFormRatings from './TourFormRatings.vue';
-import TourFormExtras from './TourFormExtras.vue';
-import TourFormSummary from './TourFormSummary.vue';
 import { tourApi } from '@/api/tours';
 import { toast } from 'vue-sonner';
 import type { Tour } from '@/types/tour';
-import { useToursStore } from '@/stores/tours';
-import TourFormObjects from './TourFormObjects.vue';
-
+import TourFormData from './TourFormData.vue';
+import TourFormParams from './TourFormParams.vue';
+import TourFormObjectsTab from './TourFormObjectsTab.vue';
+import TourFormProgram from './TourFormProgram.vue';
+import TourFormMap from './TourFormMap.vue';
+import TourFormTabControl from './TourFormTabControl.vue';
+import TourFormDesc from './TourFormDesc.vue';
 
 const router = useRouter();
-const { formatCurrency } = useToursStore();
 const id = ref<string | null>(null);
 const currentItem = ref<Tour | null>(null);
+const activeTab = ref('Data');
 
-onMounted(() => {
-  const routeId = router.currentRoute.value.params.id;
-  if (routeId && routeId !== 'new') {
-    id.value = routeId as string;
-    loadItem();
-  }
-});
+
 
 const loadItem = async (): Promise<void> => {
   try {
@@ -56,9 +47,24 @@ const handleSubmit = async (formData: Partial<Tour>): Promise<void> => {
 const handleCancel = (): void => {
   router.push({ name: 'tours-list' });
 };
+
+onMounted(() => {
+  const routeId = router.currentRoute.value.params.id;
+  if (routeId && routeId !== 'new') {
+    id.value = routeId as string;
+    loadItem();
+  }
+});
 </script>
 
 <template>
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Уникальный тур</h1>
+    <TourFormTabControl
+      v-model:modelValue="activeTab"
+    />
+  </div>
+
   <div v-if="!currentItem" class="w-full p-6 bg-white rounded-xl">
     <div class="flex items-center justify-center h-32">
       <div class="text-gray-500">Загрузка данных...</div>
@@ -69,39 +75,32 @@ const handleCancel = (): void => {
     v-else
     class="main-content"
   >
-  <div class="content">
-    <TourFormHeader 
-      :currentItem="currentItem" 
-    />
-
-    <TourFormOverview
-      v-model:currentItem="currentItem"
-    />
-
-    <TourFormCards 
-      v-model:currentItem="currentItem" 
-    /> 
-
-    <TourFormLogistics 
-      v-model:currentItem="currentItem"
-    />
-
-    <TourFormObjects
-      v-model:currentItem="currentItem" 
-    />
-
-    <TourFormRatings
-      v-model:currentItem="currentItem" 
-    />
-
-    <TourFormExtras 
-      v-model:currentItem="currentItem" 
-    />
-
-    <TourFormSummary
-        v-model:currentItem="currentItem" 
-    />
-  </div>
+    <div class="content">
+      <TourFormData
+        v-if="activeTab === 'Data'"
+        v-model:currentItem="currentItem"
+      />
+      <TourFormParams
+        v-else-if="activeTab === 'Params'"
+        v-model:currentItem="currentItem"
+      />
+      <TourFormObjectsTab
+        v-else-if="activeTab === 'ObjectsTab'"
+        v-model:currentItem="currentItem"
+      />
+      <TourFormProgram
+        v-else-if="activeTab === 'Program'"
+        v-model:currentItem="currentItem"
+      />
+      <TourFormMap
+        v-else-if="activeTab === 'Map'"
+        v-model:currentItem="currentItem"
+      />
+      <TourFormDesc
+        v-else-if="activeTab === 'Desc'"
+        v-model:currentItem="currentItem"
+      />
+    </div>
   </div>
 </template>
 
