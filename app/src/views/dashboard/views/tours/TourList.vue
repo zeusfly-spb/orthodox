@@ -47,7 +47,7 @@ const handleEditTour = (id: string | number): void => {
 </script>
 
 <template>
-  <div>
+  <div class="main-content">
     <Card class="mb-8 gap-0">
       <CardContent>
         <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
@@ -87,3 +87,13 @@ const handleEditTour = (id: string | number): void => {
     />
   </div>
 </template>
+
+<style lang="scss">
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    transition: all 0.3s;
+    min-width: 0;
+}
+
+</style>
