@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import { useBookingStore } from '@/stores/booking'
 import { useRouter } from 'vue-router'
+import UButton from '@/components/ui/UButton.vue';
 
 const bookingStore = useBookingStore()
 const router = useRouter()
@@ -12,6 +13,7 @@ const inputValue = ref('');
 // Получаем данные из стора
 const bookingData = computed(() => bookingStore.booking)
 const totalPrice = computed(() => bookingData.value.mainInfo.tourPrice * bookingData.value.counts.people)
+const showAll = ref(false)
 
 const displayValue = computed({
     get: () => {
@@ -88,12 +90,20 @@ watch(totalPrice, (newPrice) => {
                     </div>
                 </div>
                 
-                <div v-for="(item, index) in bookingData.counts.people" :key="index">
-                    <div class="tourist-item2">
+                <div :class="[`tourist-list${showAll? '-long' : '-short'}`]">
+                    <div class="tourist-item2" v-for="(item, index) in bookingData.counts.people" :key="index">
                         <div class="tourist-name2">Турист {{ index + 1 }}</div>
                         <div class="tourist-price2">{{ bookingData.mainInfo.tourPrice }} ₽</div>
                     </div>
                 </div>
+                <UButton
+                        v-if="bookingData.counts.people > 5 && !showAll"
+                        text="Показать всех" 
+                        variant="secondary" 
+                        size="small" 
+                        action="normal"
+                        @click="showAll = true"
+                    />
 
                 <div class="total-price2">
                     <div>Общая стоимость:</div>
@@ -658,5 +668,15 @@ hr {
 /* Убираем старые стили чекбоксов */
 .checkbox {
     display: none;
+}
+.tourist-list {
+    &-short {
+        max-height: 240px;
+        overflow: hidden;
+    }
+    &-long {
+        max-height: 100%;
+        overflow: visible;
+    }
 }
 </style>
