@@ -87,13 +87,3 @@ const handleEditTour = (id: string | number): void => {
     />
   </div>
 </template>
-
-<style lang="scss">
-.main-content {
-    flex: 1;
-    margin-left: 250px;
-    transition: all 0.3s;
-    min-width: 0;
-}
-
-</style>

@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!accessToken.value)
-  const isEmailVerified = computed(() => user.value?.email_verified ?? false)
+  const isEmailVerified = computed(() => user.value?.data?.email_verified || false)
   const isInitialized = ref(false)
 
   const initializeAuth = async () => {

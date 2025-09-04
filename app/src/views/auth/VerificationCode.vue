@@ -16,15 +16,6 @@ const isSubmitting = ref(false)
 const showResendButton = ref(true)
 const codeValue = ref<string[]>(Array(6).fill(''))
 
-onBeforeMount(async () => {
-  if (authStore.isEmailVerified) {
-    router.push({ name: 'dashboard-home' })
-  }
-  if (!authStore.isAuthenticated) {
-    router.push({ name: 'login' })
-  }
-})
-
 const handleSubmit = async () => {
   if (isSubmitting.value) return
 
@@ -81,6 +72,13 @@ const handleResendCode = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+if (authStore.isEmailVerified) {
+    router.push({ name: 'home' })
+}
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login' })
 }
 </script>
 

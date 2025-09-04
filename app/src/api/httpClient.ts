@@ -88,6 +88,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 403) {
+      console.log('REDIRECT!')
       await authStore.loadUser()
       if (!authStore.isEmailVerified) {
         window.location.reload()

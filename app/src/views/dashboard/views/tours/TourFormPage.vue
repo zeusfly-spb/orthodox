@@ -67,8 +67,9 @@ const handleCancel = (): void => {
   
   <div 
     v-else
-    class="w-full p-6 bg-white rounded-xl"
+    class="main-content"
   >
+  <div class="content">
     <TourFormHeader 
       :currentItem="currentItem" 
     />
@@ -98,7 +99,8 @@ const handleCancel = (): void => {
     />
 
     <TourFormSummary
-      v-model:currentItem="currentItem" 
+        v-model:currentItem="currentItem" 
     />
+  </div>
   </div>
 </template>

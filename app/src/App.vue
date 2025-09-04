@@ -25,3 +25,18 @@ import { Toaster } from 'vue-sonner'
   cursor: pointer;
 }
 </style>
+
+<style lang="scss">
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    transition: all 0.3s;
+    min-width: 0;
+}
+.content {
+    padding: 30px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+</style>
