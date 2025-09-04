@@ -58,23 +58,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">Уникальный тур</h1>
-    <TourFormTabControl
-      v-model:modelValue="activeTab"
-    />
-  </div>
-
   <div v-if="!currentItem" class="w-full p-6 bg-white rounded-xl">
     <div class="flex items-center justify-center h-32">
       <div class="text-gray-500">Загрузка данных...</div>
     </div>
   </div>
-  
   <div 
     v-else
     class="main-content"
+    style="margin-left: 270px; margin-top: 20px;"
   >
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-6">Уникальный тур</h1>
+      <TourFormTabControl
+        v-model:modelValue="activeTab"
+      />
+    </div>
     <div class="content">
       <TourFormData
         v-if="activeTab === 'Data'"
