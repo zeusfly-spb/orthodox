@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, ref } from 'vue'
+import { markRaw, reactive, ref } from 'vue'
 import About from '@/views/dashboard/views/operator/About.vue'
 import Requisite from '@/views/dashboard/views/operator/Requisite.vue'
 import FAQ from '@/views/dashboard/views/operator/FAQ.vue'
@@ -11,19 +11,19 @@ export const useProfileStore = defineStore('profile', () => {
     const tabList = [
     {
         title: 'Данные о паломнической службе',
-        component: About
+        component: markRaw(About)
     },
     {
         title: 'Реквизиты',
-        component: Requisite
+        component: markRaw(Requisite)
     },
     {
         title: 'Файлы',
-        component: Files
+        component: markRaw(Files)
     },
     {
         title: 'FAQ',
-        component: FAQ
+        component: markRaw(FAQ)
     }
 ]
 

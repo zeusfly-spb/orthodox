@@ -1,8 +1,10 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useBookingStore } from '@/stores/booking'
+import { useRouter } from 'vue-router'
 
 const bookingStore = useBookingStore()
+const router = useRouter()
 
 const payType = ref('full')
 const inputValue = ref('');
@@ -50,6 +52,8 @@ async function handleSaveTourist() {
         await bookingStore.updateBooking()
     } catch (error) {
         console.error('Error updating tourist:', error)
+    } finally {
+        router.push({ name: 'orders' })
     }
 }
 

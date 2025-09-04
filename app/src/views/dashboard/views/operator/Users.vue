@@ -8,13 +8,8 @@ import UsersInTable from './UsersInTable.vue'
 import UsersInBlock from './UsersInBlock.vue'
 import { managerApi } from '@/api/managers'
 
-
-const props = defineProps({
-    operator: Object,
-})
-
 const managers = ref('')
-const filteredManagers = ref('')
+const filteredManagers = ref([])
 const searchQuery = ref('')
 const viewSelected = shallowRef('table')
 const sortTypeList = shallowRef(['Новые пользователи', 'Имя пользователя', 'Тег'])

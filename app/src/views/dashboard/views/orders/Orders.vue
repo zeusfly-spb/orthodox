@@ -1,17 +1,16 @@
 <script setup>
-
 import { managerApi } from '@/api/managers'
 import UButton from '@/components/ui/UButton.vue'
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive } from 'vue';
-import { tourApi } from '@/api/tours';
+import { bookingApi } from '@/api/bookings';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking'
 
 const booking = useBookingStore()
-
 const isOpenModal = ref(false)
+const isLoading = ref(false)
 
 const filters = reactive({
     days: 1,
@@ -22,34 +21,63 @@ const filters = reactive({
 
 const statusList = ['Новая', 'В обработке', 'Подтверждена', 'Отклонена', 'Завершена']
 
-async function loadAllData() {
+// Функция форматирования даты
+const formatDate = (dateString) => {
+  if (!dateString) return 'Не указана';
   try {
-    const [toursResponse, managersResponse] = await Promise.all([
-      tourApi.fetchData(),
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+  } catch (error) {
+    return 'Неверный формат';
+  }
+};
+
+// Функция вычисления даты окончания
+const calculateEndDate = (tour) => {
+  if (!tour?.date || !tour?.duration) return 'Не указана';
+  
+  try {
+    const startDate = new Date(tour.date);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + (tour.duration - 1));
+    return endDate.toLocaleDateString('ru-RU');
+  } catch (error) {
+    return 'Неверный формат';
+  }
+};
+
+// Функция получения текста статуса
+const getStatusText = (status) => {
+  const statusMap = {
+    'pending': 'В обработке',
+    'confirmed': 'Подтверждена',
+    'rejected': 'Отклонена',
+    'completed': 'Завершена'
+  };
+  return statusMap[status] || status || 'Не указан';
+};
+
+async function loadAllData() {
+  isLoading.value = true;
+  try {
+    const [bookingsResponse, managersResponse] = await Promise.all([
+      bookingApi.fetchData(),
       managerApi.fetchData()
     ]);
 
     booking.managers = managersResponse.data.map(m => m.name);
-
-    // Загружаем полные данные по каждому туру
-    const toursWithDetails = await Promise.all(
-      toursResponse.data.map(tour => 
-        tourApi.getData(tour.id).then(res => res.data)
-      )
-    );
-
-    // Объединяем базовую информацию с bookings
-    booking.orders = toursResponse.data.map((tour, index) => ({
-      ...tour,
-      bookings: toursWithDetails[index].bookings || []
-    }));
+    booking.orderList = bookingsResponse.data || [];
 
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
+    booking.orderList = [];
+  } finally {
+    isLoading.value = false;
   }
 }
 
 onMounted(() => {
+  booking.orderList = [];
   loadAllData();
 });
 </script>
@@ -76,7 +104,7 @@ onMounted(() => {
                             <UInput 
                                 svgPath="/svg/search.svg"
                                 placeholder="Поиск по названию тура, заказчику, номеру заявки..."
-                                inputHeightPx="36" 
+                                :inputHeightPx="36" 
                             />
                         </div>
                     </div>
@@ -185,10 +213,9 @@ onMounted(() => {
                     </div>
                 </div>
 
-
-                <div class="filters"  v-for="item in booking.orders" :key="item.id">
+                <div class="filters" v-for="order in booking.orderList" :key="order.id">
                     <div class="page-header">
-                        <div class="title-table-n-za">{{ item.title }}</div>
+                        <div class="title-table-n-za">{{ order.tour?.title }}</div>
                         <div>
                             <div class="tags-list">
                                 <div class="tag-item">
@@ -204,48 +231,90 @@ onMounted(() => {
                                     <th>Дата начала тура</th>
                                     <th>Дата окончания тура</th>
                                     <th>Забронировано</th>
-                                    <th>Всего</th>
-                                    <th>Статус</th>
+                                    <th>Всего мест</th>
+                                    <th>Статус заявки</th>
                                     <th style="width: 100px;"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(val, index) in item.bookings" :key="index">
-                                    <td>
-                                        {{ item.dates[0].date_start }}
-                                    </td>
-                                    <td>
-                                        {{ item.dates[0].date_end }}
-                                    </td>
-                                    <td>
-                                        {{ item.bookings[index].customers.length }}
-                                    </td>
-                                    <td>
-                                        {{ item.bookings.length }}
-                                    </td>
-                                    <td>
-                                        <div class="status-item">
-                                            <span class="status-name" v-show="val.status">{{ val.status }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="actions-container">
-                                            <div class="user-actions">
-                                                <button class="edit-btn">
-                                                    <img src="/svg/eye.svg" alt="view">
-                                                </button>
-                                                <button class="edit-btn">
-                                                    <router-link :to="{name: 'order-edit', params: { id: item.bookings[index].id }}">
-                                                        <img src="/svg/pencil.svg" alt="edit">
-                                                    </router-link>
-                                                </button>
-                                                <button class="more-btn">
-                                                    <img src="/svg/more-horiz.svg" alt="edit">
-                                                </button>
+                                <!-- Проверяем, что есть даты и они не пустые -->
+                                <template v-if="order.tour?.dates && order.tour.dates.length">
+                                    <tr v-for="(date, dateIndex) in order.tour.dates" :key="dateIndex">
+                                        <td>
+                                            {{ formatDate(date.date_start) }}
+                                        </td>
+                                        <td>
+                                            {{ formatDate(date.date_end) }}
+                                        </td>
+                                        <td>
+                                            {{ order.customers?.length || 0 }}
+                                        </td>
+                                        <td>
+                                            {{ date.seats || order.tour.seats || 'Не указано' }}
+                                        </td>
+                                        <td>
+                                            <div class="status-item">
+                                                <span class="status-name">{{ getStatusText(order.status) }}</span>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td>
+                                            <div class="actions-container">
+                                                <div class="user-actions">
+                                                    <button class="edit-btn">
+                                                        <img src="/svg/eye.svg" alt="view">
+                                                    </button>
+                                                    <button class="edit-btn">
+                                                        <router-link :to="{name: 'order-edit', params: { id: order.id }}">
+                                                            <img src="/svg/pencil.svg" alt="edit">
+                                                        </router-link>
+                                                    </button>
+                                                    <button class="more-btn">
+                                                        <img src="/svg/more-horiz.svg" alt="edit">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <!-- Если дат нет, показываем одну строку с основной информацией -->
+                                <template v-else>
+                                    <tr>
+                                        <td>
+                                            {{ formatDate(order.tour?.date) }}
+                                        </td>
+                                        <td>
+                                            {{ calculateEndDate(order.tour) }}
+                                        </td>
+                                        <td>
+                                            {{ order.customers?.length || 0 }}
+                                        </td>
+                                        <td>
+                                            {{ order.tour?.seats || 'Не указано' }}
+                                        </td>
+                                        <td>
+                                            <div class="status-item">
+                                                <span class="status-name">{{ getStatusText(order.status) }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="actions-container">
+                                                <div class="user-actions">
+                                                    <button class="edit-btn">
+                                                        <img src="/svg/eye.svg" alt="view">
+                                                    </button>
+                                                    <button class="edit-btn">
+                                                        <router-link :to="{name: 'order-edit', params: { id: order.id }}">
+                                                            <img src="/svg/pencil.svg" alt="edit">
+                                                        </router-link>
+                                                    </button>
+                                                    <button class="more-btn">
+                                                        <img src="/svg/more-horiz.svg" alt="edit">
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -317,18 +386,6 @@ onMounted(() => {
 
 .clear {
     clear: both;
-}
-
-.status-name {
-    display: inline-block;
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border-radius: 44px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    margin-right: 8px;
-    margin-bottom: 4px;
 }
 
 .users-header {

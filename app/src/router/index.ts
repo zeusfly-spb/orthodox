@@ -154,26 +154,27 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+// router.beforeEach(async (to, from, next) => {
+//   const authStore = useAuthStore()
+//   next({ name: 'home' })
 
-  if (authStore.accessToken && !authStore.isInitialized) {
-    try {
-      await authStore.initializeAuth()
-    } catch (error) {
-      console.error('Failed to initialize auth:', error)
-    }
-  }
+  // if (authStore.accessToken && !authStore.isInitialized) {
+  //   try {
+  //     await authStore.initializeAuth()
+  //   } catch (error) {
+  //     console.error('Failed to initialize auth:', error)
+  //   }
+  // }
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login' })
-  } else if (to.meta.requiresAuth && authStore.isAuthenticated && !authStore.isEmailVerified) {
-    next({ name: 'email-verify-code' })
-  } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    next({ name: 'dashboard-home' })
-  } else {
-    next()
-  }
-})
+  // if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  //   next({ name: 'login' })
+  // } else if (to.meta.requiresAuth && authStore.isAuthenticated && !authStore.isEmailVerified) {
+  //   next({ name: 'email-verify-code' })
+  // } else if (to.meta.guestOnly && authStore.isAuthenticated) {
+  //   next({ name: 'dashboard-home' })
+  // } else {
+  //   next()
+  // }
+// })
 
 export default router

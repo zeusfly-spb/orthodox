@@ -266,8 +266,10 @@ onMounted(async () => {
         </template>
         
         <template #buttons>
-            <UButton text="Отмена" size="small" variant="secondary" @click="closeModal"/>
-            <UButton text="Сохранить" size="small" @click="sendForm"/>
+            <div class="buttons">
+                <UButton text="Отмена" size="small" variant="secondary" @click="closeModal"/>
+                <UButton text="Сохранить" size="small" @click="sendForm"/>
+            </div>
         </template>
     </UModal>
     <Alert variant="destructive" v-show="hasErrorAlert" class="fixed top-4 right-4 w-[350px] p-2 z-50 shadow-lg">
@@ -509,5 +511,10 @@ label span {
 .slide-fade-leave-to {
   transform: translateX(100%);
   opacity: 0;
+}
+.buttons {
+    display: flex;
+    justify-content: end;
+    gap: 20px;
 }
 </style>
