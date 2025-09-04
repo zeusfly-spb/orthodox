@@ -13,6 +13,10 @@ const props = defineProps({
         default: () => []
     },
     modelValue: String,
+    placeholder: {
+      type: String,
+      default: ''
+    },
     withSearch: {
         type: Boolean,
         default: false
@@ -66,7 +70,7 @@ onClickOutside(dropdownRef, () => {
 <template>
     <div class="dropdown" ref="dropdownRef" @click.stop="dropdown.isShowList = !dropdown.isShowList">
         <div class="dropdown__input">
-            {{ dropdown.selectedItem }} 
+            {{ dropdown.selectedItem || props.placeholder }} 
             <img :class="{'inverse': dropdown.isShowList}" src="/svg/arrow-down.svg" alt="open list">
         </div>
         <ul 

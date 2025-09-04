@@ -3,7 +3,7 @@ import { managerApi } from '@/api/managers'
 import UButton from '@/components/ui/UButton.vue'
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed, watch } from 'vue';
 import { bookingApi } from '@/api/bookings';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking'
@@ -11,15 +11,23 @@ import { useBookingStore } from '@/stores/booking'
 const booking = useBookingStore()
 const isOpenModal = ref(false)
 const isLoading = ref(false)
+const searchQuery = ref('')
 
 const filters = reactive({
-    days: 1,
-    status: 'Статус заявки',
-    manager: 'Менеджер',
-    operator: ''
+    status: '',
+    manager: '',
+    startDate: '',
+    endDate: ''
 })
 
-const statusList = ['Новая', 'В обработке', 'Подтверждена', 'Отклонена', 'Завершена']
+const statusList = [
+    { value: 'pending', label: 'В обработке' },
+    { value: 'confirmed', label: 'Подтверждена' },
+    { value: 'rejected', label: 'Отклонена' },
+    { value: 'completed', label: 'Завершена' }
+]
+
+const statusLabels = statusList.map(s => s.label)
 
 // Функция форматирования даты
 const formatDate = (dateString) => {
@@ -57,6 +65,100 @@ const getStatusText = (status) => {
   return statusMap[status] || status || 'Не указан';
 };
 
+// Отфильтрованные заявки
+const filteredOrders = computed(() => {
+  if (!booking.orderList || !booking.orderList.length) return [];
+
+  return booking.orderList.filter(order => {
+    // Фильтр по статусу
+    if (filters.status && order.status !== filters.status) {
+      return false;
+    }
+
+    // Фильтр по менеджеру (если нужно)
+    if (filters.manager) {
+      // Здесь нужно добавить логику фильтрации по менеджеру, если есть такое поле в данных
+      // if (order.manager !== filters.manager) return false;
+    }
+
+    // Фильтр по дате создания
+    if (filters.startDate || filters.endDate) {
+      const orderDate = new Date(order.created_at);
+      
+      if (filters.startDate) {
+        const startDate = new Date(filters.startDate);
+        if (orderDate < startDate) return false;
+      }
+      
+      if (filters.endDate) {
+        const endDate = new Date(filters.endDate);
+        endDate.setHours(23, 59, 59); // Устанавливаем конец дня
+        if (orderDate > endDate) return false;
+      }
+    }
+
+    // Поиск по тексту
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase();
+      const tourTitle = order.tour?.title?.toLowerCase() || '';
+      const orderId = order.id.toString();
+      const customerNames = order.customers?.map(c => 
+        `${c.lastname} ${c.firstname} ${c.patronymic}`.toLowerCase()
+      ).join(' ') || '';
+
+      if (!tourTitle.includes(query) && 
+          !orderId.includes(query) && 
+          !customerNames.includes(query)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+});
+
+const showPeriodDropdown = ref(false);
+const periodDisplayText = computed(() => {
+  if (filters.startDate && filters.endDate) {
+    return `${formatDisplayDate(filters.startDate)} - ${formatDisplayDate(filters.endDate)}`;
+  }
+  return 'Период создания';
+});
+
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+  } catch (error) {
+    return dateString;
+  }
+};
+
+const togglePeriodDropdown = () => {
+  showPeriodDropdown.value = !showPeriodDropdown.value;
+};
+
+const applyPeriodFilter = () => {
+  showPeriodDropdown.value = false;
+  // Здесь можно добавить дополнительную логику применения фильтра
+};
+
+const clearPeriodFilter = () => {
+  filters.startDate = '';
+  filters.endDate = '';
+  showPeriodDropdown.value = false;
+};
+
+// Сброс фильтров
+const resetFilters = () => {
+  filters.status = '';
+  filters.manager = '';
+  filters.startDate = '';
+  filters.endDate = '';
+  searchQuery.value = '';
+};
+
 async function loadAllData() {
   isLoading.value = true;
   try {
@@ -74,6 +176,24 @@ async function loadAllData() {
   } finally {
     isLoading.value = false;
   }
+}
+
+// Вычисляемое свойство для отображения выбранного значения
+const selectedStatusLabel = computed({
+  get: () => {
+    const status = statusList.find(s => s.value === filters.status);
+    return status ? status.label : 'Все статусы';
+  },
+  set: (newValue) => {
+    const status = statusList.find(s => s.label === newValue);
+    filters.status = status ? status.value : '';
+  }
+})
+
+// Или можно использовать обработчик вместо setter
+const handleStatusChange = (selectedLabel) => {
+  const status = statusList.find(s => s.label === selectedLabel);
+  filters.status = status ? status.value : '';
 }
 
 onMounted(() => {
@@ -97,6 +217,7 @@ onMounted(() => {
                     <template #title>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</template>
                     <template #description>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus temporibus sit, impedit adipisci perferendis incidunt accusantium neque, fuga, molestiae harum quae maiores expedita beatae sapiente voluptatibus? Aut distinctio atque facilis!</template>
                 </UBanner>
+                
                 <!-- Фильтры для заявок -->
                 <div class="search-filters-container2">
                     <div class="search-container">
@@ -104,273 +225,250 @@ onMounted(() => {
                             <UInput 
                                 svgPath="/svg/search.svg"
                                 placeholder="Поиск по названию тура, заказчику, номеру заявки..."
-                                :inputHeightPx="36" 
+                                :inputHeightPx="36"
+                                v-model="searchQuery"
+                            />
+                            <UButton 
+                                text="Сбросить фильтры" 
+                                size="small" 
+                                variant="secondary" 
+                                @click="resetFilters"
+                                style="margin-left: 10px;"
                             />
                         </div>
                     </div>
 
                     <div class="filters-scroll-container">
                         <div class="filters-grid">
-                            <UDropdown :list="statusList" v-model="filters.status"/>
-                            <UDropdown :list="booking.managers" v-model="filters.manager"/>
-
-                            <!-- Фильтр по периоду создания -->
+                            <!-- Фильтр по статусу -->
                             <div class="filter-item">
-                                <div class="custom-select">
-                                    <div class="filter-trigger filter-trigger-period" id="periodTrigger">
-                                        <span id="periodText">Период создания тура</span>
-                                        <svg class="calendar-icon" width="18" height="20" viewBox="0 0 18 20"
-                                            fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.6668 0.966797C6.0534 0.966797 6.3668 1.2802 6.3668 1.6668V4.1668C6.3668 4.5534 6.0534 4.8668 5.6668 4.8668C5.2802 4.8668 4.9668 4.5534 4.9668 4.1668V1.6668C4.9668 1.2802 5.2802 0.966797 5.6668 0.966797Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M12.3328 0.966797C12.7194 0.966797 13.0328 1.2802 13.0328 1.6668V4.1668C13.0328 4.5534 12.7194 4.8668 12.3328 4.8668C11.9462 4.8668 11.6328 4.5534 11.6328 4.1668V1.6668C11.6328 1.2802 11.9462 0.966797 12.3328 0.966797Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M1.2168 7.575C1.2168 7.1884 1.5302 6.875 1.9168 6.875H16.0835C16.4701 6.875 16.7835 7.1884 16.7835 7.575C16.7835 7.9616 16.4701 8.275 16.0835 8.275H1.9168C1.5302 8.275 1.2168 7.9616 1.2168 7.575Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M3.00234 4.53895C2.48558 5.09546 2.1998 5.94077 2.1998 7.08346V14.1668C2.1998 15.3095 2.48558 16.1548 3.00234 16.7113C3.51039 17.2584 4.34156 17.6335 5.66647 17.6335H12.3331C13.6581 17.6335 14.4892 17.2584 14.9973 16.7113C15.514 16.1548 15.7998 15.3095 15.7998 14.1668V7.08346C15.7998 5.94077 15.514 5.09546 14.9973 4.53895C14.4892 3.99182 13.6581 3.6168 12.3331 3.6168H5.66647C4.34156 3.6168 3.51039 3.99182 3.00234 4.53895ZM1.97643 3.58631C2.82256 2.6751 4.07472 2.2168 5.66647 2.2168H12.3331C13.9249 2.2168 15.1771 2.6751 16.0232 3.58631C16.8606 4.48813 17.1998 5.72616 17.1998 7.08346V14.1668C17.1998 15.5241 16.8606 16.7621 16.0232 17.6639C15.1771 18.5752 13.9249 19.0335 12.3331 19.0335H5.66647C4.07472 19.0335 2.82256 18.5752 1.97643 17.6639C1.13903 16.7621 0.799805 15.5241 0.799805 14.1668V7.08346C0.799805 5.72616 1.13903 4.48813 1.97643 3.58631Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M9.12891 11.4168C9.12891 11.0302 9.44231 10.7168 9.82891 10.7168H9.83639C10.223 10.7168 10.5364 11.0302 10.5364 11.4168C10.5364 11.8034 10.223 12.1168 9.83639 12.1168H9.82891C9.44231 12.1168 9.12891 11.8034 9.12891 11.4168Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.21094 11.4168C5.21094 11.0302 5.52434 10.7168 5.91094 10.7168H5.91842C6.30502 10.7168 6.61842 11.0302 6.61842 11.4168C6.61842 11.8034 6.30502 12.1168 5.91842 12.1168H5.91094C5.52434 12.1168 5.21094 11.8034 5.21094 11.4168Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.21094 14.7498C5.21094 14.3632 5.52434 14.0498 5.91094 14.0498H5.91842C6.30502 14.0498 6.61842 14.3632 6.61842 14.7498C6.61842 15.1364 6.30502 15.4498 5.91842 15.4498H5.91094C5.52434 15.4498 5.21094 15.1364 5.21094 14.7498Z"
-                                                fill="#64748B" />
-                                        </svg>
-                                    </div>
-                                    <div class="filter-dropdown-period">
-                                        <input type="text" class="date-range-input" id="dateRangeInput"
-                                            placeholder="Выберите период" readonly>
-                                    </div>
-                                </div>
+                                <UDropdown 
+                                    :list="statusLabels" 
+                                    v-model="selectedStatusLabel"
+                                    placeholder="Все статусы"
+                                    @update:modelValue="handleStatusChange"
+                                />
                             </div>
 
+                            <!-- Фильтр по менеджеру -->
                             <div class="filter-item">
-                                <div class="custom-select">
-                                    <div class="filter-trigger filter-trigger-period" id="periodTrigger2">
-                                        <span id="periodText2">Даты туров</span>
-                                        <svg class="calendar-icon" width="18" height="20" viewBox="0 0 18 20"
-                                            fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.6668 0.966797C6.0534 0.966797 6.3668 1.2802 6.3668 1.6668V4.1668C6.3668 4.5534 6.0534 4.8668 5.6668 4.8668C5.2802 4.8668 4.9668 4.5534 4.9668 4.1668V1.6668C4.9668 1.2802 5.2802 0.966797 5.6668 0.966797Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M12.3328 0.966797C12.7194 0.966797 13.0328 1.2802 13.0328 1.6668V4.1668C13.0328 4.5534 12.7194 4.8668 12.3328 4.8668C11.9462 4.8668 11.6328 4.5534 11.6328 4.1668V1.6668C11.6328 1.2802 11.9462 0.966797 12.3328 0.966797Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M1.2168 7.575C1.2168 7.1884 1.5302 6.875 1.9168 6.875H16.0835C16.4701 6.875 16.7835 7.1884 16.7835 7.575C16.7835 7.9616 16.4701 8.275 16.0835 8.275H1.9168C1.5302 8.275 1.2168 7.9616 1.2168 7.575Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M3.00234 4.53895C2.48558 5.09546 2.1998 5.94077 2.1998 7.08346V14.1668C2.1998 15.3095 2.48558 16.1548 3.00234 16.7113C3.51039 17.2584 4.34156 17.6335 5.66647 17.6335H12.3331C13.6581 17.6335 14.4892 17.2584 14.9973 16.7113C15.514 16.1548 15.7998 15.3095 15.7998 14.1668V7.08346C15.7998 5.94077 15.514 5.09546 14.9973 4.53895C14.4892 3.99182 13.6581 3.6168 12.3331 3.6168H5.66647C4.34156 3.6168 3.51039 3.99182 3.00234 4.53895ZM1.97643 3.58631C2.82256 2.6751 4.07472 2.2168 5.66647 2.2168H12.3331C13.9249 2.2168 15.1771 2.6751 16.0232 3.58631C16.8606 4.48813 17.1998 5.72616 17.1998 7.08346V14.1668C17.1998 15.5241 16.8606 16.7621 16.0232 17.6639C15.1771 18.5752 13.9249 19.0335 12.3331 19.0335H5.66647C4.07472 19.0335 2.82256 18.5752 1.97643 17.6639C1.13903 16.7621 0.799805 15.5241 0.799805 14.1668V7.08346C0.799805 5.72616 1.13903 4.48813 1.97643 3.58631Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M9.12891 11.4168C9.12891 11.0302 9.44231 10.7168 9.82891 10.7168H9.83639C10.223 10.7168 10.5364 11.0302 10.5364 11.4168C10.5364 11.8034 10.223 12.1168 9.83639 12.1168H9.82891C9.44231 12.1168 9.12891 11.8034 9.12891 11.4168Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.21094 11.4168C5.21094 11.0302 5.52434 10.7168 5.91094 10.7168H5.91842C6.30502 10.7168 6.61842 11.0302 6.61842 11.4168C6.61842 11.8034 6.30502 12.1168 5.91842 12.1168H5.91094C5.52434 12.1168 5.21094 11.8034 5.21094 11.4168Z"
-                                                fill="#64748B" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M5.21094 14.7498C5.21094 14.3632 5.52434 14.0498 5.91094 14.0498H5.91842C6.30502 14.0498 6.61842 14.3632 6.61842 14.7498C6.61842 15.1364 6.30502 15.4498 5.91842 15.4498H5.91094C5.52434 15.4498 5.21094 15.1364 5.21094 14.7498Z"
-                                                fill="#64748B" />
-                                        </svg>
-                                    </div>
-                                    <div class="filter-dropdown-period">
-                                        <input type="text" class="date-range-input" id="dateRangeInput2"
-                                            placeholder="Выберите период" readonly>
-                                    </div>
-                                </div>
+                                <UDropdown 
+                                    :list="booking.managers" 
+                                    v-model="filters.manager"
+                                    placeholder="Все менеджеры"
+                                    @update:modelValue="(value) => {
+                                        filters.manager = value;
+                                    }"
+                                />
                             </div>
-                        </div>
-                    </div>
-                    <!-- Теги -->
-                    <div class="tags-container">
-                        <div class="tags-list">
-                            <div class="tag-item active">
-                                <span>Ter 1</span>
-                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
-                                </svg>
-                            </div>
-                            <div class="tag-item">
-                                <span>Ter 1</span>
-                            </div>
-                        </div>
-                        <button class="add-tag-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                            </svg>
-                            Добавить тег
-                        </button>
-                    </div>
+
+                            <!-- Фильтр по дате создания -->
+                            <div class="filter-item">
+    <div class="custom-select period-filter">
+        <div class="filter-trigger filter-trigger-period" @click="togglePeriodDropdown">
+            <span>{{ periodDisplayText }}</span>
+            <svg class="calendar-icon" width="18" height="20" viewBox="0 0 18 20" fill="none">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.6668 0.966797C6.0534 0.966797 6.3668 1.2802 6.3668 1.6668V4.1668C6.3668 4.5534 6.0534 4.8668 5.6668 4.8668C5.2802 4.8668 4.9668 4.5534 4.9668 4.1668V1.6668C4.9668 1.2802 5.2802 0.966797 5.6668 0.966797Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M12.3328 0.966797C12.7194 0.966797 13.0328 1.2802 13.0328 1.6668V4.1668C13.0328 4.5534 12.7194 4.8668 12.3328 4.8668C11.9462 4.8668 11.6328 4.5534 11.6328 4.1668V1.6668C11.6328 1.2802 11.9462 0.966797 12.3328 0.966797Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M1.2168 7.575C1.2168 7.1884 1.5302 6.875 1.9168 6.875H16.0835C16.4701 6.875 16.7835 7.1884 16.7835 7.575C16.7835 7.9616 16.4701 8.275 16.0835 8.275H1.9168C1.5302 8.275 1.2168 7.9616 1.2168 7.575Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M3.00234 4.53895C2.48558 5.09546 2.1998 5.94077 2.1998 7.08346V14.1668C2.1998 15.3095 2.48558 16.1548 3.00234 16.7113C3.51039 17.2584 4.34156 17.6335 5.66647 17.6335H12.3331C13.6581 17.6335 14.4892 17.2584 14.9973 16.7113C15.514 16.1548 15.7998 15.3095 15.7998 14.1668V7.08346C15.7998 5.94077 15.514 5.09546 14.9973 4.53895C14.4892 3.99182 13.6581 3.6168 12.3331 3.6168H5.66647C4.34156 3.6168 3.51039 3.99182 3.00234 4.53895ZM1.97643 3.58631C2.82256 2.6751 4.07472 2.2168 5.66647 2.2168H12.3331C13.9249 2.2168 15.1771 2.6751 16.0232 3.58631C16.8606 4.48813 17.1998 5.72616 17.1998 7.08346V14.1668C17.1998 15.5241 16.8606 16.7621 16.0232 17.6639C15.1771 18.5752 13.9249 19.0335 12.3331 19.0335H5.66647C4.07472 19.0335 2.82256 18.5752 1.97643 17.6639C1.13903 16.7621 0.799805 15.5241 0.799805 14.1668V7.08346C0.799805 5.72616 1.13903 4.48813 1.97643 3.58631Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M9.12891 11.4168C9.12891 11.0302 9.44231 10.7168 9.82891 10.7168H9.83639C10.223 10.7168 10.5364 11.0302 10.5364 11.4168C10.5364 11.8034 10.223 12.1168 9.83639 12.1168H9.82891C9.44231 12.1168 9.12891 11.8034 9.12891 11.4168Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.21094 11.4168C5.21094 11.0302 5.52434 10.7168 5.91094 10.7168H5.91842C6.30502 10.7168 6.61842 11.0302 6.61842 11.4168C6.61842 11.8034 6.30502 12.1168 5.91842 12.1168H5.91094C5.52434 12.1168 5.21094 11.8034 5.21094 11.4168Z"
+                    fill="#64748B" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.21094 14.7498C5.21094 14.3632 5.52434 14.0498 5.91094 14.0498H5.91842C6.30502 14.0498 6.61842 14.3632 6.61842 14.7498C6.61842 15.1364 6.30502 15.4498 5.91842 15.4498H5.91094C5.52434 15.4498 5.21094 15.1364 5.21094 14.7498Z"
+                    fill="#64748B" />
+            </svg>
+        </div>
+        <div class="filter-dropdown-period" v-if="showPeriodDropdown">
+            <div class="period-filters-container">
+                <div class="period-input-group">
+                    <label>С:</label>
+                    <input 
+                        type="date" 
+                        class="date-input" 
+                        v-model="filters.startDate"
+                    >
                 </div>
-
-                <div class="filters" v-for="order in booking.orderList" :key="order.id">
-                    <div class="page-header">
-                        <div class="title-table-n-za">{{ order.tour?.title }}</div>
-                        <div>
-                            <div class="tags-list">
-                                <div class="tag-item">
-                                    <span>Ter 1</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-wrapper2">
-                        <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Дата начала тура</th>
-                                    <th>Дата окончания тура</th>
-                                    <th>Забронировано</th>
-                                    <th>Всего мест</th>
-                                    <th>Статус заявки</th>
-                                    <th style="width: 100px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Проверяем, что есть даты и они не пустые -->
-                                <template v-if="order.tour?.dates && order.tour.dates.length">
-                                    <tr v-for="(date, dateIndex) in order.tour.dates" :key="dateIndex">
-                                        <td>
-                                            {{ formatDate(date.date_start) }}
-                                        </td>
-                                        <td>
-                                            {{ formatDate(date.date_end) }}
-                                        </td>
-                                        <td>
-                                            {{ order.customers?.length || 0 }}
-                                        </td>
-                                        <td>
-                                            {{ date.seats || order.tour.seats || 'Не указано' }}
-                                        </td>
-                                        <td>
-                                            <div class="status-item">
-                                                <span class="status-name">{{ getStatusText(order.status) }}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="actions-container">
-                                                <div class="user-actions">
-                                                    <button class="edit-btn">
-                                                        <img src="/svg/eye.svg" alt="view">
-                                                    </button>
-                                                    <button class="edit-btn">
-                                                        <router-link :to="{name: 'order-edit', params: { id: order.id }}">
-                                                            <img src="/svg/pencil.svg" alt="edit">
-                                                        </router-link>
-                                                    </button>
-                                                    <button class="more-btn">
-                                                        <img src="/svg/more-horiz.svg" alt="edit">
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <!-- Если дат нет, показываем одну строку с основной информацией -->
-                                <template v-else>
-                                    <tr>
-                                        <td>
-                                            {{ formatDate(order.tour?.date) }}
-                                        </td>
-                                        <td>
-                                            {{ calculateEndDate(order.tour) }}
-                                        </td>
-                                        <td>
-                                            {{ order.customers?.length || 0 }}
-                                        </td>
-                                        <td>
-                                            {{ order.tour?.seats || 'Не указано' }}
-                                        </td>
-                                        <td>
-                                            <div class="status-item">
-                                                <span class="status-name">{{ getStatusText(order.status) }}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="actions-container">
-                                                <div class="user-actions">
-                                                    <button class="edit-btn">
-                                                        <img src="/svg/eye.svg" alt="view">
-                                                    </button>
-                                                    <button class="edit-btn">
-                                                        <router-link :to="{name: 'order-edit', params: { id: order.id }}">
-                                                            <img src="/svg/pencil.svg" alt="edit">
-                                                        </router-link>
-                                                    </button>
-                                                    <button class="more-btn">
-                                                        <img src="/svg/more-horiz.svg" alt="edit">
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="period-input-group">
+                    <label>По:</label>
+                    <input 
+                        type="date" 
+                        class="date-input" 
+                        v-model="filters.endDate"
+                    >
+                </div>
+                <div class="period-actions">
+                    <button class="btn btn-secondary period-clear-btn" @click="clearPeriodFilter">
+                        Очистить
+                    </button>
+                    <button class="btn btn-primary period-apply-btn" @click="applyPeriodFilter">
+                        Применить
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+                        </div>
+                    </div>
 
-        <!-- Модальное окно для добавления тегов -->
-        <div class="modal" id="tagsModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Добавить тег</h3>
-                    <button class="close-modal">&times;</button>
+                    <!-- Информация о фильтрах -->
+                    <div class="tags-container" v-if="filters.status || filters.manager || filters.startDate || filters.endDate">
+                        <div class="tags-list">
+                            <div class="tag-item active" v-if="filters.status">
+                                <span>Статус: {{ statusList.find(s => s.value === filters.status)?.label }}</span>
+                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    @click="filters.status = ''">
+                                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
+                                </svg>
+                            </div>
+                            <div class="tag-item active" v-if="filters.manager">
+                                <span>Менеджер: {{ filters.manager }}</span>
+                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    @click="filters.manager = ''">
+                                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
+                                </svg>
+                            </div>
+                            <div class="tag-item active" v-if="filters.startDate">
+                                <span>С: {{ formatDate(filters.startDate) }}</span>
+                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    @click="filters.startDate = ''">
+                                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
+                                </svg>
+                            </div>
+                            <div class="tag-item active" v-if="filters.endDate">
+                                <span>По: {{ formatDate(filters.endDate) }}</span>
+                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    @click="filters.endDate = ''">
+                                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                        labore et dolore magna aliqua.</p>
-                    <div class="modal-tags-container">
-                        <div class="tag-input-row">
-                            <input type="text" class="modal-tag-input" placeholder="Имя тега">
-                            <button class="btn btn-primary add-tag-btn-modal">Добавить</button>
-                        </div>
-                        <div class="modal-tags-list">
-                            <div class="modal-tag-item">
-                                <span>Тет 1</span>
-                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
-                                </svg>
-                            </div>
-                            <div class="modal-tag-item">
-                                <span>Тет 1</span>
-                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
-                                </svg>
-                            </div>
-                            <div class="modal-tag-item">
-                                <span>Тет 1</span>
-                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
-                                </svg>
-                            </div>
-                            <div class="modal-tag-item">
-                                <span>Тет 1</span>
-                                <svg class="tag-close" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" />
-                                </svg>
+
+                <!-- Индикатор загрузки -->
+                <div v-if="isLoading" class="loading">
+                    Загрузка данных...
+                </div>
+
+                <!-- Список заявок -->
+                <div v-else>
+                    <div class="filters" v-for="order in filteredOrders" :key="order.id">
+                        <div class="page-header">
+                            <div class="title-table-n-za">{{ order.tour?.title }}</div>
+                            <div>
+                                <div class="tags-list">
+                                    <div class="tag-item">
+                                        <span>ID: {{ order.id }}</span>
+                                    </div>
+                                    <div class="tag-item" :class="order.status">
+                                        <span>{{ getStatusText(order.status) }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <div class="table-wrapper2">
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Дата начала тура</th>
+                                        <th>Дата окончания тура</th>
+                                        <th>Забронировано</th>
+                                        <th>Всего мест</th>
+                                        <th>Статус заявки</th>
+                                        <th style="width: 100px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="order.tour?.dates && order.tour.dates.length">
+                                        <tr v-for="(date, dateIndex) in order.tour.dates" :key="dateIndex">
+                                            <td>{{ formatDate(date.date_start) }}</td>
+                                            <td>{{ formatDate(date.date_end) }}</td>
+                                            <td>{{ order.customers?.length || 0 }}</td>
+                                            <td>{{ date.seats || order.tour.seats || 'Не указано' }}</td>
+                                            <td>
+                                                <div class="status-item">
+                                                    <span class="status-name">{{ getStatusText(order.status) }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="actions-container">
+                                                    <div class="user-actions">
+                                                        <button class="edit-btn">
+                                                            <img src="/svg/eye.svg" alt="view">
+                                                        </button>
+                                                        <button class="edit-btn">
+                                                            <router-link :to="{name: 'order-edit', params: { id: order.id }}">
+                                                                <img src="/svg/pencil.svg" alt="edit">
+                                                            </router-link>
+                                                        </button>
+                                                        <button class="more-btn">
+                                                            <img src="/svg/more-horiz.svg" alt="edit">
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td>{{ formatDate(order.tour?.date) }}</td>
+                                            <td>{{ calculateEndDate(order.tour) }}</td>
+                                            <td>{{ order.customers?.length || 0 }}</td>
+                                            <td>{{ order.tour?.seats || 'Не указано' }}</td>
+                                            <td>
+                                                <div class="status-item">
+                                                    <span class="status-name">{{ getStatusText(order.status) }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="actions-container">
+                                                    <div class="user-actions">
+                                                        <button class="edit-btn">
+                                                            <img src="/svg/eye.svg" alt="view">
+                                                        </button>
+                                                        <button class="edit-btn">
+                                                            <router-link :to="{name: 'order-edit', params: { id: order.id }}">
+                                                                <img src="/svg/pencil.svg" alt="edit">
+                                                            </router-link>
+                                                        </button>
+                                                        <button class="more-btn">
+                                                            <img src="/svg/more-horiz.svg" alt="edit">
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Если нет отфильтрованных заявок -->
+                    <div v-if="!filteredOrders.length" class="no-data">
+                        <template v-if="filters.status || filters.manager || filters.startDate || filters.endDate || searchQuery">
+                            По вашему запросу ничего не найдено. 
+                            <a href="#" @click.prevent="resetFilters" style="color: #007bff; text-decoration: underline;">
+                                Сбросить фильтры
+                            </a>
+                        </template>
+                        <template v-else>
+                            Нет данных о заявках
+                        </template>
                     </div>
                 </div>
             </div>
@@ -2147,5 +2245,138 @@ input[type="checkbox"]:checked+.custom-checkbox:after {
     line-height: 16px;
     color: rgba(106, 110, 117, 1);
     white-space: nowrap;
+}
+
+.period-filter {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  min-width: 200px;
+}
+
+.filter-trigger-period {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 40px;
+  white-space: nowrap;
+  
+  &:hover {
+    border-color: #94a3b8;
+    background-color: #fff;
+  }
+  
+  span {
+    font-size: 14px;
+    color: #353535;
+    margin-right: 8px;
+  }
+  
+  .calendar-icon {
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+}
+
+.filter-dropdown-period {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 5px;
+  padding: 16px;
+  min-width: 300px;
+}
+
+.period-filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.period-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+  }
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  
+  &:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+}
+
+.period-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  
+  .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  
+  .period-clear-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+  
+  .period-apply-btn {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    
+    &:hover {
+      background: #0d9c6e;
+    }
+  }
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+  .period-filter {
+    width: 100%;
+  }
+  
+  .filter-dropdown-period {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 320px;
+  }
 }
 </style>
