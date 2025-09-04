@@ -38,10 +38,10 @@ const emit = defineEmits<{
 
 const tour = computed({
     get() {
-            return props.currentItem;
+        return props.currentItem;
     },
     set(value) {
-            emit('update:currentItem', value);
+        emit('update:currentItem', value);
     }
 });
 
