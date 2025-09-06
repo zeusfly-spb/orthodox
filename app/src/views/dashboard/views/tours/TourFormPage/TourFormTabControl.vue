@@ -42,6 +42,13 @@
       >
         Карта маршрута
       </button>
+      <button 
+        class="tab-button"
+        :class="{ 'tab-button--active': activeTab === 'TreeView' }"
+        @click="activeTab = 'TreeView'"
+      >
+        Структура данных
+      </button>
     </div>
 </template>
 

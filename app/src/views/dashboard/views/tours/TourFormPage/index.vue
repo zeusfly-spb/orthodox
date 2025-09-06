@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, computed, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { tourApi } from '@/api/tours';
 import { toast } from 'vue-sonner';
 import type { Tour } from '@/types/tour';
@@ -11,13 +11,32 @@ import TourFormProgram from './TourFormProgram.vue';
 import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
+import TourFormTreeView from './TourFormTreeView.vue';
 
 const router = useRouter();
+const route = useRoute();
 const id = ref<string | null>(null);
 const currentItem = ref<Tour | null>(null);
 const activeTab = ref('Data');
 
+const updateUrlTab = (tab: string) => {
+  router.replace({
+    name: route.name as string,
+    params: route.params,
+    query: { ...route.query, tab }
+  });
+};
 
+const loadTabFromUrl = () => {
+  const tabFromUrl = route.query.tab as string;
+  if (tabFromUrl && ['Data', 'Params', 'Desc', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)) {
+    activeTab.value = tabFromUrl;
+  }
+};
+
+watch(activeTab, (newTab) => {
+  updateUrlTab(newTab);
+});
 
 const loadItem = async (): Promise<void> => {
   try {
@@ -49,6 +68,7 @@ const handleCancel = (): void => {
 };
 
 onMounted(() => {
+  loadTabFromUrl();
   const routeId = router.currentRoute.value.params.id;
   if (routeId && routeId !== 'new') {
     id.value = routeId as string;
@@ -66,7 +86,7 @@ onMounted(() => {
   <div 
     v-else
     class="main-content"
-    style="margin-left: 270px; margin-top: 20px;"
+    style="margin-left: 279px; margin-top: 20px;"
   >
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 mb-6">Уникальный тур</h1>
@@ -98,6 +118,10 @@ onMounted(() => {
       <TourFormDesc
         v-else-if="activeTab === 'Desc'"
         v-model:currentItem="currentItem"
+      />
+      <TourFormTreeView
+        v-else-if="activeTab === 'TreeView'"
+        :currentItem="currentItem"
       />
     </div>
   </div>
