@@ -9,7 +9,7 @@ import {
   SidebarRail,
   type SidebarProps,
   useSidebar,
-} from '@/components/ui/sidebar'
+} from '@/components/ui/sidebar';
 import {
   BookOpen,
   Bot,
@@ -21,21 +21,21 @@ import {
   Users,
   Database,
   BadgeCheck,
-} from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+} from 'lucide-vue-next';
+import { RouterLink } from 'vue-router';
 
-import logoFull from '@/assets/images/logo-full.png'
-import logoIcon from '@/assets/images/logo-icon.png'
-import NavMain from '@/components/dashboard/nav/NavMain.vue'
-import NavSecondary from '@/components/dashboard/nav/NavSecondary.vue'
-import NavCollapsible from '@/components/dashboard/nav/NavCollapsible.vue'
+import logoFull from '@/assets/images/logo-full.png';
+import logoIcon from '@/assets/images/logo-icon.png';
+import NavMain from '@/components/dashboard/nav/NavMain.vue';
+import NavSecondary from '@/components/dashboard/nav/NavSecondary.vue';
+import NavCollapsible from '@/components/dashboard/nav/NavCollapsible.vue';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
   class: 'bg-white',
-})
+});
 
-const { state, isMobile } = useSidebar()
+const { state, isMobile } = useSidebar();
 
 // This is sample data.
 const data = {
@@ -171,7 +171,7 @@ const data = {
       ],
     },
   ],
-}
+};
 </script>
 
 <template>

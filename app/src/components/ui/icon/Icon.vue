@@ -1,17 +1,17 @@
 <script setup>
 import { computed } from 'vue';
-import * as icons from "lucide-vue-next";
+import * as icons from 'lucide-vue-next';
 
 const props = defineProps({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   size: Number,
   color: String,
   strokeWidth: Number,
-  defaultClass: String
-})
+  defaultClass: String,
+});
 
 const icon = computed(() => icons[props.name]);
 </script>

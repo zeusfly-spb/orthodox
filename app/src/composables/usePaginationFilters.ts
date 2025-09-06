@@ -1,16 +1,16 @@
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { debounce } from 'lodash-es'
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { debounce } from 'lodash-es';
 
 export const usePaginationFilters = (defaultFilters = {}, debounceTime = 500) => {
-  const route = useRoute()
-  const router = useRouter()
+  const route = useRoute();
+  const router = useRouter();
 
   // Состояние фильтров
   const filters = ref({
     page: Number(route.query.page) || 1,
     ...defaultFilters,
-  })
+  });
 
   // Комплексные фильтры (при необходимости)
   const complexFilters = computed(() => ({
@@ -20,35 +20,35 @@ export const usePaginationFilters = (defaultFilters = {}, debounceTime = 500) =>
         ([key, value]) => value !== null && value !== undefined && value !== '',
       ),
     ),
-  }))
+  }));
 
   // Debounce для поиска
-  const debouncedApply = debounce(applyFilters, debounceTime)
+  const debouncedApply = debounce(applyFilters, debounceTime);
 
   // Отслеживаем изменения простых фильтров
   watch(
     () => filters.value,
     (newVal, oldVal) => {
       if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-        debouncedApply()
+        debouncedApply();
       }
     },
     { deep: true },
-  )
+  );
 
   // Применение фильтров
   function applyFilters() {
     // Убираем page=1 для чистоты URL
-    const query = { ...complexFilters.value }
-    if (query.page === 1) delete query.page
+    const query = { ...complexFilters.value };
+    if (query.page === 1) delete query.page;
 
-    router.push({ query })
+    router.push({ query });
   }
 
   // Обработчик изменения страницы
   function handlePageChange(page: number) {
-    filters.value.page = page
-    applyFilters()
+    filters.value.page = page;
+    applyFilters();
   }
 
   // Сброс фильтров
@@ -56,8 +56,8 @@ export const usePaginationFilters = (defaultFilters = {}, debounceTime = 500) =>
     filters.value = {
       page: 1,
       ...defaultFilters,
-    }
-    applyFilters()
+    };
+    applyFilters();
   }
 
   return {
@@ -67,5 +67,5 @@ export const usePaginationFilters = (defaultFilters = {}, debounceTime = 500) =>
     resetFilters,
     handlePageChange,
     currentPage: computed(() => filters.value.page),
-  }
-}
+  };
+};

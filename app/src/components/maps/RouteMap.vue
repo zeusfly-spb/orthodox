@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
   MglMap,
   MglNavigationControl,
@@ -9,50 +9,50 @@ import {
   MglSymbolLayer,
   MglMarker,
   MglPopup,
-} from '@indoorequal/vue-maplibre-gl'
+} from '@indoorequal/vue-maplibre-gl';
 
 const props = withDefaults(
   defineProps<{
-    mapStyle?: string
-    height?: string
+    mapStyle?: string;
+    height?: string;
     points?: Array<{
       entity?: {
-        id: string | number
+        id: string | number;
         location: {
-          type: 'Point'
-          coordinates: [number, number]
-        }
-        title?: string
-        description?: string
-        [key: string]: any
-      }
+          type: 'Point';
+          coordinates: [number, number];
+        };
+        title?: string;
+        description?: string;
+        [key: string]: any;
+      };
       location?: {
-        type: 'Point'
-        coordinates: [number, number]
-      }
-      title?: string
-      description?: string
-      id: string | number
-      [key: string]: any
-    }>
+        type: 'Point';
+        coordinates: [number, number];
+      };
+      title?: string;
+      description?: string;
+      id: string | number;
+      [key: string]: any;
+    }>;
     linePaint?: {
-      'line-color': string
-      'line-width': number
-      'line-dasharray'?: number[]
-      'line-opacity'?: number
-      'line-translate'?: number[]
-    }
+      'line-color': string;
+      'line-width': number;
+      'line-dasharray'?: number[];
+      'line-opacity'?: number;
+      'line-translate'?: number[];
+    };
     lineLayout?: {
-      'line-join': string
-      'line-cap': string
-      'line-sort-key'?: number
-    }
+      'line-join': string;
+      'line-cap': string;
+      'line-sort-key'?: number;
+    };
     circlePaint?: {
-      'circle-color': string
-      'circle-radius': number
-      'circle-stroke-color'?: string
-      'circle-stroke-width': number
-    }
+      'circle-color': string;
+      'circle-radius': number;
+      'circle-stroke-color'?: string;
+      'circle-stroke-width': number;
+    };
   }>(),
   {
     mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
@@ -77,28 +77,28 @@ const props = withDefaults(
       'circle-stroke-width': 2,
     },
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'marker-click', id: string | number | undefined): void
-}>()
+  (e: 'marker-click', id: string | number | undefined): void;
+}>();
 
-const mapRef = ref(null)
-const mapContainer = ref<HTMLElement | null>(null)
-const containerStyle = computed(() => ({ height: props.height }))
+const mapRef = ref(null);
+const mapContainer = ref<HTMLElement | null>(null);
+const containerStyle = computed(() => ({ height: props.height }));
 
 const normalizedPoints = computed(() => {
   return props.points
     .map((point, index) => {
-      const hasEntity = !!point.entity
+      const hasEntity = !!point.entity;
       const coordinates = hasEntity
         ? point.entity.location?.coordinates
-        : point.location?.coordinates
+        : point.location?.coordinates;
 
-      if (!coordinates) return null
+      if (!coordinates) return null;
 
-      const title = hasEntity ? point.entity.title : point.title
-      const description = hasEntity ? point.entity.description : point.description
+      const title = hasEntity ? point.entity.title : point.title;
+      const description = hasEntity ? point.entity.description : point.description;
 
       return {
         id: point.id,
@@ -106,29 +106,29 @@ const normalizedPoints = computed(() => {
         title: title || '',
         description: description || '',
         index: index + 1,
-      }
+      };
     })
     .filter(Boolean) as Array<{
-    id: string | number
-    coordinates: [number, number]
-    title: string
-    description: string
-    index: number
-  }>
-})
+    id: string | number;
+    coordinates: [number, number];
+    title: string;
+    description: string;
+    index: number;
+  }>;
+});
 
-const lineCoordinates = computed(() => normalizedPoints.value.map((point) => point.coordinates))
+const lineCoordinates = computed(() => normalizedPoints.value.map((point) => point.coordinates));
 
 const pointsDictionary = computed(() => {
   const dict: Record<
     string,
     {
-      coordinates: [number, number]
-      title: string
-      description: string
-      index: number
+      coordinates: [number, number];
+      title: string;
+      description: string;
+      index: number;
     }
-  > = {}
+  > = {};
 
   normalizedPoints.value.forEach((point) => {
     dict[point.id.toString()] = {
@@ -136,36 +136,36 @@ const pointsDictionary = computed(() => {
       title: point.title,
       description: point.description,
       index: point.index,
-    }
-  })
+    };
+  });
 
-  return dict
-})
+  return dict;
+});
 
 const mapParams = computed(() => {
   if (!normalizedPoints.value.length) {
     return {
       center: [110.32128708, 65.53927338] as [number, number],
       zoom: 2,
-    }
+    };
   }
 
-  const coords = lineCoordinates.value
-  const lngs = coords.map((c) => c[0])
-  const lats = coords.map((c) => c[1])
+  const coords = lineCoordinates.value;
+  const lngs = coords.map((c) => c[0]);
+  const lats = coords.map((c) => c[1]);
 
   const bbox = {
     minLng: Math.min(...lngs),
     maxLng: Math.max(...lngs),
     minLat: Math.min(...lats),
     maxLat: Math.max(...lats),
-  }
+  };
 
-  const center = [(bbox.minLng + bbox.maxLng) / 2, (bbox.minLat + bbox.maxLat) / 2]
+  const center = [(bbox.minLng + bbox.maxLng) / 2, (bbox.minLat + bbox.maxLat) / 2];
 
-  const latDiff = bbox.maxLat - bbox.minLat
-  const lngDiff = bbox.maxLng - bbox.minLng
-  const maxDiff = Math.max(latDiff, lngDiff)
+  const latDiff = bbox.maxLat - bbox.minLat;
+  const lngDiff = bbox.maxLng - bbox.minLng;
+  const maxDiff = Math.max(latDiff, lngDiff);
 
   const zoomLevels = [
     { diff: 20, zoom: 3 },
@@ -174,25 +174,25 @@ const mapParams = computed(() => {
     { diff: 2, zoom: 6 },
     { diff: 1, zoom: 7 },
     { diff: 0.5, zoom: 8 },
-  ]
+  ];
 
-  const zoomConfig = zoomLevels.find((config) => maxDiff > config.diff)
-  const zoom = zoomConfig ? zoomConfig.zoom : 9
+  const zoomConfig = zoomLevels.find((config) => maxDiff > config.diff);
+  const zoom = zoomConfig ? zoomConfig.zoom : 9;
 
-  return { center, zoom }
-})
+  return { center, zoom };
+});
 
 const resetView = () => {
-  const map = mapRef.value?.map
+  const map = mapRef.value?.map;
   if (map) {
     map.flyTo({
       center: mapParams.value.center,
       zoom: mapParams.value.zoom,
       essential: true,
       duration: 1000,
-    })
+    });
   }
-}
+};
 
 // GeoJSON
 const routeData = computed(() => {
@@ -208,7 +208,7 @@ const routeData = computed(() => {
       description: point.description,
       index: point.index,
     },
-  }))
+  }));
 
   // Добавляем линию если есть хотя бы 2 точки
   if (normalizedPoints.value.length >= 2) {
@@ -219,34 +219,34 @@ const routeData = computed(() => {
         type: 'LineString' as const,
         coordinates: lineCoordinates.value,
       },
-    })
+    });
   }
 
   return {
     type: 'FeatureCollection' as const,
     features,
-  }
-})
+  };
+});
 
-const pointFilter = ['==', ['geometry-type'], 'Point']
-const lineFilter = ['==', ['geometry-type'], 'LineString']
+const pointFilter = ['==', ['geometry-type'], 'Point'];
+const lineFilter = ['==', ['geometry-type'], 'LineString'];
 
 const activePopup = ref<{
-  coordinates: [number, number]
-  content: string
-  id: string | number
-} | null>(null)
+  coordinates: [number, number];
+  content: string;
+  id: string | number;
+} | null>(null);
 
 const truncateText = (text: string, maxLength: number) => {
-  if (!text) return ''
-  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
-}
+  if (!text) return '';
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
 
 const openPopupById = (id: string | number, fly?: boolean) => {
-  const pointData = pointsDictionary.value[id.toString()]
-  if (!pointData) return
+  const pointData = pointsDictionary.value[id.toString()];
+  if (!pointData) return;
 
-  const truncatedDescription = truncateText(pointData.description, 100)
+  const truncatedDescription = truncateText(pointData.description, 100);
 
   activePopup.value = {
     coordinates: [...pointData.coordinates],
@@ -257,83 +257,83 @@ const openPopupById = (id: string | number, fly?: boolean) => {
       </div>
     `,
     id: id,
-  }
+  };
 
-  if (!fly) return
-  flyToPointById(id)
-}
+  if (!fly) return;
+  flyToPointById(id);
+};
 
 const flyToPointById = (id: string | number) => {
-  const pointData = pointsDictionary.value[id.toString()]
-  if (!pointData) return
+  const pointData = pointsDictionary.value[id.toString()];
+  if (!pointData) return;
 
-  const map = mapRef.value?.map
+  const map = mapRef.value?.map;
   if (map) {
     map.flyTo({
       center: pointData.coordinates,
       zoom: 14,
       essential: true,
       duration: 1000,
-    })
+    });
   }
-}
+};
 
 // Map click handler
 const handleMapClick = async (e: any) => {
-  const map = mapRef.value?.map
-  if (!map) return
+  const map = mapRef.value?.map;
+  if (!map) return;
 
   const features = map.queryRenderedFeatures(e.point, {
     layers: ['points', 'point-labels'],
-  })
+  });
 
   if (features.length > 0) {
-    const pointFeature = features[0]
-    const clickedId = pointFeature.properties?.id
+    const pointFeature = features[0];
+    const clickedId = pointFeature.properties?.id;
 
     if (clickedId) {
-      emit('marker-click', clickedId)
-      openPopupById(clickedId)
+      emit('marker-click', clickedId);
+      openPopupById(clickedId);
     }
   } else {
-    activePopup.value = null
+    activePopup.value = null;
   }
-}
+};
 
 const closePopup = () => {
-  activePopup.value = null
-}
+  activePopup.value = null;
+};
 
 onMounted(() => {
-  const map = mapRef.value?.map
-  if (!map) return
+  const map = mapRef.value?.map;
+  if (!map) return;
 
   try {
-    map.on('click', handleMapClick)
+    map.on('click', handleMapClick);
 
     map.on('mouseenter', ['points', 'point-labels'], () => {
-      map.getCanvas().style.cursor = 'pointer'
-    })
+      map.getCanvas().style.cursor = 'pointer';
+    });
 
     map.on('mouseleave', ['points', 'point-labels'], () => {
-      map.getCanvas().style.cursor = ''
-    })
+      map.getCanvas().style.cursor = '';
+    });
   } catch (error) {
-    console.error('Ошибка подписки на события карты:', error)
+    console.error('Ошибка подписки на события карты:', error);
   }
-})
+});
 
 onUnmounted(() => {
   if (mapRef.value?.map) {
-    mapRef.value.map.off('click', handleMapClick)
+    mapRef.value.map.off('click', handleMapClick);
   }
-})
+});
 
 defineExpose({
   openPopupById,
   flyToPointById,
   resetView,
-})
+});
 </script>
 
 <template>

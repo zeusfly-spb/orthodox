@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, nextTick, ref, onMounted, onUnmounted, reactive } from 'vue'
+import { watch, nextTick, ref, onMounted, onUnmounted, reactive } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -7,39 +7,39 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { toast } from 'vue-sonner'
-import { entityApi } from '@/api/entities.ts'
-import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue'
-import MarkerMap from '@/components/maps/MarkerMap.vue'
-import api from '@/api/httpClient'
-import { debounce } from 'lodash-es'
-import type { AddressSuggestion } from '@/types/addressSuggestion.ts'
-import type { Requisite } from '@/types/requisite.ts'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { toast } from 'vue-sonner';
+import { entityApi } from '@/api/entities.ts';
+import EntityParameters from '@/components/dashboard/entities/EntityParameters.vue';
+import MarkerMap from '@/components/maps/MarkerMap.vue';
+import api from '@/api/httpClient';
+import { debounce } from 'lodash-es';
+import type { AddressSuggestion } from '@/types/addressSuggestion.ts';
+import type { Requisite } from '@/types/requisite.ts';
 
 interface FormFields {
-  title: string
-  description: string
-  email: string
-  phone: string
-  latitude: number | null
-  longitude: number | null
-  requisite: Requisite | null
+  title: string;
+  description: string;
+  email: string;
+  phone: string;
+  latitude: number | null;
+  longitude: number | null;
+  requisite: Requisite | null;
 }
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
-    item?: FormFields
+    open: boolean;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
+    item?: FormFields;
   }>(),
   {
     createTitle: 'Добавить данные',
@@ -48,13 +48,13 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: FormFields): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: FormFields): void;
+  (e: 'dismiss'): void;
+}>();
 
 const formTemplate: FormFields = {
   title: '',
@@ -80,33 +80,33 @@ const formTemplate: FormFields = {
     email: null,
     phone: null,
   },
-}
+};
 
-const requiredFields: Array<keyof FormFields> = ['title', 'description']
+const requiredFields: Array<keyof FormFields> = ['title', 'description'];
 
-const parametersData = ref<any>([])
-const addressSuggestions = ref<AddressSuggestion[]>([])
-const showSuggestions = ref(false)
-const isLoadingSuggestions = ref(false)
+const parametersData = ref<any>([]);
+const addressSuggestions = ref<AddressSuggestion[]>([]);
+const showSuggestions = ref(false);
+const isLoadingSuggestions = ref(false);
 
 const fetchParameters = async () => {
   try {
-    const response = await entityApi.getData('parameters')
-    parametersData.value = response.data
+    const response = await entityApi.getData('parameters');
+    parametersData.value = response.data;
   } catch (error) {
-    toast.error('Ошибка при загрузке параметров')
-    console.error(error)
+    toast.error('Ошибка при загрузке параметров');
+    console.error(error);
   }
-}
+};
 
 onMounted(() => {
-  fetchParameters()
-  document.addEventListener('mousedown', handleClickOutside)
-})
+  fetchParameters();
+  document.addEventListener('mousedown', handleClickOutside);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('mousedown', handleClickOutside)
-})
+  document.removeEventListener('mousedown', handleClickOutside);
+});
 
 const form = reactive<Omit<FormFields, 'id'>>({
   title: '',
@@ -117,35 +117,35 @@ const form = reactive<Omit<FormFields, 'id'>>({
   longitude: null,
   parameters: {},
   requisite: {},
-})
+});
 
 const resetForm = () => {
-  markerData.value = null
-  addressSuggestions.value = []
-  showSuggestions.value = false
+  markerData.value = null;
+  addressSuggestions.value = [];
+  showSuggestions.value = false;
 
   Object.keys(form).forEach((key) => {
-    form[key] = formTemplate[key]
-  })
-  form.parameters = {}
-  form.requisite = {}
-}
+    form[key] = formTemplate[key];
+  });
+  form.parameters = {};
+  form.requisite = {};
+};
 
-const markerData = ref<{ type: string; coordinates: number[] } | null>(null)
+const markerData = ref<{ type: string; coordinates: number[] } | null>(null);
 
 const handleMarkerUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
-  form.latitude = lat
-  form.longitude = lng
+  form.latitude = lat;
+  form.longitude = lng;
 
-  fetchMarkerSuggestions(lat, lng)
-}
+  fetchMarkerSuggestions(lat, lng);
+};
 
-const suggestionsRef = ref<HTMLElement | null>(null)
-const addressInputRef = ref<HTMLElement | null>(null)
+const suggestionsRef = ref<HTMLElement | null>(null);
+const addressInputRef = ref<HTMLElement | null>(null);
 
 const handleClickOutside = (event: MouseEvent) => {
-  const addressInputElement = addressInputRef.value?.$el || addressInputRef.value
-  const suggestionsElement = suggestionsRef.value
+  const addressInputElement = addressInputRef.value?.$el || addressInputRef.value;
+  const suggestionsElement = suggestionsRef.value;
 
   if (
     suggestionsElement &&
@@ -153,149 +153,149 @@ const handleClickOutside = (event: MouseEvent) => {
     addressInputElement &&
     !addressInputElement.contains(event.target as Node)
   ) {
-    showSuggestions.value = false
+    showSuggestions.value = false;
   }
-}
+};
 
 const fetchSuggestions = debounce(async (address: string) => {
   if (address.length < 5) {
-    addressSuggestions.value = []
-    showSuggestions.value = false
-    return
+    addressSuggestions.value = [];
+    showSuggestions.value = false;
+    return;
   }
 
   try {
-    isLoadingSuggestions.value = true
-    const { data } = await api.post('/manage/suggestions/address', { address })
-    addressSuggestions.value = data.data
-    showSuggestions.value = true
+    isLoadingSuggestions.value = true;
+    const { data } = await api.post('/manage/suggestions/address', { address });
+    addressSuggestions.value = data.data;
+    showSuggestions.value = true;
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
-    console.error(error)
-    addressSuggestions.value = []
-    showSuggestions.value = false
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса');
+    console.error(error);
+    addressSuggestions.value = [];
+    showSuggestions.value = false;
   } finally {
-    isLoadingSuggestions.value = false
+    isLoadingSuggestions.value = false;
   }
-}, 500)
+}, 500);
 
 const fetchMarkerSuggestions = debounce(async (lat: number, lng: number) => {
   try {
-    isLoadingSuggestions.value = true
-    const { data } = await api.post('/manage/suggestions/geo/reverse', { lat, lng })
-    addressSuggestions.value = data.data
-    showSuggestions.value = true
+    isLoadingSuggestions.value = true;
+    const { data } = await api.post('/manage/suggestions/geo/reverse', { lat, lng });
+    addressSuggestions.value = data.data;
+    showSuggestions.value = true;
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса')
-    console.error(error)
-    addressSuggestions.value = []
-    showSuggestions.value = false
+    toast.error(error.response?.data?.message || 'Ошибка при поиске адреса');
+    console.error(error);
+    addressSuggestions.value = [];
+    showSuggestions.value = false;
   } finally {
-    isLoadingSuggestions.value = false
+    isLoadingSuggestions.value = false;
   }
-}, 500)
+}, 500);
 
 const selectAddressSuggestion = (suggestion: AddressSuggestion) => {
   if (!form.requisite) {
-    form.requisite = { ...formTemplate.requisite! }
+    form.requisite = { ...formTemplate.requisite! };
   }
-  const postal_code = suggestion.postal_code || ''
-  const country = suggestion.country || ''
-  form.requisite.real_address = suggestion.value
+  const postal_code = suggestion.postal_code || '';
+  const country = suggestion.country || '';
+  form.requisite.real_address = suggestion.value;
 
   if (suggestion.latitude && suggestion.longitude) {
-    form.latitude = suggestion.latitude
-    form.longitude = suggestion.longitude
+    form.latitude = suggestion.latitude;
+    form.longitude = suggestion.longitude;
 
     markerData.value = {
       type: 'Point',
       coordinates: [form.latitude, form.longitude],
-    }
+    };
   }
 
-  addressSuggestions.value = []
-  showSuggestions.value = false
-}
+  addressSuggestions.value = [];
+  showSuggestions.value = false;
+};
 
 const handleAddressInput = () => {
-  if (!form.requisite) return
+  if (!form.requisite) return;
 
   // Clear coordinates if real_address is changed
   if (form.requisite.real_address.length < 5) {
-    form.latitude = null
-    form.longitude = null
-    markerData.value = null
-    addressSuggestions.value = []
-    showSuggestions.value = false
+    form.latitude = null;
+    form.longitude = null;
+    markerData.value = null;
+    addressSuggestions.value = [];
+    showSuggestions.value = false;
   } else {
-    fetchSuggestions(form.requisite.real_address)
+    fetchSuggestions(form.requisite.real_address);
   }
-}
+};
 
 const handleAddressFocus = () => {
   if (addressSuggestions.value.length > 0) {
-    showSuggestions.value = true
+    showSuggestions.value = true;
   }
-}
+};
 
 const handleAddressBlur = () => {
   setTimeout(() => {
-    if (!showSuggestions.value) return
-    showSuggestions.value = false
-  }, 200)
-}
+    if (!showSuggestions.value) return;
+    showSuggestions.value = false;
+  }, 200);
+};
 
 watch(
   () => props.item,
   (newEntity) => {
     if (newEntity) {
-      resetForm()
+      resetForm();
 
-      form.title = newEntity.title || ''
-      form.description = newEntity.description || ''
-      form.phone = newEntity.phone || ''
-      form.email = newEntity.email || ''
-      form.latitude = newEntity.location?.coordinates[1] || null
-      form.longitude = newEntity.location?.coordinates[0] || null
+      form.title = newEntity.title || '';
+      form.description = newEntity.description || '';
+      form.phone = newEntity.phone || '';
+      form.email = newEntity.email || '';
+      form.latitude = newEntity.location?.coordinates[1] || null;
+      form.longitude = newEntity.location?.coordinates[0] || null;
       form.parameters = {
         entityType: newEntity.entityType?.id,
-      }
+      };
 
       if (newEntity.requisite) {
-        form.requisite = { ...newEntity.requisite }
+        form.requisite = { ...newEntity.requisite };
       }
 
       if (newEntity.location) {
         markerData.value = {
           type: newEntity.location.type,
           coordinates: [newEntity.location?.coordinates[1], newEntity.location?.coordinates[0]],
-        }
+        };
       }
     }
   },
   { immediate: true, deep: true },
-)
+);
 
 watch(
   () => props.open,
   async (isOpen) => {
     if (!isOpen) {
-      await nextTick()
-      resetForm()
-      emit('dismiss')
+      await nextTick();
+      resetForm();
+      emit('dismiss');
     }
   },
-)
+);
 
 const onSubmit = () => {
   if (!form.title || Object.keys(form.parameters).length === 0) {
-    toast.error('Заполните обязательные поля')
-    return
+    toast.error('Заполните обязательные поля');
+    return;
   }
 
-  emit('submit', { ...form })
-  emit('update:open', false)
-}
+  emit('submit', { ...form });
+  emit('update:open', false);
+};
 </script>
 
 <template>
@@ -349,11 +349,11 @@ const onSubmit = () => {
                   @update:model-value="
                     (value) => {
                       if (form.requisite) {
-                        form.requisite.real_address = value
+                        form.requisite.real_address = value;
                       } else {
-                        form.requisite = { ...formTemplate.requisite!, real_address: value }
+                        form.requisite = { ...formTemplate.requisite!, real_address: value };
                       }
-                      handleAddressInput()
+                      handleAddressInput();
                     }
                   "
                   @focus="handleAddressFocus"

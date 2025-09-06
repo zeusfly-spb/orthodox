@@ -1,18 +1,13 @@
 <template>
   <div class="flex flex-row justify-between">
-    <div class="flex flex-wrap items-center gap-3 mb-6  text-gray-400 flex-row">
+    <div class="flex flex-wrap items-center gap-3 mb-6 text-gray-400 flex-row">
       <span>ТУРЫ</span>
-      <Badge
-        class="text-gray-600 bg-gray-200 rounded-full"
-      >
+      <Badge class="text-gray-600 bg-gray-200 rounded-full">
         {{ items.length }}
       </Badge>
     </div>
     <div class="flex flex-wrap items-center gap-3 text-gray-400 flex-row touchable">
-      <ArrowDownUp
-        class="text-gray-600"
-        @click="items.reverse()"
-      />
+      <ArrowDownUp class="text-gray-600" @click="items.reverse()" />
       Сортировка
     </div>
   </div>
@@ -24,5 +19,5 @@ import { Badge } from '@/components/ui/badge/index.js';
 import { useToursStore } from '@/stores/tours.js';
 import { storeToRefs } from 'pinia';
 
-const {items} = storeToRefs(useToursStore());
+const { items } = storeToRefs(useToursStore());
 </script>

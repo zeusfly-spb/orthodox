@@ -12,24 +12,54 @@ import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
+import { cloneDeep, isEqual } from 'lodash';
 
 const router = useRouter();
 const route = useRoute();
 const id = ref<string | null>(null);
 const currentItem = ref<Tour | null>(null);
+const backupItem = ref<Tour | null>(null);
 const activeTab = ref('Data');
+const editMode = ref(false);
+
+// Computed для отслеживания изменений
+const hasChanges = computed(() => {
+  if (!currentItem.value || !backupItem.value) return false;
+  return !isEqual(currentItem.value, backupItem.value);
+});
+
+// Функция для получения только измененных полей
+const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
+  const changedFields: Partial<Tour> = {};
+  
+  // Сравниваем каждое поле
+  Object.keys(current).forEach(key => {
+    const currentValue = (current as any)[key];
+    const originalValue = (original as any)[key];
+    
+    // Если значения отличаются, добавляем в измененные поля
+    if (!isEqual(currentValue, originalValue)) {
+      (changedFields as any)[key] = currentValue;
+    }
+  });
+  
+  return changedFields;
+};
 
 const updateUrlTab = (tab: string) => {
   router.replace({
     name: route.name as string,
     params: route.params,
-    query: { ...route.query, tab }
+    query: { ...route.query, tab },
   });
 };
 
 const loadTabFromUrl = () => {
   const tabFromUrl = route.query.tab as string;
-  if (tabFromUrl && ['Data', 'Params', 'Desc', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)) {
+  if (
+    tabFromUrl &&
+    ['Data', 'Params', 'Desc', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
+  ) {
     activeTab.value = tabFromUrl;
   }
 };
@@ -42,29 +72,33 @@ const loadItem = async (): Promise<void> => {
   try {
     const { data } = await tourApi.getData(id.value!);
     currentItem.value = data;
+    backupItem.value = data;
   } catch (error: unknown) {
     toast.error('Ошибка загрузки данных');
     router.push({ name: 'tours-list' });
   }
 };
 
-const handleSubmit = async (formData: Partial<Tour>): Promise<void> => {
+const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
-      await tourApi.patchData(id.value, formData);
+      const changedFields = getChangedFields(backupItem.value!, currentItem.value!);
+      await tourApi.patchData(id.value, changedFields);
       toast.success('Тур успешно обновлен');
     } else {
-      await tourApi.storeData(formData);
+      await tourApi.storeData(currentItem.value!);
       toast.success('Тур успешно создан');
     }
-    router.push({ name: 'tours-list' });
+    backupItem.value = cloneDeep(currentItem.value);
+    editMode.value = false;
   } catch (error: unknown) {
     toast.error('Ошибка сохранения данных');
   }
 };
 
 const handleCancel = (): void => {
-  router.push({ name: 'tours-list' });
+  currentItem.value = cloneDeep(backupItem.value);
+  editMode.value = false;
 };
 
 onMounted(() => {
@@ -83,62 +117,59 @@ onMounted(() => {
       <div class="text-gray-500">Загрузка данных...</div>
     </div>
   </div>
-  <div 
-    v-else
-    class="main-content"
-    style="margin-left: 279px; margin-top: 20px;"
-  >
+  <div v-else class="main-content" style="margin-left: 279px; margin-top: 20px">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-6">Уникальный тур</h1>
-      <TourFormTabControl
-        v-model:modelValue="activeTab"
-      />
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Уникальный тур</h1>
+        
+        <!-- Кнопки сохранения и отмены -->
+        <div v-if="hasChanges || editMode" class="flex gap-3">
+          <button
+            @click="handleCancel"
+            class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Отмена
+          </button>
+          <button
+            :disabled="!hasChanges"
+            @click="handleSubmit"
+            class="px-4 py-2 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors"
+            :class="{
+              'opacity-50 cursor-not-allowed': !hasChanges,
+            }"
+          >
+            Сохранить
+          </button>
+        </div>
+      </div>
+      <TourFormTabControl v-model:modelValue="activeTab" />
     </div>
     <div class="content">
-      <TourFormData
-        v-if="activeTab === 'Data'"
-        v-model:currentItem="currentItem"
-      />
-      <TourFormParams
-        v-else-if="activeTab === 'Params'"
-        v-model:currentItem="currentItem"
-      />
+      <TourFormData v-if="activeTab === 'Data'" v-model:currentItem="currentItem" v-model:editMode="editMode" />
+      <TourFormParams v-else-if="activeTab === 'Params'" v-model:currentItem="currentItem" />
       <TourFormObjectsTab
         v-else-if="activeTab === 'ObjectsTab'"
         v-model:currentItem="currentItem"
       />
-      <TourFormProgram
-        v-else-if="activeTab === 'Program'"
-        v-model:currentItem="currentItem"
-      />
-      <TourFormMap
-        v-else-if="activeTab === 'Map'"
-        v-model:currentItem="currentItem"
-      />
-      <TourFormDesc
-        v-else-if="activeTab === 'Desc'"
-        v-model:currentItem="currentItem"
-      />
-      <TourFormTreeView
-        v-else-if="activeTab === 'TreeView'"
-        :currentItem="currentItem"
-      />
+      <TourFormProgram v-else-if="activeTab === 'Program'" v-model:currentItem="currentItem" />
+      <TourFormMap v-else-if="activeTab === 'Map'" v-model:currentItem="currentItem" />
+      <TourFormDesc v-else-if="activeTab === 'Desc'" v-model:currentItem="currentItem" />
+      <TourFormTreeView v-else-if="activeTab === 'TreeView'" :currentItem="currentItem" />
     </div>
   </div>
 </template>
 
 <style lang="scss">
 .main-content {
-    flex: 1;
-    margin-left: 250px;
-    transition: all 0.3s;
-    min-width: 0;
+  flex: 1;
+  margin-left: 250px;
+  transition: all 0.3s;
+  min-width: 0;
 }
 .content {
-    padding: 30px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+  padding: 30px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 </style>
-

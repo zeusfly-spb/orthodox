@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import DashboardSidebar from '@/components/dashboard/nav/DashboardSidebar.vue'
-import DashboardHeader from '@/components/dashboard/nav/DashboardHeader.vue'
+import { RouterView } from 'vue-router';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import DashboardSidebar from '@/components/dashboard/nav/DashboardSidebar.vue';
+import DashboardHeader from '@/components/dashboard/nav/DashboardHeader.vue';
 </script>
 
 <template>

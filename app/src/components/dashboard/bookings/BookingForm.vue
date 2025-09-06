@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { watch, reactive, nextTick, ref } from 'vue'
-import { Calendar as CalendarIcon, Trash2, Search, Check } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { watch, reactive, nextTick, ref } from 'vue';
+import { Calendar as CalendarIcon, Trash2, Search, Check } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,23 +9,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/select';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion'
+} from '@/components/ui/accordion';
 import {
   Combobox,
   ComboboxAnchor,
@@ -34,36 +34,36 @@ import {
   ComboboxItem,
   ComboboxItemIndicator,
   ComboboxList,
-} from '@/components/ui/combobox'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { toast } from 'vue-sonner'
-import { cn } from '@/lib/utils'
+} from '@/components/ui/combobox';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
+import { toast } from 'vue-sonner';
+import { cn } from '@/lib/utils';
 
-import type { Customer } from '@/types/customer.ts'
-import type { Tour } from '@/types/tour.ts'
-import { tourApi } from '@/api/tours'
+import type { Customer } from '@/types/customer.ts';
+import type { Tour } from '@/types/tour.ts';
+import { tourApi } from '@/api/tours';
 
-const searchQuery = ref('')
-const tours = ref<Tour[]>([])
-const isLoadingTours = ref(false)
+const searchQuery = ref('');
+const tours = ref<Tour[]>([]);
+const isLoadingTours = ref(false);
 
 interface BookingForm {
-  id?: number
-  status: string
-  description: string | null
-  customers: Customer[]
-  tour_id: number | null
+  id?: number;
+  status: string;
+  description: string | null;
+  customers: Customer[];
+  tour_id: number | null;
 }
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    item?: BookingForm | null
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
+    open: boolean;
+    item?: BookingForm | null;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
   }>(),
   {
     createTitle: 'Создать бронирование',
@@ -73,13 +73,13 @@ const props = withDefaults(
     cancelText: 'Отмена',
     item: null,
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: BookingForm): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: BookingForm): void;
+  (e: 'dismiss'): void;
+}>();
 
 const customerTemplate: Customer = {
   firstname: '',
@@ -97,7 +97,7 @@ const customerTemplate: Customer = {
   passport_address: null,
   gender: null,
   snils: null,
-}
+};
 
 const form = reactive<BookingForm>({
   id: undefined,
@@ -105,139 +105,139 @@ const form = reactive<BookingForm>({
   description: null,
   customers: [{ ...customerTemplate }],
   tour: null,
-})
+});
 
 const debounce = (fn: Function, delay: number) => {
-  let timeoutId: ReturnType<typeof setTimeout>
+  let timeoutId: ReturnType<typeof setTimeout>;
   return function (...args: any[]) {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => fn.apply(this, args), delay)
-  }
-}
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+};
 
 const debouncedSearchTours = debounce(async (query: string) => {
   if (query.length < 2) {
-    tours.value = []
-    return
+    tours.value = [];
+    return;
   }
 
   try {
-    isLoadingTours.value = true
-    const response = await tourApi.fetchData({ 'filter[title]': query })
-    tours.value = response.data
+    isLoadingTours.value = true;
+    const response = await tourApi.fetchData({ 'filter[title]': query });
+    tours.value = response.data;
   } catch (error) {
-    toast.error('Ошибка поиска')
-    console.error(error)
+    toast.error('Ошибка поиска');
+    console.error(error);
   } finally {
-    isLoadingTours.value = false
+    isLoadingTours.value = false;
   }
-}, 300)
+}, 300);
 
 const handleInput = (event: Event) => {
-  const query = (event.target as HTMLInputElement).value
-  searchQuery.value = query
-  debouncedSearchTours(query)
-}
+  const query = (event.target as HTMLInputElement).value;
+  searchQuery.value = query;
+  debouncedSearchTours(query);
+};
 
 const selectTour = (tour: Tour) => {
-  form.tour = tour
-  form.tour_id = tour.id
-  searchQuery.value = tour.title
-  tours.value = []
-}
+  form.tour = tour;
+  form.tour_id = tour.id;
+  searchQuery.value = tour.title;
+  tours.value = [];
+};
 
 const addCustomer = () => {
-  form.customers.push({ ...customerTemplate })
-}
+  form.customers.push({ ...customerTemplate });
+};
 
 const removeCustomer = (index: number) => {
   if (form.customers.length > 1) {
-    form.customers.splice(index, 1)
+    form.customers.splice(index, 1);
   } else {
-    toast.error('Должен быть хотя бы один клиент')
+    toast.error('Должен быть хотя бы один клиент');
   }
-}
+};
 
 const resetForm = () => {
-  form.id = undefined
-  form.status = 'pending'
-  form.description = null
-  form.customers = [{ ...customerTemplate }]
-  form.tour = null
-  form.tour_id = null
-  searchQuery.value = ''
-  tours.value = []
-}
+  form.id = undefined;
+  form.status = 'pending';
+  form.description = null;
+  form.customers = [{ ...customerTemplate }];
+  form.tour = null;
+  form.tour_id = null;
+  searchQuery.value = '';
+  tours.value = [];
+};
 
 watch(
   () => props.item,
   (item) => {
     if (item) {
-      form.id = item.id
-      form.status = item.status
-      form.description = item.description
+      form.id = item.id;
+      form.status = item.status;
+      form.description = item.description;
       form.customers = item.customers.map((customer) => ({
         ...customerTemplate,
         ...customer,
-      }))
-      form.tour = item.tour ? { ...item.tour } : null
-      form.tour_id = item.tour?.id || null
+      }));
+      form.tour = item.tour ? { ...item.tour } : null;
+      form.tour_id = item.tour?.id || null;
       if (item.tour) {
-        searchQuery.value = item.tour.title
+        searchQuery.value = item.tour.title;
       }
     } else {
-      resetForm()
+      resetForm();
     }
   },
   { immediate: true, deep: true },
-)
+);
 
 watch(
   () => props.open,
   (isOpen) => {
     if (!isOpen) {
       nextTick(() => {
-        resetForm()
-        emit('dismiss')
-      })
+        resetForm();
+        emit('dismiss');
+      });
     }
   },
-)
+);
 
 const validateForm = (): boolean => {
   if (!form.tour) {
-    toast.error('Тур не выбран')
-    return false
+    toast.error('Тур не выбран');
+    return false;
   }
 
   for (const [index, customer] of form.customers.entries()) {
     if (!customer.firstname || !customer.lastname || !customer.email || !customer.phone) {
-      toast.error(`Заполните обязательные поля для клиента ${index + 1}`)
-      return false
+      toast.error(`Заполните обязательные поля для клиента ${index + 1}`);
+      return false;
     }
 
     if (!customer.passport_series || !customer.passport_number) {
-      toast.error(`Заполните паспортные данные для клиента ${index + 1}`)
-      return false
+      toast.error(`Заполните паспортные данные для клиента ${index + 1}`);
+      return false;
     }
   }
 
-  return true
-}
+  return true;
+};
 
 const onSubmit = () => {
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
   const formData = {
     ...form,
     tour_id: form.tour?.id || null,
-  }
+  };
 
-  delete formData.tour
+  delete formData.tour;
 
-  emit('submit', formData)
-  emit('update:open', false)
-}
+  emit('submit', formData);
+  emit('update:open', false);
+};
 </script>
 
 <template>

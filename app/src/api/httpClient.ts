@@ -58,15 +58,15 @@ api.interceptors.response.use(
     };
   },
   async (error) => {
-    const authStore = useAuthStore()
+    const authStore = useAuthStore();
 
     if (error.code === 'ECONNABORTED') {
       error.response = {
         status: 408,
         statusText: 'Request Timeout',
         data: { message: 'Превышено время ожидания ответа сервера' },
-      }
-      return Promise.reject(error)
+      };
+      return Promise.reject(error);
     }
 
     if (error.response?.headers?.authorization && !isRefreshing) {
@@ -88,10 +88,10 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 403) {
-      console.log('REDIRECT!')
-      await authStore.loadUser()
+      console.log('REDIRECT!');
+      await authStore.loadUser();
       if (!authStore.isEmailVerified) {
-        window.location.reload()
+        window.location.reload();
       }
     }
 

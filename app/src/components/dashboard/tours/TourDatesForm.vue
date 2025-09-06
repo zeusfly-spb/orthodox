@@ -1,52 +1,52 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Trash2, Calendar as CalendarIcon } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { toast } from 'vue-sonner'
+import { ref } from 'vue';
+import { Trash2, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-  modelValue: string[]
-}>()
+  modelValue: string[];
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string[]]
-}>()
+  'update:modelValue': [value: string[]];
+}>();
 
-const newDate = ref<string>()
+const newDate = ref<string>();
 
 const disabledDates = (date: Date) => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return date < today
-}
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+};
 
 const addDate = () => {
   if (!newDate.value) {
-    toast.error('Выберите дату')
-    return
+    toast.error('Выберите дату');
+    return;
   }
 
   if (props.modelValue.includes(newDate.value)) {
-    toast.error('Эта дата уже добавлена')
-    return
+    toast.error('Эта дата уже добавлена');
+    return;
   }
 
   const updatedDates = [...props.modelValue, newDate.value].sort((a, b) => {
-    return new Date(a).getTime() - new Date(b).getTime()
-  })
+    return new Date(a).getTime() - new Date(b).getTime();
+  });
 
-  emit('update:modelValue', updatedDates)
-  newDate.value = undefined
-}
+  emit('update:modelValue', updatedDates);
+  newDate.value = undefined;
+};
 
 const removeDate = (index: number) => {
-  const updatedDates = [...props.modelValue]
-  updatedDates.splice(index, 1)
-  emit('update:modelValue', updatedDates)
-}
+  const updatedDates = [...props.modelValue];
+  updatedDates.splice(index, 1);
+  emit('update:modelValue', updatedDates);
+};
 </script>
 
 <template>

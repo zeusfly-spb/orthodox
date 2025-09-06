@@ -1,36 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import { forgotPassword } from '@/api/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'vue-sonner'
-import type { AuthError, ForgotPasswordData } from '@/types/auth'
-import { Mail } from 'lucide-vue-next'
+import { ref } from 'vue';
+import { useRouter, RouterLink } from 'vue-router';
+import { forgotPassword } from '@/api/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'vue-sonner';
+import type { AuthError, ForgotPasswordData } from '@/types/auth';
+import { Mail } from 'lucide-vue-next';
 
-const router = useRouter()
-const isLoading = ref(false)
+const router = useRouter();
+const isLoading = ref(false);
 
 const form = ref<ForgotPasswordData>({
   email: '',
-})
+});
 
 const handleSubmit = async () => {
   try {
-    isLoading.value = true
-    await forgotPassword(form.value)
-    toast.success('Ссылка на изменение пароля отправлена вам на почту')
-    router.push({ name: 'login' })
+    isLoading.value = true;
+    await forgotPassword(form.value);
+    toast.success('Ссылка на изменение пароля отправлена вам на почту');
+    router.push({ name: 'login' });
   } catch (error: unknown) {
-    const apiError = error as AuthError
-    const errorMessage = apiError.response?.data?.message || apiError.message || 'An error occurred'
-    toast.error(errorMessage)
-    form.value.email = ''
+    const apiError = error as AuthError;
+    const errorMessage =
+      apiError.response?.data?.message || apiError.message || 'An error occurred';
+    toast.error(errorMessage);
+    form.value.email = '';
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <template>

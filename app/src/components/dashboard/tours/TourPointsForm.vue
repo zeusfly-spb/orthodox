@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Trash2, Search, Check } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
-import { toast } from 'vue-sonner'
-import { ref } from 'vue'
-import { cn } from '@/lib/utils'
-import { entityApi } from '@/api/entities'
+import { Trash2, Search, Check } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { toast } from 'vue-sonner';
+import { ref } from 'vue';
+import { cn } from '@/lib/utils';
+import { entityApi } from '@/api/entities';
 import {
   Combobox,
   ComboboxAnchor,
@@ -15,75 +15,75 @@ import {
   ComboboxItem,
   ComboboxItemIndicator,
   ComboboxList,
-} from '@/components/ui/combobox'
-import type { Entity } from '@/types/entity.ts'
+} from '@/components/ui/combobox';
+import type { Entity } from '@/types/entity.ts';
 
 interface PointItem {
-  id: string | number
-  title?: string | null
-  description?: string | null
-  address?: string | null
-  location?: object
-  time: string
-  order_column: number
+  id: string | number;
+  title?: string | null;
+  description?: string | null;
+  address?: string | null;
+  location?: object;
+  time: string;
+  order_column: number;
   entity: {
-    id: number
-    title?: string
-    description?: string | null
-    location?: object
-  }
+    id: number;
+    title?: string;
+    description?: string | null;
+    location?: object;
+  };
 }
 
 const props = defineProps<{
-  modelValue: PointItem[]
-}>()
+  modelValue: PointItem[];
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: PointItem[]]
-}>()
+  'update:modelValue': [value: PointItem[]];
+}>();
 
-const searchQuery = ref('')
-const points = ref<Entity[]>([])
-const isLoadingPoints = ref(false)
+const searchQuery = ref('');
+const points = ref<Entity[]>([]);
+const isLoadingPoints = ref(false);
 
 const debounce = (fn: Function, delay: number) => {
-  let timeoutId: ReturnType<typeof setTimeout>
+  let timeoutId: ReturnType<typeof setTimeout>;
   return function (...args: any[]) {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => fn.apply(this, args), delay)
-  }
-}
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+};
 
 const debouncedSearchPoints = debounce(async (query: string) => {
   if (query.length < 2) {
-    points.value = []
-    return
+    points.value = [];
+    return;
   }
 
   try {
-    isLoadingPoints.value = true
-    const response = await entityApi.fetchData({ 'filter[title]': query })
-    points.value = response.data
+    isLoadingPoints.value = true;
+    const response = await entityApi.fetchData({ 'filter[title]': query });
+    points.value = response.data;
   } catch (error) {
-    toast.error('Ошибка поиска')
-    console.error(error)
+    toast.error('Ошибка поиска');
+    console.error(error);
   } finally {
-    isLoadingPoints.value = false
+    isLoadingPoints.value = false;
   }
-}, 300)
+}, 300);
 
 const handleInput = (event: Event) => {
-  const query = (event.target as HTMLInputElement).value
-  searchQuery.value = query
-  debouncedSearchPoints(query)
-}
+  const query = (event.target as HTMLInputElement).value;
+  searchQuery.value = query;
+  debouncedSearchPoints(query);
+};
 
 const selectPoint = (point: Entity) => {
-  const alreadyExists = props.modelValue.some((item) => item.entity.id === point.id)
+  const alreadyExists = props.modelValue.some((item) => item.entity.id === point.id);
 
   if (alreadyExists) {
-    toast.error('Объект уже добавлен')
-    return
+    toast.error('Объект уже добавлен');
+    return;
   }
 
   const newPoint: PointItem = {
@@ -95,24 +95,24 @@ const selectPoint = (point: Entity) => {
     },
     time: '',
     order_column: props.modelValue.length + 1,
-  }
+  };
 
-  emit('update:modelValue', [...props.modelValue, newPoint])
-  searchQuery.value = ''
-  points.value = []
-}
+  emit('update:modelValue', [...props.modelValue, newPoint]);
+  searchQuery.value = '';
+  points.value = [];
+};
 
 const updatePointTime = (index: number, time: string) => {
-  const updatedPoints = [...props.modelValue]
-  updatedPoints[index].time = time
-  emit('update:modelValue', updatedPoints)
-}
+  const updatedPoints = [...props.modelValue];
+  updatedPoints[index].time = time;
+  emit('update:modelValue', updatedPoints);
+};
 
 const removePoint = (index: number) => {
-  const updatedPoints = [...props.modelValue]
-  updatedPoints.splice(index, 1)
-  emit('update:modelValue', updatedPoints)
-}
+  const updatedPoints = [...props.modelValue];
+  updatedPoints.splice(index, 1);
+  emit('update:modelValue', updatedPoints);
+};
 </script>
 
 <template>

@@ -1,3 +1,3 @@
-import { createApiClient } from '@/api/generic'
+import { createApiClient } from '@/api/generic';
 
-export const filesApi = createApiClient('operator/uploads')
+export const filesApi = createApiClient('operator/uploads');

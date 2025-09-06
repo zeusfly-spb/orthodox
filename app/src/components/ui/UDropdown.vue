@@ -8,28 +8,28 @@ const inputWidth = ref(0);
 const maxItemWidth = ref(0);
 
 const props = defineProps({
-    list: {
-        type: Array,
-        default: () => []
-    },
-    modelValue: String,
-    withSearch: {
-        type: Boolean,
-        default: false
-    }
+  list: {
+    type: Array,
+    default: () => [],
+  },
+  modelValue: String,
+  withSearch: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const dropdown = reactive({
-    isShowList: false,
-    selectedItem: props.modelValue || '',
-    searchValue: ''
+  isShowList: false,
+  selectedItem: props.modelValue || '',
+  searchValue: '',
 });
 
 const filteredList = computed(() => {
-  return Object.entries(props.list).filter(([key, value]) => 
-    String(value).toLowerCase().includes(dropdown.searchValue.toLowerCase())
+  return Object.entries(props.list).filter(([key, value]) =>
+    String(value).toLowerCase().includes(dropdown.searchValue.toLowerCase()),
   );
 });
 
@@ -41,57 +41,52 @@ onMounted(() => {
   inputWidth.value = dropdownRef.value?.offsetWidth || 0;
   const items = dropdownRef.value?.querySelectorAll('.dropdown__item');
   if (items) {
-    maxItemWidth.value = Math.max(
-      ...Array.from(items).map(item => item.scrollWidth)
-    );
+    maxItemWidth.value = Math.max(...Array.from(items).map((item) => item.scrollWidth));
   }
 });
 
 watch(
-    () => props.modelValue, (newValue) => {
-        dropdown.selectedItem = newValue;
-    }
+  () => props.modelValue,
+  (newValue) => {
+    dropdown.selectedItem = newValue;
+  },
 );
 
 function selectItem(item) {
-    emit('update:modelValue', props.withSearch? item[1] : item);
-    dropdown.searchValue = ''
+  emit('update:modelValue', props.withSearch ? item[1] : item);
+  dropdown.searchValue = '';
 }
 
 onClickOutside(dropdownRef, () => {
-    dropdown.isShowList = false;
+  dropdown.isShowList = false;
 });
 </script>
 
 <template>
-    <div class="dropdown" ref="dropdownRef" @click.stop="dropdown.isShowList = !dropdown.isShowList">
-        <div class="dropdown__input">
-            {{ dropdown.selectedItem }} 
-            <img :class="{'inverse': dropdown.isShowList}" src="/svg/arrow-down.svg" alt="open list">
-        </div>
-        <ul 
-            class="dropdown__list" 
-            v-if="dropdown.isShowList"
-            :style="{ minWidth: listWidth }"
-        >
-            <UInput 
-                v-if="withSearch" 
-                v-model="dropdown.searchValue" 
-                svgPath="/svg/search.svg" 
-                :inputHeightPx="40" 
-                placeholder="Поиск" 
-                @click.stop
-            />
-            <li 
-                v-for="(item, index) in withSearch? filteredList : props.list"
-                :key="index"
-                class="dropdown__item"
-                @click="selectItem(item)"
-            >
-                {{ `${withSearch? item[1] : item}` }}
-            </li>
-        </ul>
+  <div class="dropdown" ref="dropdownRef" @click.stop="dropdown.isShowList = !dropdown.isShowList">
+    <div class="dropdown__input">
+      {{ dropdown.selectedItem }}
+      <img :class="{ inverse: dropdown.isShowList }" src="/svg/arrow-down.svg" alt="open list" />
     </div>
+    <ul class="dropdown__list" v-if="dropdown.isShowList" :style="{ minWidth: listWidth }">
+      <UInput
+        v-if="withSearch"
+        v-model="dropdown.searchValue"
+        svgPath="/svg/search.svg"
+        :inputHeightPx="40"
+        placeholder="Поиск"
+        @click.stop
+      />
+      <li
+        v-for="(item, index) in withSearch ? filteredList : props.list"
+        :key="index"
+        class="dropdown__item"
+        @click="selectItem(item)"
+      >
+        {{ `${withSearch ? item[1] : item}` }}
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -145,14 +140,14 @@ onClickOutside(dropdownRef, () => {
     transform-origin: top center;
     animation: fadeIn 0.2s ease-out forwards;
     background-color: white;
-    
+
     /* Для плавного появления */
     opacity: 0;
     transform: translateY(-10px);
-    transition: 
+    transition:
       opacity 0.2s ease,
       transform 0.2s ease;
-    
+
     &.show {
       opacity: 1;
       transform: translateY(0);

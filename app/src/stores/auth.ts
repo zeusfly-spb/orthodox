@@ -4,38 +4,38 @@ import { fetchOperators, fetchUser, loginUser, logoutUser, registerUser } from '
 import type { ApiUser, Credentials, RegisterData, AuthError } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessTokenName = 'access_token'
-  const accessTokenType = 'Bearer'
-  const accessToken = ref<string | null>(localStorage.getItem(accessTokenName) || null)
-  const user = ref<ApiUser | null>(null)
-  const operators = ref<[] | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const accessTokenName = 'access_token';
+  const accessTokenType = 'Bearer';
+  const accessToken = ref<string | null>(localStorage.getItem(accessTokenName) || null);
+  const user = ref<ApiUser | null>(null);
+  const operators = ref<[] | null>(null);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
 
-  const isAuthenticated = computed(() => !!accessToken.value)
-  const isEmailVerified = computed(() => user.value?.data?.email_verified || false)
-  const isInitialized = ref(false)
+  const isAuthenticated = computed(() => !!accessToken.value);
+  const isEmailVerified = computed(() => user.value?.data?.email_verified || false);
+  const isInitialized = ref(false);
 
   const initializeAuth = async () => {
-    if (isInitialized.value || !accessToken.value) return
+    if (isInitialized.value || !accessToken.value) return;
 
     try {
-      await loadUser()
-      isInitialized.value = true
+      await loadUser();
+      isInitialized.value = true;
     } catch (error) {
-      console.error('Initial user load failed:', error)
-      accessToken.value = null
-      localStorage.removeItem(accessTokenName)
+      console.error('Initial user load failed:', error);
+      accessToken.value = null;
+      localStorage.removeItem(accessTokenName);
     }
-  }
+  };
 
   const loadUser = async (): Promise<void> => {
     await getUser();
   };
 
   loadUser().catch((error) => {
-    console.error('Initial user load failed:', error)
-  })
+    console.error('Initial user load failed:', error);
+  });
 
   async function login(credentials: Credentials) {
     try {
@@ -96,7 +96,8 @@ export const useAuthStore = defineStore('auth', () => {
       return data;
     } catch (err: unknown) {
       const authError = err as AuthError;
-      error.value = authError.response?.data?.message || authError.message || 'Ошибка получения пользователя';
+      error.value =
+        authError.response?.data?.message || authError.message || 'Ошибка получения пользователя';
       throw err;
     } finally {
       isLoading.value = false;
@@ -115,15 +116,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function loadOperators() {
     try {
-      isLoading.value = true
-      const { data } = await fetchOperators()
-      operators.value = data?.data || data
-      return data
+      isLoading.value = true;
+      const { data } = await fetchOperators();
+      operators.value = data?.data || data;
+      return data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      error.value = err.response?.data?.message || err.message;
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -144,5 +145,5 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     checkToken,
     loadOperators,
-  }
-})
+  };
+});

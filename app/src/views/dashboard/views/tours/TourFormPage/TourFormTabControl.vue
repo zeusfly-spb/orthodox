@@ -1,75 +1,75 @@
 <template>
-    <div class="tab-container">
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'Data' }"
-        @click="activeTab = 'Data'"
-      >
-        Данные о туре
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'Params' }"
-        @click="activeTab = 'Params'"
-      >
-        Параметры тура
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'Desc' }"
-        @click="activeTab = 'Desc'"
-      >
-        Описание тура
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'ObjectsTab' }"
-        @click="activeTab = 'ObjectsTab'"
-      >
-        Объекты в туре
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'Program' }"
-        @click="activeTab = 'Program'"
-      >
-        Программа тура
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'Map' }"
-        @click="activeTab = 'Map'"
-      >
-        Карта маршрута
-      </button>
-      <button 
-        class="tab-button"
-        :class="{ 'tab-button--active': activeTab === 'TreeView' }"
-        @click="activeTab = 'TreeView'"
-      >
-        Структура данных
-      </button>
-    </div>
+  <div class="tab-container">
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Data' }"
+      @click="activeTab = 'Data'"
+    >
+      Данные о туре
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Params' }"
+      @click="activeTab = 'Params'"
+    >
+      Параметры тура
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Desc' }"
+      @click="activeTab = 'Desc'"
+    >
+      Описание тура
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'ObjectsTab' }"
+      @click="activeTab = 'ObjectsTab'"
+    >
+      Объекты в туре
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Program' }"
+      @click="activeTab = 'Program'"
+    >
+      Программа тура
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Map' }"
+      @click="activeTab = 'Map'"
+    >
+      Карта маршрута
+    </button>
+    <button
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'TreeView' }"
+      @click="activeTab = 'TreeView'"
+    >
+      Структура данных
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
 const props = defineProps<{
-    modelValue: string;
+  modelValue: string;
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
+  (e: 'update:modelValue', value: string): void;
 }>();
 
 const activeTab = computed({
-    get() {
-        return props.modelValue;
-    },
-    set(value: string) {
-        emit('update:modelValue', value);
-    }
+  get() {
+    return props.modelValue;
+  },
+  set(value: string) {
+    emit('update:modelValue', value);
+  },
 });
 </script>
 

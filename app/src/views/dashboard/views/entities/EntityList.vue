@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
+import { ref } from 'vue';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
 
-import DataTable from '@/components/dashboard/entities/DataTable.vue'
-import EntityForm from '@/components/dashboard/entities/EntityForm.vue'
-import { entityApi } from '@/api/entities.ts'
-import { useCrudActions } from '@/composables/useCrudActions'
-import Pagination from '@/components/app/Pagination.vue'
+import DataTable from '@/components/dashboard/entities/DataTable.vue';
+import EntityForm from '@/components/dashboard/entities/EntityForm.vue';
+import { entityApi } from '@/api/entities.ts';
+import { useCrudActions } from '@/composables/useCrudActions';
+import Pagination from '@/components/app/Pagination.vue';
 
 const {
   isLoading,
@@ -27,31 +27,31 @@ const {
 } = useCrudActions(entityApi, {
   successMessage: 'Данные сохранены',
   deleteMessage: 'Данные удалены',
-})
+});
 
 // Load API data
-loadCollection()
+loadCollection();
 
 // Filters
 const filters = ref({
   search: '',
   status: '',
-})
+});
 
 const handlePageChange = (page: number) => {
   loadCollection({
     page,
     ...filters.value,
-  })
-}
+  });
+};
 
 const applyFilters = () => {
   // Сбрасываем на первую страницу при применении фильтров
   loadCollection({
     page: 1,
     ...filters.value,
-  })
-}
+  });
+};
 </script>
 
 <template>

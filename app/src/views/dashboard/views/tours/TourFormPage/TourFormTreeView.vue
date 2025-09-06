@@ -3,13 +3,13 @@
     <div class="tree-header">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Структура данных тура</h3>
       <div class="flex gap-2 mb-4">
-        <button 
+        <button
           @click="expandAll"
           class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
         >
           Развернуть все
         </button>
-        <button 
+        <button
           @click="collapseAll"
           class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
         >
@@ -17,9 +17,9 @@
         </button>
       </div>
     </div>
-    
+
     <div class="tree-content bg-white border border-gray-200 rounded-lg p-4">
-      <TreeNode 
+      <TreeNode
         v-if="currentItem"
         :node="currentItem"
         :nodeKey="'tour'"
@@ -63,11 +63,11 @@ const collapseAll = () => {
 
 const getAllNodePaths = (obj: any, path = ''): string[] => {
   const paths: string[] = [];
-  
+
   if (path === 'tour') {
     paths.push('tour');
   }
-  
+
   if (typeof obj === 'object' && obj !== null) {
     if (Array.isArray(obj)) {
       obj.forEach((item: any, index: number) => {
@@ -78,10 +78,10 @@ const getAllNodePaths = (obj: any, path = ''): string[] => {
         }
       });
     } else {
-      Object.keys(obj).forEach(key => {
+      Object.keys(obj).forEach((key) => {
         const currentPath = path ? `${path}.${key}` : key;
         const value = obj[key];
-        
+
         if (typeof value === 'object' && value !== null) {
           paths.push(currentPath);
           paths.push(...getAllNodePaths(value, currentPath));
@@ -89,17 +89,21 @@ const getAllNodePaths = (obj: any, path = ''): string[] => {
       });
     }
   }
-  
+
   return paths;
 };
 
 onMounted(() => {
-    watch(() => props.currentItem, (newItem) => {
+  watch(
+    () => props.currentItem,
+    (newItem) => {
       if (newItem) {
         const allPaths = getAllNodePaths(newItem, 'tour');
         expandedNodes.value = new Set(allPaths);
       }
-    }, { immediate: true });
+    },
+    { immediate: true },
+  );
 });
 </script>
 

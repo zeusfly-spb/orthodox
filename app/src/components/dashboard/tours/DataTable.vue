@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreHorizontal, Trash2, SquarePen, Pencil, ArrowDownUp } from 'lucide-vue-next'
+import { MoreHorizontal, Trash2, SquarePen, Pencil, ArrowDownUp } from 'lucide-vue-next';
 import {
   Table,
   TableBody,
@@ -7,22 +7,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import TableSkeleton from '@/components/app/TableSkeleton.vue'
+} from '@/components/ui/table';
+import TableSkeleton from '@/components/app/TableSkeleton.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import Badge from "@/components/app/Badge.vue";
-import {computed, ref} from "vue";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import Badge from '@/components/app/Badge.vue';
+import { computed, ref } from 'vue';
 import { useToursStore } from '@/stores/tours.ts';
 
 const emit = defineEmits<{
-  (e: 'edit', id: number | string): void
-  (e: 'delete', id: number | string): void
+  (e: 'edit', id: number | string): void;
+  (e: 'delete', id: number | string): void;
 }>();
 
 const priceSortDirection = ref<'none' | 'asc' | 'desc'>('none');
@@ -32,7 +32,7 @@ const isLoading = computed(() => store.isLoading);
 const items = computed(() => store.items);
 const tours = computed<any[]>(() => {
   let result = [...items.value];
-  const getPrice = (t: any) => Number.isFinite(t?.price) ? t.price : 0;
+  const getPrice = (t: any) => (Number.isFinite(t?.price) ? t.price : 0);
   if (priceSortDirection.value === 'asc') {
     result.sort((a, b) => getPrice(a) - getPrice(b));
   } else if (priceSortDirection.value === 'desc') {
@@ -88,17 +88,13 @@ const changePriceSorting = () => {
         <TableHead>Кол-во паломников</TableHead>
         <TableHead>Статус</TableHead>
         <TableHead>
-          <div
-            class="flex flex-row"
-          >
+          <div class="flex flex-row">
             Цена
-            <div
-              :title="priceSortingTitle"
-            >
+            <div :title="priceSortingTitle">
               <ArrowDownUp
                 :size="16"
                 class="mt-1 ml-1 touchable"
-                :class="{'text-gray-400': priceSortDirection === 'none'}"
+                :class="{ 'text-gray-400': priceSortDirection === 'none' }"
                 @click="changePriceSorting"
               />
             </div>
@@ -108,11 +104,7 @@ const changePriceSorting = () => {
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow
-        v-for="item in tours"
-        :key="item.id"
-        class="hover:bg-green-50/50"
-      >
+      <TableRow v-for="item in tours" :key="item.id" class="hover:bg-green-50/50">
         <TableCell>
           {{ item.id }}
         </TableCell>
@@ -128,9 +120,7 @@ const changePriceSorting = () => {
         <TableCell>
           {{ item?.tourTransport?.title }}
         </TableCell>
-        <TableCell>
-          {{ item.duration || 0 }} / {{ item.duration - 1 || 0 }}
-        </TableCell>
+        <TableCell> {{ item.duration || 0 }} / {{ item.duration - 1 || 0 }} </TableCell>
         <TableCell>
           {{ item.customers_count }}
         </TableCell>
@@ -147,7 +137,7 @@ const changePriceSorting = () => {
         <TableCell>
           <DropdownMenu title="Редактировать">
             <DropdownMenuTrigger as-child>
-              <Button variant="ghost" class="h-8 w-8 p-0  touchable">
+              <Button variant="ghost" class="h-8 w-8 p-0 touchable">
                 <Pencil /> <MoreHorizontal class="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -170,10 +160,7 @@ const changePriceSorting = () => {
       </TableRow>
     </TableBody>
   </Table>
-  <span
-    v-if="!tours?.length && !isLoading"
-    class="flex justify-center text-gray-500 mt-2"
-  >
+  <span v-if="!tours?.length && !isLoading" class="flex justify-center text-gray-500 mt-2">
     По заданным параметрам туров не найдено
   </span>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type LucideIcon } from 'lucide-vue-next'
+import { type LucideIcon } from 'lucide-vue-next';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,25 +8,25 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar'
+} from '@/components/ui/sidebar';
 
 defineProps<{
   items: {
-    title: string
-    url: string
-    icon?: LucideIcon
+    title: string;
+    url: string;
+    icon?: LucideIcon;
     items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-}>()
+      title: string;
+      url: string;
+    }[];
+  }[];
+}>();
 
-import { useRoute, RouterLink } from 'vue-router'
-const route = useRoute()
+import { useRoute, RouterLink } from 'vue-router';
+const route = useRoute();
 const isItemActive = (url: string) => {
-  return route.path === url
-}
+  return route.path === url;
+};
 </script>
 
 <template>
@@ -38,10 +38,7 @@ const isItemActive = (url: string) => {
     </SidebarGroupLabel>
     <SidebarGroupContent>
       <SidebarMenu>
-        <SidebarMenuItem
-          v-for="childItem in item.items"
-          :key="childItem.title"
-        >
+        <SidebarMenuItem v-for="childItem in item.items" :key="childItem.title">
           <SidebarMenuButton
             as-child
             :is-active="isItemActive(childItem.url)"

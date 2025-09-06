@@ -1,9 +1,6 @@
 <template>
   <div class="tree-node">
-    <div 
-      class="node-line flex items-center"
-      :style="{ paddingLeft: `${level * 20}px` }"
-    >
+    <div class="node-line flex items-center" :style="{ paddingLeft: `${level * 20}px` }">
       <button
         v-if="hasChildren"
         @click="toggle"
@@ -12,18 +9,14 @@
         <span class="text-xs">{{ isExpanded ? '▼' : '▶' }}</span>
       </button>
       <span v-else class="w-4 mr-2"></span>
-      
+
       <span class="node-key font-medium text-blue-600">{{ nodeKey }}:</span>
-      
-      <span 
-        v-if="!hasChildren"
-        class="node-value ml-2"
-        :class="valueClass"
-      >
+
+      <span v-if="!hasChildren" class="node-value ml-2" :class="valueClass">
         {{ formattedValue }}
       </span>
     </div>
-    
+
     <div v-if="hasChildren && isExpanded" class="children">
       <TreeNode
         v-for="(child, key) in children"

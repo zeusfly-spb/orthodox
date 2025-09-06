@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { watch, nextTick } from 'vue'
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { watch, nextTick } from 'vue';
+import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { useCommonForm } from '@/composables/useCommonForm.ts'
-import type { Requisite } from '@/types/requisite.ts'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
+import { useCommonForm } from '@/composables/useCommonForm.ts';
+import type { Requisite } from '@/types/requisite.ts';
 
 const formTemplate: Requisite = {
   title: '',
@@ -33,7 +33,7 @@ const formTemplate: Requisite = {
   postal_address: null,
   email: null,
   phone: null,
-}
+};
 
 const requiredFields: Array<keyof Requisite> = [
   'title',
@@ -43,22 +43,22 @@ const requiredFields: Array<keyof Requisite> = [
   'kpp',
   'legal_address',
   'real_address',
-]
+];
 
 const { form, resetForm, fillForm, validateForm } = useCommonForm<Requisite>(
   formTemplate,
   requiredFields,
-)
+);
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    item?: Requisite
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
+    open: boolean;
+    item?: Requisite;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
   }>(),
   {
     createTitle: 'Создать реквизиты',
@@ -67,32 +67,32 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: Requisite): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: Requisite): void;
+  (e: 'dismiss'): void;
+}>();
 
-watch(() => props.item, fillForm, { immediate: true })
+watch(() => props.item, fillForm, { immediate: true });
 
 watch(
   () => props.open,
   async (isOpen) => {
     if (!isOpen) {
-      await nextTick()
-      resetForm()
-      emit('dismiss')
+      await nextTick();
+      resetForm();
+      emit('dismiss');
     }
   },
-)
+);
 
 const onSubmit = () => {
-  if (!validateForm()) return
-  emit('submit', { ...form })
-  emit('update:open', false)
-}
+  if (!validateForm()) return;
+  emit('submit', { ...form });
+  emit('update:open', false);
+};
 </script>
 
 <template>

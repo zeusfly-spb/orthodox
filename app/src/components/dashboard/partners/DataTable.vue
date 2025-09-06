@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreHorizontal, Trash2, SquarePen } from 'lucide-vue-next'
+import { MoreHorizontal, Trash2, SquarePen } from 'lucide-vue-next';
 import {
   Table,
   TableBody,
@@ -8,20 +8,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import TableSkeleton from '@/components/app/TableSkeleton.vue'
+} from '@/components/ui/table';
+import TableSkeleton from '@/components/app/TableSkeleton.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
-  isLoading: boolean
-  collection?: any[] | undefined
-}>()
+  isLoading: boolean;
+  collection?: any[] | undefined;
+}>();
 </script>
 
 <template>

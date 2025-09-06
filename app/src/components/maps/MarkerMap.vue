@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { MglMap, MglNavigationControl, MglMarker, MglPopup } from '@indoorequal/vue-maplibre-gl'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { ref, computed, watch, nextTick } from 'vue';
+import { MglMap, MglNavigationControl, MglMarker, MglPopup } from '@indoorequal/vue-maplibre-gl';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const props = withDefaults(
   defineProps<{
-    mapStyle?: string
-    center?: number[]
-    zoom?: number
-    height?: string
-    markerData?: { type: string; coordinates: number[] } | null
-    markerColor?: string
-    draggable?: boolean
+    mapStyle?: string;
+    center?: number[];
+    zoom?: number;
+    height?: string;
+    markerData?: { type: string; coordinates: number[] } | null;
+    markerColor?: string;
+    draggable?: boolean;
   }>(),
   {
     mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
@@ -23,57 +23,57 @@ const props = withDefaults(
     markerColor: '#10B981',
     draggable: false,
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:coordinates', coords: { lat: number; lng: number }): void
-}>()
+  (e: 'update:coordinates', coords: { lat: number; lng: number }): void;
+}>();
 
-const draggable = ref(props.draggable)
+const draggable = ref(props.draggable);
 
-const mapKey = ref(0)
+const mapKey = ref(0);
 
 const markerCoordinates = ref(
   props.markerData?.coordinates
     ? [props.markerData.coordinates[1], props.markerData.coordinates[0]]
     : props.center,
-)
+);
 
-const mapCenter = ref(markerCoordinates.value)
+const mapCenter = ref(markerCoordinates.value);
 
-const mapZoom = ref(props.markerData ? props.zoom : 2)
+const mapZoom = ref(props.markerData ? props.zoom : 2);
 
 const containerStyle = computed(() => {
-  return { height: props.height }
-})
+  return { height: props.height };
+});
 
 const updateMapView = () => {
-  mapKey.value++
+  mapKey.value++;
   nextTick(() => {
-    mapCenter.value = [...markerCoordinates.value]
-    mapZoom.value = 14
-  })
-}
+    mapCenter.value = [...markerCoordinates.value];
+    mapZoom.value = 14;
+  });
+};
 
 watch(
   () => props.markerData,
   (newVal) => {
     if (newVal?.coordinates) {
-      markerCoordinates.value = [newVal.coordinates[1], newVal.coordinates[0]]
-      updateMapView()
+      markerCoordinates.value = [newVal.coordinates[1], newVal.coordinates[0]];
+      updateMapView();
     }
   },
   { immediate: true, deep: true },
-)
+);
 
 const onDragEnd = () => {
-  const { lat, lng } = markerCoordinates.value
+  const { lat, lng } = markerCoordinates.value;
 
   emit('update:coordinates', {
     lat: lat.toFixed(8),
     lng: lng.toFixed(8),
-  })
-}
+  });
+};
 </script>
 
 <template>

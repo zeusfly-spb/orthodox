@@ -2,11 +2,7 @@
   <div class="tour-description">
     <div class="section-header">
       <h2 class="section-title">Описание</h2>
-      <button 
-      class="edit-button" 
-      @click="handleEdit"
-      title="Редактировать описание"
-      >
+      <button class="edit-button" @click="handleEdit" title="Редактировать описание">
         <Pencil class="w-4 h-4" />
       </button>
     </div>
@@ -15,10 +11,8 @@
       <p class="description-text">
         {{ tour.description }}
       </p>
-      
-      <button class="read-more-link" @click="handleReadMore">
-        Читать подробнее
-      </button>
+
+      <button class="read-more-link" @click="handleReadMore">Читать подробнее</button>
     </div>
   </div>
 </template>
@@ -28,21 +22,21 @@ import { Pencil } from 'lucide-vue-next';
 import type { Tour } from '@/types/tour';
 import { computed } from 'vue';
 
-const props = defineProps <{
+const props = defineProps<{
   currentItem: Tour;
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:currentItem', value: Tour): void;
 }>();
 
 const tour = computed({
-    get() {
-        return props.currentItem;
-    },
-    set(value) {
-        emit('update:currentItem', value);
-    }
+  get() {
+    return props.currentItem;
+  },
+  set(value) {
+    emit('update:currentItem', value);
+  },
 });
 
 const handleEdit = () => {
@@ -131,7 +125,7 @@ const handleReadMore = () => {
   .tour-description {
     padding: 1rem;
   }
-  
+
   .description-text {
     font-size: 0.875rem;
   }

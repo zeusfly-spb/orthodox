@@ -7,30 +7,16 @@
       v-model.trim="queryFilters.searchString.value"
     />
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model.number="dayCount"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model.number="dayCount">
       <option value="0">Длительность (дней)</option>
-      <option
-        v-for="day in tourDays"
-        :key="`duration-option-${day}`"
-        :value="day"
-      >
+      <option v-for="day in tourDays" :key="`duration-option-${day}`" :value="day">
         {{ day }}
       </option>
     </select>
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model.number="customerCount"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model.number="customerCount">
       <option value="0">Паломников</option>
-      <option
-        v-for="item in customerNumbers"
-        :key="`customer-number-option-${item}`" 
-        :value="item"
-      >
+      <option v-for="item in customerNumbers" :key="`customer-number-option-${item}`" :value="item">
         {{ item }}
       </option>
     </select>
@@ -60,24 +46,14 @@
       </div>
     </div>
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.tourTypeId.value"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model="queryFilters.tourTypeId.value">
       <option value="0">Тип тура</option>
-      <option
-        v-for="type in tourTypes"
-        :key="`type-option-${type.id}`"
-        :value="type.id"
-      >
+      <option v-for="type in tourTypes" :key="`type-option-${type.id}`" :value="type.id">
         {{ type.title }}
       </option>
     </select>
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.tourCategoryId.value"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model="queryFilters.tourCategoryId.value">
       <option value="0">Категория тура</option>
       <option
         v-for="category in tourCategories"
@@ -88,10 +64,7 @@
       </option>
     </select>
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.tourTransportId.value"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model="queryFilters.tourTransportId.value">
       <option value="0">Логистика тура</option>
       <option
         v-for="transport in tourTransports"
@@ -102,26 +75,19 @@
       </option>
     </select>
 
-    <select
-      class="border rounded-xl px-2 py-2"
-      v-model="queryFilters.tourStatusId.value"
-    >
+    <select class="border rounded-xl px-2 py-2" v-model="queryFilters.tourStatusId.value">
       <option value="0">Статус тура</option>
-      <option
-        v-for="status in tourStatuses"
-        :key="`status-option-${status.id}`"
-        :value="status.id"
-      >
+      <option v-for="status in tourStatuses" :key="`status-option-${status.id}`" :value="status.id">
         {{ status.title }}
       </option>
     </select>
     <button
-    v-if="filtered"
-    title="Сбросить фильтры"
-    type="button" 
-    class="p-2 rounded hover:bg-gray-100 touchable" 
-    @click="resetQueryParams" 
-    aria-label="Сбросить фильтры"
+      v-if="filtered"
+      title="Сбросить фильтры"
+      type="button"
+      class="p-2 rounded hover:bg-gray-100 touchable"
+      @click="resetQueryParams"
+      aria-label="Сбросить фильтры"
     >
       <FunnelX class="text-gray-500" />
     </button>
@@ -129,13 +95,13 @@
 </template>
 
 <script setup lang="ts">
-import {FunnelX} from "lucide-vue-next";
-import {useToursStore} from "@/stores/tours.ts";
-import {storeToRefs} from "pinia";
-import {computed} from "vue";
+import { FunnelX } from 'lucide-vue-next';
+import { useToursStore } from '@/stores/tours.ts';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 const toursStore = useToursStore();
-const {queryFilters, dayCount, customerCount} = storeToRefs(toursStore);
+const { queryFilters, dayCount, customerCount } = storeToRefs(toursStore);
 const tourTypes = computed(() => toursStore.tourTypes);
 const tourCategories = computed(() => toursStore.tourCategories);
 const tourTransports = computed(() => toursStore.tourTransports);
@@ -144,6 +110,6 @@ const filtered = computed(() => toursStore.filtered);
 const tourDays = computed(() => toursStore.tourDays);
 const customerNumbers = computed(() => toursStore.customerNumbers);
 
-const {resetQueryFilters} = toursStore;
+const { resetQueryFilters } = toursStore;
 const resetQueryParams = () => resetQueryFilters();
 </script>

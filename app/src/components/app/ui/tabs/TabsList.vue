@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject } from 'vue';
 
-const activeTab = inject<string>('activeTab')
-const setActiveTab = inject<(value: string) => void>('setActiveTab')
+const activeTab = inject<string>('activeTab');
+const setActiveTab = inject<(value: string) => void>('setActiveTab');
 </script>
 
 <template>

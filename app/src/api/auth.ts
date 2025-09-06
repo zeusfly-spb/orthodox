@@ -1,12 +1,12 @@
 import api from './httpClient';
 import type { AxiosResponse } from 'axios';
-import type { 
-  AuthResponse, 
-  RegisterData, 
-  Credentials, 
-  ApiUser, 
-  ForgotPasswordData, 
-  ResetPasswordData 
+import type {
+  AuthResponse,
+  RegisterData,
+  Credentials,
+  ApiUser,
+  ForgotPasswordData,
+  ResetPasswordData,
 } from '@/types/auth';
 
 export const loginUser = async (credentials: Credentials): Promise<AxiosResponse<AuthResponse>> => {
@@ -36,8 +36,8 @@ export const resetPassword = async (data: ResetPasswordData): Promise<void> => {
 };
 
 export const verifyEmailCode = async (data: { code: string }): Promise<AxiosResponse> => {
-  return api.post('/email/verify/code', data)
-}
+  return api.post('/email/verify/code', data);
+};
 
 export const verifyEmail = (data: {
   id: string;

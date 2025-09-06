@@ -4,7 +4,7 @@ const props = defineProps({
     type: String,
     default: 'h-6 w-6 text-gray-600',
   },
-})
+});
 </script>
 
 <template>

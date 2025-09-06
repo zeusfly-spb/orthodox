@@ -15,38 +15,38 @@
             {{ tour.title }}
           </span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Тип тура</span>
           <span class="param-value">
             {{ tour.tourType?.title }}
           </span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Логистика тура</span>
           <span class="param-value">
             {{ tour.tourTransport?.title }}
           </span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Категория тура</span>
           <span class="param-value">
             {{ tour.tourCategory?.title }}
           </span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Страны</span>
           <span class="param-value">--, -- +1</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Страна начала</span>
           <span class="param-value">--</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Город начала</span>
           <span class="param-value">--</span>
@@ -57,22 +57,22 @@
           <span class="param-label">Города</span>
           <span class="param-value">--, -- +3</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Количество дней</span>
           <span class="param-value">{{ tour.duration }}</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Время начала</span>
           <span class="param-value">--:-- по МСК</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Дата начала</span>
           <span class="param-value">--</span>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Сложность</span>
           <div class="rating-container">
@@ -86,7 +86,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="param-item">
           <span class="param-label">Комфорт</span>
           <div class="rating-container">
@@ -110,7 +110,7 @@ import { Pencil } from 'lucide-vue-next';
 import type { Tour } from '@/types/tour';
 import { computed } from 'vue';
 
-const props = defineProps <{
+const props = defineProps<{
   currentItem: Tour;
 }>();
 
@@ -119,13 +119,12 @@ const emit = defineEmits<{
 }>();
 
 const tour = computed({
-
   get() {
     return props.currentItem;
   },
   set(value: Tour) {
     emit('update:currentItem', value);
-  }
+  },
 });
 
 const handleEdit = () => {
@@ -233,7 +232,7 @@ const handleEdit = () => {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
-  
+
   .rating-container {
     flex-direction: column;
     align-items: flex-start;

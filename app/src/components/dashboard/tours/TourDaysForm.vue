@@ -1,50 +1,50 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { Trash2, Plus } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card } from '@/components/ui/card'
-import { toast } from 'vue-sonner'
+import { reactive } from 'vue';
+import { Trash2, Plus } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { toast } from 'vue-sonner';
 
 export interface DayItem {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
 
 const props = defineProps<{
-  modelValue: DayItem[]
-}>()
+  modelValue: DayItem[];
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: DayItem[]]
-}>()
+  'update:modelValue': [value: DayItem[]];
+}>();
 
 const newDay = reactive<DayItem>({
   title: '',
   description: '',
-})
+});
 
 const addDay = () => {
   if (!newDay.title.trim() || !newDay.description.trim()) {
-    toast.error('Заполните название и описание дня')
-    return
+    toast.error('Заполните название и описание дня');
+    return;
   }
 
-  const updatedDays = [...props.modelValue, { ...newDay }]
-  emit('update:modelValue', updatedDays)
+  const updatedDays = [...props.modelValue, { ...newDay }];
+  emit('update:modelValue', updatedDays);
 
   // Сброс формы
-  newDay.title = ''
-  newDay.description = ''
-}
+  newDay.title = '';
+  newDay.description = '';
+};
 
 const removeDay = (index: number) => {
-  const updatedDays = [...props.modelValue]
-  updatedDays.splice(index, 1)
-  emit('update:modelValue', updatedDays)
-}
+  const updatedDays = [...props.modelValue];
+  updatedDays.splice(index, 1);
+  emit('update:modelValue', updatedDays);
+};
 </script>
 
 <template>
