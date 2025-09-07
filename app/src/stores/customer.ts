@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
 import { partnerApi } from '@/api/partners'
-import type { Tourist } from '@/types'
+import type { Customer } from '@/types/customer'
 
 export const useCustomerStore = defineStore('customer', () => {
   const clientNames = ref<string[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   
-  const currentTourist = reactive<Tourist>({
+  const currentTourist = reactive<Customer>({
     id: 0,
     firstname: '',
     lastname: '',
@@ -32,12 +32,28 @@ export const useCustomerStore = defineStore('customer', () => {
     updated_at: ''
   })
 
-  const extraInfo = reactive ({
+  // Изменяем структуру для хранения дополнительных услуг
+  const extraInfo = reactive({
     basicService: {
       name: '',
       price: ''
-    }
+    },
+    additionalServices: [], // Массив для дополнительных услуг
+    description: ''
   })
+
+  // Функция для добавления новой дополнительной услуги
+  const addAdditionalService = () => {
+    extraInfo.additionalServices.push({
+      name: '',
+      price: ''
+    })
+  }
+
+  // Функция для удаления дополнительной услуги
+  const removeAdditionalService = (index: number) => {
+    extraInfo.additionalServices.splice(index, 1)
+  }
 
   const fetchClientNames = async () => {
     isLoading.value = true
@@ -53,12 +69,11 @@ export const useCustomerStore = defineStore('customer', () => {
     }
   }
 
-  const updateCustomer = (tourist: Tourist) => {
+  const updateCustomer = (tourist: Customer) => {
     Object.assign(currentTourist, tourist)
   }
 
-  // Заглушки для методов работы с туристами
-  const updateTourist = async (id: number, data: Partial<Tourist>) => {
+  const updateTourist = async (id: number, data: Partial<Customer>) => {
     isLoading.value = true
     try {
       console.log('Updating tourist:', id, data)
@@ -95,5 +110,7 @@ export const useCustomerStore = defineStore('customer', () => {
     fetchClientNames,
     updateCustomer,
     updateTourist,
+    addAdditionalService,
+    removeAdditionalService
   }
 })

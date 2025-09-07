@@ -18,4 +18,6 @@ export interface Customer {
   snils?: string | null
   created_at?: string
   updated_at?: string
+  description?: string
+  json_attributes?: string[] | null
 }

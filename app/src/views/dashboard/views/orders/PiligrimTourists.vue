@@ -4,6 +4,7 @@ import UInput from '@/components/ui/UInput.vue';
 import UButton from '@/components/ui/UButton.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
 import UModal from '@/components/ui/UModal.vue';
+import Textarea from '@/components/ui/textarea/Textarea.vue'
 import { useAccommodationStore } from '@/stores/accommodation'
 import { useBookingStore } from '@/stores/booking'
 import { useCustomerStore } from '@/stores/customer'
@@ -19,6 +20,7 @@ const innerTouristCount = ref(bookingStore.booking.counts.people || 1)
 const modalParagraph = reactive({
     'personal': true,
     'price': false,
+    'comment': false
 })
 
 // Используем данные из сторов
@@ -37,6 +39,10 @@ const filteredAccommodationOptions = computed(() => {
       )
   })
 })
+
+function handleAddService() {
+    customerStore.addAdditionalService();
+}
 
 function closeModal() {
     isShowModal.value = false
@@ -149,6 +155,16 @@ function emitSelectedOption() {
         console.log('Выбран вариант размещения:', selectedAccommodation.value);
     } else {
         alert('Пожалуйста, выберите вариант размещения');
+    }
+}
+
+function getParagraphBalance(activeParagraph) {
+    for(const paragraph in modalParagraph) {
+        if(paragraph === activeParagraph) {
+            modalParagraph[paragraph] = true
+        } else {
+            modalParagraph[paragraph] = false
+        }
     }
 }
 
@@ -347,11 +363,13 @@ onMounted(() => {
     
     <UModal v-show="isShowModal" @close="closeModal">
         <template #headerTitle>
-            Редактировать данные о туристе
+            <div class="header-title">
+                Редактировать данные о туристе
+            </div>
         </template>
 
         <template #bodyContent>
-            <div class="base-info__title" @click="modalParagraph.personal = !modalParagraph.personal">
+            <div class="base-info__title" @click="getParagraphBalance('personal')">
                 <div class="base-info__name">
                     Персональные данные
                 </div>
@@ -437,7 +455,7 @@ onMounted(() => {
                     </div>
                 </div>
             </section>
-            <div class="base-info__title" @click="modalParagraph.price = !modalParagraph.price">
+            <div class="base-info__title" @click="getParagraphBalance('price')">
                 <div class="base-info__name">
                     Стоимость за туриста
                 </div>
@@ -454,10 +472,44 @@ onMounted(() => {
                         <UInput v-model="customerStore.extraInfo.basicService.price" :inputHeightPx="36" placeholder=""/>
                     </div>
                 </div>
-                <div class="add-service" @click="">
+                <div class="base-info__name">
+                    Дополнительные услуги
+                </div>
+                <div v-for="(service, index) in customerStore.extraInfo.additionalServices" :key="index" class="base-info__block additional-service">
+                    <div class="base-info__column">
+                        <label>Наименование доп. услуги {{ index + 1 }}</label>
+                        <UInput v-model="service.name" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label>Стоимость</label>
+                        <UInput v-model="service.price" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column remove-service-column">
+                        <label>&nbsp;</label>
+                        <button class="remove-service-btn" @click="customerStore.removeAdditionalService(index)">
+                            <img src="/svg/trash.svg" alt="Удалить услугу" class="mt-2 cursor-pointer">
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="add-service" @click="handleAddService">
                     <img src="/svg/plus.svg" alt="">
                     <div class="add-service__title">
                         Еще доп. услуга
+                    </div>
+                </div>
+            </section>
+            <div class="base-info__title" @click="getParagraphBalance('comment')">
+                <div class="base-info__name">
+                    Комментарий
+                </div>
+                <img src="/svg/arrow-down.svg" :class="`base-info__arrow${!modalParagraph.comment?'_reverse':''}`" alt="arrow" />
+            </div>
+            <section :class="['base-info', {'collapsed': !modalParagraph.comment}]">
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Создано для внесения пометок персонально к туристу (например, что он диабетик, вегетарианец и т.д). </label>
+                        <Textarea v-model="customerStore.extraInfo.description" class="mt-2"/>
                     </div>
                 </div>
             </section>
@@ -956,6 +1008,11 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
         cursor: pointer;
     }
 }
+.header-title {
+    font-weight: 600;
+    font-size: 20px;
+    color: #353535;
+}
 .base-info {
     display: flex;
     flex-direction: column;
@@ -1041,6 +1098,7 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
 .add-service {
     display: flex;
     gap: 10px;
+    cursor: pointer;
 
     &__title {
         font-weight: 500;
