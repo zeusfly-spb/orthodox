@@ -15,10 +15,12 @@ import { Button } from '@/components/ui/button'
 import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useProfileStore } from '@/stores/profile'
+import { useAuthStore } from '@/stores/auth'
 
 
 const router = useRouter()
 const profile = useProfileStore()
+const authStore = useAuthStore()
 const operator = ref('')
 const actionProfileList = ref(['Создать профиль', 'Данные о паломнической службе', 'Реквизиты', 'FAQ', 'Туры паломнической службы'])
 
@@ -66,7 +68,7 @@ function closeModal(){
 
 async function sendForm() {
     try {
-        await fixOperatorById(localStorage.getItem('tour_operator_id'), modalFields)
+        await fixOperatorById(authStore.user.tour_operator.id, modalFields)
     }
     catch(error){
         profile.error = error.response?.data?.message || error.message
@@ -80,7 +82,7 @@ async function sendForm() {
 }
 
 onMounted(async () => {
-    if(localStorage.getItem('tour_operator_id')){
+    if(authStore.user.tour_operator.id){
         try {
             operator.value = await fetchOperator()
         } catch (error) {

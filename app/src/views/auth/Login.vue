@@ -52,7 +52,6 @@ async function login(){
 
     try {
         await authStore.login(credentials)
-        localStorage.setItem('tour_operator_id', form.serviceId.value)
         router.push({ name: 'home' })
     } catch (error) {
         console.error('Login failed:', authStore.error)

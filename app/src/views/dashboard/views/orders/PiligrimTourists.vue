@@ -1,5 +1,5 @@
 <script setup>
-import { defineEmits, ref, onMounted, computed, watch } from 'vue';
+import { defineEmits, ref, onMounted, computed, watch, reactive } from 'vue';
 import UInput from '@/components/ui/UInput.vue';
 import UButton from '@/components/ui/UButton.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
@@ -16,7 +16,10 @@ const customerStore = useCustomerStore()
 
 const isShowModal = ref(false)
 const innerTouristCount = ref(bookingStore.booking.counts.people || 1)
-const isSaving = ref(false)
+const modalParagraph = reactive({
+    'personal': true,
+    'price': false,
+})
 
 // Используем данные из сторов
 const availableRoomTypes = computed(() => accommodationStore.roomTypes)
@@ -348,8 +351,13 @@ onMounted(() => {
         </template>
 
         <template #bodyContent>
-            <section class="base-info">
-                <div class="base-info__title">Персональные данные</div>
+            <div class="base-info__title" @click="modalParagraph.personal = !modalParagraph.personal">
+                <div class="base-info__name">
+                    Персональные данные
+                </div>
+                <img src="/svg/arrow-down.svg" :class="`base-info__arrow${!modalParagraph.personal?'_reverse':''}`" alt="arrow" />
+            </div>
+            <section :class="['base-info', {'collapsed': !modalParagraph.personal}]">
                 <div class="base-info__block">
                     <div class="base-info__column">
                         <label for="name">Имя<span>*</span></label>
@@ -426,6 +434,30 @@ onMounted(() => {
                             v-model="customerStore.currentTourist.payment_status" 
                             :withSearch="false"
                         />
+                    </div>
+                </div>
+            </section>
+            <div class="base-info__title" @click="modalParagraph.price = !modalParagraph.price">
+                <div class="base-info__name">
+                    Стоимость за туриста
+                </div>
+                <img src="/svg/arrow-down.svg" :class="`base-info__arrow${!modalParagraph.price?'_reverse':''}`" alt="arrow" />
+            </div>
+            <section :class="['base-info', {'collapsed': !modalParagraph.price}]">
+                <div class="base-info__block">
+                    <div class="base-info__column">
+                        <label>Наименование основной услуги</label>
+                        <UInput v-model="customerStore.extraInfo.basicService.name" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                    <div class="base-info__column">
+                        <label>Стоимость</label>
+                        <UInput v-model="customerStore.extraInfo.basicService.price" :inputHeightPx="36" placeholder=""/>
+                    </div>
+                </div>
+                <div class="add-service" @click="">
+                    <img src="/svg/plus.svg" alt="">
+                    <div class="add-service__title">
+                        Еще доп. услуга
                     </div>
                 </div>
             </section>
@@ -928,10 +960,49 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    max-height: 1000px; // достаточно большая максимальная высота
+    opacity: 1;
+    
+    &.collapsed {
+        max-height: 0;
+        opacity: 0;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    &__title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px 0;
+        user-select: none;
+    }
+    
+    &__arrow {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        
+        &_reverse {
+            transform: rotate(180deg);
+        }
+    }
+
     &__block {
         display: flex;
         gap: 12px;
+        transition: opacity 0.2s ease;
+        
+        .collapsed & {
+            opacity: 0;
+            pointer-events: none;
+        }
     }
+    
     &__column {
         display: flex;
         flex-direction: column;
@@ -940,11 +1011,42 @@ input[type="checkbox"]:checked + .custom-checkbox:after {
             font-size: 12px;
             color: #6A6E75;
         }
+        
+        .collapsed & {
+            opacity: 0;
+            pointer-events: none;
+        }
     }
+}
+
+.base-info__block,
+.base-info__column {
+    transition: opacity 0.2s ease, margin 0.3s ease, padding 0.3s ease;
+}
+
+.collapsed .base-info__block,
+.collapsed .base-info__column {
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    height: 0;
+    min-height: 0;
 }
 
 .footer-buttons {
     display: flex;
     justify-content: space-between;
+}
+
+.add-service {
+    display: flex;
+    gap: 10px;
+
+    &__title {
+        font-weight: 500;
+        font-style: Medium;
+        font-size: 14px;
+        color: #10B981;
+    }
 }
 </style>

@@ -8,7 +8,7 @@ const props = defineProps({
 
 const requisiteList = reactive([
     {title: 'Наименование юридического лица', value: props.operator.requisite.legal_name},
-    {title: 'Реестровый номер', value: localStorage.getItem('tour_operator_id')},
+    {title: 'Реестровый номер', value: ''},
     {title: 'Индивидуальный Номер Налогоплательщика', value: props.operator.requisite.inn},
     {title: 'Основной Государственный Регистрационный Номер', value: props.operator.requisite.legal_name},
     {title: 'Банк', value: props.operator.requisite.legal_name},

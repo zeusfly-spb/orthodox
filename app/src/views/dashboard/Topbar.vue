@@ -21,7 +21,6 @@ const dropdownList = ref([
 
 function handleLogout() {
     authStore.logout()
-    localStorage.removeItem('tour_operator_id')
     router.push({ name: 'login' });
 }
 </script>

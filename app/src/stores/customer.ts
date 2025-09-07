@@ -32,6 +32,13 @@ export const useCustomerStore = defineStore('customer', () => {
     updated_at: ''
   })
 
+  const extraInfo = reactive ({
+    basicService: {
+      name: '',
+      price: ''
+    }
+  })
+
   const fetchClientNames = async () => {
     isLoading.value = true
     try {
@@ -82,11 +89,11 @@ export const useCustomerStore = defineStore('customer', () => {
   return {
     clientNames,
     currentTourist,
+    extraInfo,
     isLoading,
     error,
     fetchClientNames,
     updateCustomer,
     updateTourist,
-    deleteTourist
   }
 })
