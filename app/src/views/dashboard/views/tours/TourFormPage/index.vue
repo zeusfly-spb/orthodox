@@ -14,6 +14,13 @@ import TourFormDesc from './TourFormDesc.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
 
+const defaultPapameters = {
+  tourType: null,
+  tourCategory: null,
+  tourTransport: null,
+  tourStatus: null,
+};
+
 const router = useRouter();
 const route = useRoute();
 const id = ref<string | null>(null);
@@ -28,16 +35,26 @@ const hasChanges = computed(() => {
   return !isEqual(currentItem.value, backupItem.value);
 });
 
-// Функция для получения только измененных полей
 const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
   const changedFields: Partial<Tour> = {};
   
-  // Сравниваем каждое поле
-  Object.keys(current).forEach(key => {
+  const primitiveFields: (keyof Tour)[] = [
+    'title',
+    'route', 
+    'price',
+    'duration',
+    'seats',
+    'description',
+    'is_active',
+    'ownerable_id',
+    'ownerable_type',
+    'parameters'
+  ];
+  
+  primitiveFields.forEach(key => {
     const currentValue = (current as any)[key];
     const originalValue = (original as any)[key];
     
-    // Если значения отличаются, добавляем в измененные поля
     if (!isEqual(currentValue, originalValue)) {
       (changedFields as any)[key] = currentValue;
     }
@@ -71,8 +88,10 @@ watch(activeTab, (newTab) => {
 const loadItem = async (): Promise<void> => {
   try {
     const { data } = await tourApi.getData(id.value!);
-    currentItem.value = data;
-    backupItem.value = data;
+    const exData = cloneDeep(data);
+    exData.parameters = cloneDeep(defaultPapameters);  
+    currentItem.value = exData;
+    backupItem.value = exData;
   } catch (error: unknown) {
     toast.error('Ошибка загрузки данных');
     router.push({ name: 'tours-list' });

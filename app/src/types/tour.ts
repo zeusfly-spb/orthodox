@@ -16,6 +16,7 @@ export interface Tour {
   ownerable_type: string;
   created_at: string;
   updated_at: string;
+  parameters: object;
   tourStatus?: {
     id: number;
     slug: string;
