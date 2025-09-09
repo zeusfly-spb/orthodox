@@ -13,6 +13,7 @@ import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
+import { title } from 'process';
 
 const defaultPapameters = {
   tourType: null,
@@ -88,10 +89,15 @@ watch(activeTab, (newTab) => {
 const loadItem = async (): Promise<void> => {
   try {
     const { data } = await tourApi.getData(id.value!);
-    const exData = cloneDeep(data);
-    exData.parameters = cloneDeep(defaultPapameters);  
-    currentItem.value = exData;
-    backupItem.value = exData;
+    const parameters = {
+      tourType: data.tourType?.id,
+      tourCategory: data.tourCategory?.id,
+      tourTransport: data.tourTransport?.id,
+      tourStatus: data.tourStatus?.id,
+    };
+    data.parameters = parameters;
+    currentItem.value = data;
+    backupItem.value = data;
   } catch (error: unknown) {
     toast.error('Ошибка загрузки данных');
     router.push({ name: 'tours-list' });
@@ -102,7 +108,8 @@ const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
       const changedFields = getChangedFields(backupItem.value!, currentItem.value!);
-      await tourApi.patchData(id.value, changedFields);
+      const params = { ...changedFields, title: currentItem.value!.title};
+      await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
       await tourApi.storeData(currentItem.value!);

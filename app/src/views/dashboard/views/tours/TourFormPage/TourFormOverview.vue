@@ -105,11 +105,24 @@ const handleStatusChange = () => {
   if (selectedStatus) {
     tour.value = {
       ...tour.value,
+      parameters: {
+        ...tour.value.parameters,
+        tourStatus: selectedStatus.id
+      },
       tourStatus: {
         id: selectedStatus.id,
         slug: selectedStatus.slug,
         title: selectedStatus.title
       }
+    };
+  } else {
+    tour.value = {
+      ...tour.value,
+      parameters: {
+        ...tour.value.parameters,
+        tourStatus: null
+      },
+      tourStatus: undefined
     };
   }
 };
@@ -123,18 +136,19 @@ watch(() => tour.value.tourStatus, (newStatus) => {
   }
 }, { immediate: true });
 
+watch(() => tour.value.parameters?.tourStatus, (newStatusId) => {
+  if (newStatusId) {
+    selectedStatusId.value = newStatusId.toString();
+  } else {
+    selectedStatusId.value = '';
+  }
+}, { immediate: true });
+
 const datesString = computed(() => {
-  if (!tour.value.dates || tour.value.dates.length === 0) {
+  if (!tour.value.date) {
     return 'Даты не указаны';
   }
-  const first = tour.value.dates[0];
-  if (typeof first === 'string') {
-    return first;
-  }
-  if (first && typeof first === 'object' && 'date_start' in first && 'date_end' in first) {
-    return `${formattedDate((first as any).date_start)} / ${formattedDate((first as any).date_end)}`;
-  }
-  return 'Даты не указаны';
+  return `${formattedDate(tour.value.date)} / ${formattedDate(tour.value.date_end)}`;
 });
 </script>
 
