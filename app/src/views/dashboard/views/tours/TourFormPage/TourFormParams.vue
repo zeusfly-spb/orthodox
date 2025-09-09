@@ -2,7 +2,15 @@
   <div class="tour-params">
     <div class="section-header">
       <h2 class="section-title">Параметры паломнического тура</h2>
-      <button class="edit-button" @click="handleEdit">
+      <button
+        :class="[
+          'p-2 rounded-lg transition-colors touchable',
+          editMode 
+            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300' 
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+        ]"
+        @click="handleEdit"
+      >
         <Pencil class="w-4 h-4" />
       </button>
     </div>
@@ -11,29 +19,77 @@
       <div class="params-column">
         <div class="param-item">
           <span class="param-label">Название паломнического тура</span>
-          <span class="param-value">
+          <Input 
+            v-if="editMode" 
+            v-model="tourTitle" 
+            class="param-input"
+            placeholder="Введите название тура"
+          />
+          <span v-else class="param-value">
             {{ tour.title }}
           </span>
         </div>
 
         <div class="param-item">
           <span class="param-label">Тип тура</span>
-          <span class="param-value">
-            {{ tour.tourType?.title }}
+          <select 
+            v-if="editMode && tourTypes.length > 0" 
+            v-model="selectedTourTypeId" 
+            class="param-select"
+          >
+            <option value="" disabled>Выберите тип тура</option>
+            <option 
+              v-for="type in tourTypes" 
+              :key="type.id" 
+              :value="type.id"
+            >
+              {{ type.title }}
+            </option>
+          </select>
+          <span v-else class="param-value">
+            {{ tour.tourType?.title || 'Не указан' }}
           </span>
         </div>
 
         <div class="param-item">
           <span class="param-label">Логистика тура</span>
-          <span class="param-value">
-            {{ tour.tourTransport?.title }}
+          <select 
+            v-if="editMode && tourTransports.length > 0" 
+            v-model="selectedTourTransportId" 
+            class="param-select"
+          >
+            <option value="" disabled>Выберите логистику</option>
+            <option 
+              v-for="transport in tourTransports" 
+              :key="transport.id" 
+              :value="transport.id"
+            >
+              {{ transport.title }}
+            </option>
+          </select>
+          <span v-else class="param-value">
+            {{ tour.tourTransport?.title || 'Не указана' }}
           </span>
         </div>
 
         <div class="param-item">
           <span class="param-label">Категория тура</span>
-          <span class="param-value">
-            {{ tour.tourCategory?.title }}
+          <select 
+            v-if="editMode && tourCategories.length > 0" 
+            v-model="selectedTourCategoryId" 
+            class="param-select"
+          >
+            <option value="" disabled>Выберите категорию</option>
+            <option 
+              v-for="category in tourCategories" 
+              :key="category.id" 
+              :value="category.id"
+            >
+              {{ category.title }}
+            </option>
+          </select>
+          <span v-else class="param-value">
+            {{ tour.tourCategory?.title || 'Не указана' }}
           </span>
         </div>
 
@@ -107,15 +163,19 @@
 
 <script setup lang="ts">
 import { Pencil } from 'lucide-vue-next';
+import { Input } from '@/components/ui/input';
 import type { Tour } from '@/types/tour';
 import { computed } from 'vue';
+import { useToursStore } from '@/stores/tours';
 
 const props = defineProps<{
   currentItem: Tour;
+  editMode: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:editMode', value: boolean): void;
 }>();
 
 const tour = computed({
@@ -127,8 +187,94 @@ const tour = computed({
   },
 });
 
+const editMode = computed({
+  get() {
+    return props.editMode;
+  },
+  set(value) {
+    emit('update:editMode', value);
+  },
+});
+
+const toursStore = useToursStore();
+const tourTypes = computed(() => toursStore.tourTypes);
+const tourTransports = computed(() => toursStore.tourTransports);
+const tourCategories = computed(() => toursStore.tourCategories);
+
+const tourTitle = computed({
+  get() {
+    return tour.value.title;
+  },
+  set(value: string) {
+    tour.value = { ...tour.value, title: value };
+  },
+});
+
+const selectedTourTypeId = computed({
+  get() {
+    return (tour.value.parameters as any)?.tourType || '';
+  },
+  set(value: string | number | null) {
+    const selectedType = tourTypes.value.find(type => type.id === value);
+    tour.value = {
+      ...tour.value,
+      parameters: {
+        ...tour.value.parameters,
+        tourType: value
+      } as any,
+      tourType: selectedType ? {
+        id: selectedType.id,
+        slug: selectedType.slug,
+        title: selectedType.title
+      } : undefined
+    };
+  },
+});
+
+const selectedTourTransportId = computed({
+  get() {
+    return (tour.value.parameters as any)?.tourTransport || '';
+  },
+  set(value: string | number | null) {
+    const selectedTransport = tourTransports.value.find(transport => transport.id === value);
+    tour.value = {
+      ...tour.value,
+      parameters: {
+        ...tour.value.parameters,
+        tourTransport: value
+      } as any,
+      tourTransport: selectedTransport ? {
+        id: selectedTransport.id,
+        slug: selectedTransport.slug,
+        title: selectedTransport.title
+      } : undefined
+    };
+  },
+});
+
+const selectedTourCategoryId = computed({
+  get() {
+    return (tour.value.parameters as any)?.tourCategory || '';
+  },
+  set(value: string | number | null) {
+    const selectedCategory = tourCategories.value.find(category => category.id === value);
+    tour.value = {
+      ...tour.value,
+      parameters: {
+        ...tour.value.parameters,
+        tourCategory: value
+      } as any,
+      tourCategory: selectedCategory ? {
+        id: selectedCategory.id,
+        slug: selectedCategory.slug,
+        title: selectedCategory.title
+      } : undefined
+    };
+  },
+});
+
 const handleEdit = () => {
-  console.log('Edit tour parameters');
+  editMode.value = !editMode.value;
 };
 </script>
 
@@ -151,22 +297,6 @@ const handleEdit = () => {
   margin: 0;
 }
 
-.edit-button {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-}
-
-.edit-button:hover {
-  color: #374151;
-}
 
 .params-grid {
   display: grid;
@@ -198,6 +328,54 @@ const handleEdit = () => {
   font-size: 1rem;
   font-weight: 500;
   color: #111827;
+}
+
+.param-input {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.param-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.param-select {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 32px 8px 12px;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  transition: all 0.2s ease-in-out;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.param-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.param-select option[disabled] {
+  color: #9ca3af;
 }
 
 .rating-container {

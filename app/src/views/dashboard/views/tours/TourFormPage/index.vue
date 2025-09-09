@@ -172,7 +172,11 @@ onMounted(() => {
     </div>
     <div class="content">
       <TourFormData v-if="activeTab === 'Data'" v-model:currentItem="currentItem" v-model:editMode="editMode" />
-      <TourFormParams v-else-if="activeTab === 'Params'" v-model:currentItem="currentItem" />
+      <TourFormParams 
+        v-else-if="activeTab === 'Params'" 
+        v-model:currentItem="currentItem" 
+        v-model:editMode="editMode" 
+      />
       <TourFormObjectsTab
         v-else-if="activeTab === 'ObjectsTab'"
         v-model:currentItem="currentItem"
