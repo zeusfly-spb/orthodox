@@ -17,6 +17,9 @@ export interface Tour {
   ownerable_type: string;
   created_at: string;
   updated_at: string;
+  time: string;
+  comfort: number | null;
+  difficulty: number | null;
   parameters: {
     tourStatus: number | null | string;
   };

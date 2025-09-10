@@ -1,6 +1,7 @@
 <template>
   <div class="tab-container">
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Data' }"
       @click="activeTab = 'Data'"
@@ -8,6 +9,7 @@
       Данные о туре
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Params' }"
       @click="activeTab = 'Params'"
@@ -15,6 +17,7 @@
       Параметры тура
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Desc' }"
       @click="activeTab = 'Desc'"
@@ -22,6 +25,7 @@
       Описание тура
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'ObjectsTab' }"
       @click="activeTab = 'ObjectsTab'"
@@ -29,6 +33,7 @@
       Объекты в туре
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Program' }"
       @click="activeTab = 'Program'"
@@ -36,6 +41,7 @@
       Программа тура
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Map' }"
       @click="activeTab = 'Map'"
@@ -43,6 +49,7 @@
       Карта маршрута
     </button>
     <button
+      :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'TreeView' }"
       @click="activeTab = 'TreeView'"
@@ -57,6 +64,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
   modelValue: string;
+  hasChanges: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -102,5 +110,26 @@ const activeTab = computed({
 
 .tab-button--active:hover {
   background-color: #111827; /* bg-gray-900 */
+}
+
+.tab-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tab-button:disabled:hover {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.tab-button--active:disabled {
+  background-color: #111827 !important;
+  color: #ffffff !important;
+  border-color: #111827 !important;
+}
+
+.tab-button--active:disabled:hover {
+  background-color: #111827 !important;
 }
 </style>

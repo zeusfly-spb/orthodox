@@ -13,14 +13,6 @@ import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
-import { title } from 'process';
-
-const defaultPapameters = {
-  tourType: null,
-  tourCategory: null,
-  tourTransport: null,
-  tourStatus: null,
-};
 
 const router = useRouter();
 const route = useRoute();
@@ -40,10 +32,13 @@ const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
   const changedFields: Partial<Tour> = {};
   
   const primitiveFields: (keyof Tour)[] = [
+    'time',
     'title',
     'route', 
     'price',
     'duration',
+    'comfort',
+    'difficulty',
     'seats',
     'description',
     'is_active',
@@ -90,10 +85,10 @@ const loadItem = async (): Promise<void> => {
   try {
     const { data } = await tourApi.getData(id.value!);
     const parameters = {
-      tourType: data.tourType?.id,
-      tourCategory: data.tourCategory?.id,
-      tourTransport: data.tourTransport?.id,
-      tourStatus: data.tourStatus?.id,
+      tourType: data.tourType?.id || null,
+      tourCategory: data.tourCategory?.id || null,
+      tourTransport: data.tourTransport?.id || null,
+      tourStatus: data.tourStatus?.id || null,
     };
     data.parameters = parameters;
     currentItem.value = data;
@@ -168,10 +163,17 @@ onMounted(() => {
           </button>
         </div>
       </div>
-      <TourFormTabControl v-model:modelValue="activeTab" />
+      <TourFormTabControl 
+        v-model:modelValue="activeTab" 
+        :hasChanges="hasChanges" 
+      />
     </div>
     <div class="content">
-      <TourFormData v-if="activeTab === 'Data'" v-model:currentItem="currentItem" v-model:editMode="editMode" />
+      <TourFormData
+       v-if="activeTab === 'Data'" 
+       v-model:currentItem="currentItem" 
+       v-model:editMode="editMode" 
+      />
       <TourFormParams 
         v-else-if="activeTab === 'Params'" 
         v-model:currentItem="currentItem" 

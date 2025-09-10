@@ -95,7 +95,7 @@
 
         <div class="param-item">
           <span class="param-label">Страны</span>
-          <span class="param-value">--, -- +1</span>
+          <span class="param-value">--</span>
         </div>
 
         <div class="param-item">
@@ -111,50 +111,66 @@
       <div class="params-column">
         <div class="param-item">
           <span class="param-label">Города</span>
-          <span class="param-value">--, -- +3</span>
-        </div>
-
-        <div class="param-item">
-          <span class="param-label">Количество дней</span>
-          <span class="param-value">{{ tour.duration }}</span>
-        </div>
-
-        <div class="param-item">
-          <span class="param-label">Время начала</span>
-          <span class="param-value">--:-- по МСК</span>
-        </div>
-
-        <div class="param-item">
-          <span class="param-label">Дата начала</span>
           <span class="param-value">--</span>
         </div>
 
         <div class="param-item">
-          <span class="param-label">Сложность</span>
-          <div class="rating-container">
-            <span class="param-value">Легкий</span>
-            <div class="rating-dots">
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-            </div>
+          <span class="param-label">Количество дней</span>
+          <Input 
+            v-if="editMode" 
+            v-model="tourDuration" 
+            type="number"
+            class="param-input"
+            placeholder="Введите количество дней"
+            min="1"
+          />
+          <span v-else class="param-value">{{ tour.duration }}</span>
+        </div>
+
+        <div class="param-item">
+          <span class="param-label">Время начала</span>
+          <div v-if="editMode" class="time-input-container">
+            <Input 
+              v-model="tourStartTime" 
+              type="time"
+              class="param-input"
+            />
           </div>
+          <span v-else class="param-value">
+            {{ tour.time }}
+          </span>
+        </div>
+
+        <div class="param-item">
+          <span class="param-label">Дата начала</span>
+          <div v-if="editMode" class="date-input-container">
+            <Input 
+              v-model="tourStartDate" 
+              type="date"
+              class="param-input"
+            />
+          </div>
+          <span v-else class="param-value">
+            {{ tour.date ? formatDate(tour.date) : 'Не указана' }}
+          </span>
+        </div>
+
+        <div class="param-item">
+          <span class="param-label">Сложность</span>
+          <DotControl 
+              v-model:currentItem="tour"
+              fieldName="difficulty"
+              :editMode="editMode"                                           
+            />
         </div>
 
         <div class="param-item">
           <span class="param-label">Комфорт</span>
-          <div class="rating-container">
-            <span class="param-value">Выше среднего</span>
-            <div class="rating-dots">
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-              <span class="dot dot-empty"></span>
-            </div>
-          </div>
+            <DotControl 
+              v-model:currentItem="tour"
+              fieldName="comfort"
+              :editMode="editMode"                                           
+            />
         </div>
       </div>
     </div>
@@ -167,6 +183,7 @@ import { Input } from '@/components/ui/input';
 import type { Tour } from '@/types/tour';
 import { computed } from 'vue';
 import { useToursStore } from '@/stores/tours';
+import DotControl from '@/components/dashboard/tours/DotControl.vue';
 
 const props = defineProps<{
   currentItem: Tour;
@@ -273,6 +290,54 @@ const selectedTourCategoryId = computed({
   },
 });
 
+const tourDuration = computed({
+  get() {
+    return tour.value.duration;
+  },
+  set(value: number) {
+    tour.value = { ...tour.value, duration: value };
+  },
+});
+
+const tourStartDate = computed({
+  get() {
+    return tour.value.date ? tour.value.date.split('T')[0] : '';
+  },
+  set(value: string) {
+    const currentTime = tour.value.date ? tour.value.date.split('T')[1]?.split('.')[0] : '00:00';
+    tour.value = { ...tour.value, date: `${value}T${currentTime}` };
+  },
+});
+
+const tourStartTime = computed({
+  get() {
+    return tour.value.time || '00:00';
+  },
+  set(value: string) {
+    tour.value = { ...tour.value, time: value };
+  },
+});
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return 'Не указана';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
+const formatTime = (dateString: string) => {
+  if (!dateString) return 'Не указано';
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }) + ' по МСК';
+};
+
 const handleEdit = () => {
   editMode.value = !editMode.value;
 };
@@ -376,6 +441,11 @@ const handleEdit = () => {
 
 .param-select option[disabled] {
   color: #9ca3af;
+}
+
+.date-input-container {
+  display: flex;
+  align-items: center;
 }
 
 .rating-container {

@@ -144,11 +144,17 @@ watch(() => tour.value.parameters?.tourStatus, (newStatusId) => {
   }
 }, { immediate: true });
 
+
+
+
 const datesString = computed(() => {
-  if (!tour.value.date) {
+  if (!tour.value.date || !tour.value.duration) {
     return 'Даты не указаны';
   }
-  return `${formattedDate(tour.value.date)} / ${formattedDate(tour.value.date_end)}`;
+  const startDate = new Date(tour.value.date);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + tour.value.duration - 1);
+  return `${formattedDate(tour.value.date)} / ${formattedDate(endDate.toISOString())}`;
 });
 </script>
 

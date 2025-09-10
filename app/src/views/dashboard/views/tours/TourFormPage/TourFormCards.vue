@@ -2,12 +2,7 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
       <p class="text-sm text-gray-500 mb-1">Количество мест в туре</p>
-      <p class="text-lg font-semibold text-gray-900">--/{{ tour.seats }}</p>
-    </div>
-
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-      <p class="text-sm text-gray-500 mb-1">Время в пути</p>
-      <p class="text-lg font-semibold text-gray-900">--</p>
+      <p class="text-lg font-semibold text-gray-900">{{ tour.seats - tour.customers_count }} / {{ tour.seats }}</p>
     </div>
 
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
