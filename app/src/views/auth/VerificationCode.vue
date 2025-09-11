@@ -75,7 +75,7 @@ const handleResendCode = async () => {
 };
 
 if (authStore.isEmailVerified) {
-  router.push({ name: 'home' });
+  router.push({ name: 'dashboard-home' });
 }
 if (!authStore.isAuthenticated) {
   router.push({ name: 'login' });

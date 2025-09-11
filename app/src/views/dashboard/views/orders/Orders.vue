@@ -291,10 +291,10 @@ onMounted(() => {
               <tbody>
                 <tr v-for="(val, index) in item.bookings" :key="index">
                   <td>
-                    {{ item.dates[0].date_start }}
+                    {{ item.date_start }}
                   </td>
                   <td>
-                    {{ item.dates[0].date_end }}
+                    {{ item.date_end }}
                   </td>
                   <td>
                     {{ item.bookings[index].customers.length }}
