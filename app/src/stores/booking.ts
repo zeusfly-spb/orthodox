@@ -68,10 +68,10 @@ export const useBookingStore = defineStore('booking', () => {
     try {
       const statuses = await fetchBookingStatuses();
       const bookingsResponse = await bookingApi.getData(bookingId);
-      const { data: bookingData } = bookingsResponse;
+      const bookingData = bookingsResponse.data;
 
-      const { customers, status } = bookingData;
-      const { title, id, night_count, seats, dates, date, price, time } = bookingData.tour;
+      const { customers, status, tour } = bookingData;
+      const { title, id, night_count, seats, date, date_start, date_end, price, time } = bookingData.tour;
 
       // Update booking state
       booking.id = bookingId.toString();
@@ -81,14 +81,8 @@ export const useBookingStore = defineStore('booking', () => {
       booking.counts.nights = night_count;
       booking.counts.people = customers.length;
       booking.counts.freePlaces = seats - customers.length;
-      booking.dates.start = format(
-        min(dates.map((val: any) => parseISO(val.date_start))),
-        'yyyy-MM-dd',
-      );
-      booking.dates.finish = format(
-        max(dates.map((val: any) => parseISO(val.date_end))),
-        'yyyy-MM-dd',
-      );
+      booking.dates.start = format(parseISO(date_start), 'yyyy-MM-dd')
+      booking.dates.finish = format(parseISO(date_end), 'yyyy-MM-dd')
 
       booking.mainInfo.tourPrice = price;
       booking.mainInfo.date = date;
