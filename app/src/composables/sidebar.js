@@ -14,7 +14,7 @@ export const paragraph = [
   {
     id: 3,
     image: '/svg/community.svg',
-    linkName: 'partners-list',
+    linkName: 'customers-list',
     name: 'Мои паломники',
   },
   {
@@ -26,7 +26,7 @@ export const paragraph = [
   {
     id: 5,
     image: '/svg/home.svg',
-    linkName: 'home',
+    linkName: 'dashboard-home',
     name: 'Профиль ПС',
   },
 ];

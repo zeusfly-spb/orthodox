@@ -53,7 +53,7 @@ async function login() {
   try {
     await authStore.login(credentials);
     localStorage.setItem('tour_operator_id', form.serviceId.value);
-    router.push({ name: 'home' });
+    router.push({ name: 'dashboard-home' });
   } catch (error) {
     console.error('Login failed:', authStore.error);
     hasErrorAlert.value = true;

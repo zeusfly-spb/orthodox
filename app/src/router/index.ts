@@ -72,7 +72,7 @@ const routes = [
     children: [
       {
         path: '/',
-        name: 'home',
+        name: 'dashboard-home',
         component: () => import('@/views/dashboard/views/operator/Profile.vue'),
         meta: { requiresAuth: true },
       },
