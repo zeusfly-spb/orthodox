@@ -1,62 +1,62 @@
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { toast } from 'vue-sonner'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue'
-import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue'
-import TourParameters from '@/components/dashboard/tours/TourParameters.vue'
-import TourPointsForm from '@/components/dashboard/tours/TourPointsForm.vue'
-import { tourApi } from '@/api/tours.ts'
-import RouteMap from '@/components/maps/RouteMap.vue'
+import { ref, reactive, watch, onMounted } from 'vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'vue-sonner';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import TourDaysForm from '@/components/dashboard/tours/TourDaysForm.vue';
+import TourDatesForm from '@/components/dashboard/tours/TourDatesForm.vue';
+import TourParameters from '@/components/dashboard/tours/TourParameters.vue';
+import TourPointsForm from '@/components/dashboard/tours/TourPointsForm.vue';
+import { tourApi } from '@/api/tours.ts';
+import RouteMap from '@/components/maps/RouteMap.vue';
 
 interface DayItem {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
 
 interface FormFields {
-  id?: number | string
-  title: string
-  route: string
-  price: number
-  duration: number
-  description: string
-  is_active: boolean
-  dates: string[]
-  days: DayItem[]
-  points: PointItem[]
-  parameters: Record<string, string>
+  id?: number | string;
+  title: string;
+  route: string;
+  price: number;
+  duration: number;
+  description: string;
+  is_active: boolean;
+  dates: string[];
+  days: DayItem[];
+  points: PointItem[];
+  parameters: Record<string, string>;
 }
 
-const parametersData = ref<any>([])
+const parametersData = ref<any>([]);
 
 const fetchParameters = async () => {
   try {
-    const response = await tourApi.getData('parameters')
-    parametersData.value = response.data
+    const response = await tourApi.getData('parameters');
+    parametersData.value = response.data;
   } catch (error) {
-    toast.error('Ошибка при загрузке параметров')
-    console.error(error)
+    toast.error('Ошибка при загрузке параметров');
+    console.error(error);
   }
-}
+};
 
 onMounted(() => {
-  fetchParameters()
-})
+  fetchParameters();
+});
 
 const props = withDefaults(
   defineProps<{
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
-    item?: FormFields
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
+    item?: FormFields;
   }>(),
   {
     createTitle: 'Добавить данные',
@@ -65,12 +65,12 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'submit', item: Omit<FormFields, 'id' | 'created_at' | 'updated_at'>): void
-  (e: 'cancel'): void
-}>()
+  (e: 'submit', item: Omit<FormFields, 'id' | 'created_at' | 'updated_at'>): void;
+  (e: 'cancel'): void;
+}>();
 
 const form = reactive<Omit<FormFields, 'id'>>({
   title: '',
@@ -83,7 +83,7 @@ const form = reactive<Omit<FormFields, 'id'>>({
   days: [],
   points: [],
   parameters: {},
-})
+});
 
 watch(
   () => props.item,
@@ -94,7 +94,7 @@ watch(
         tourCategory: newTour.tourCategory?.id,
         tourTransport: newTour.tourTransport?.id,
         tourStatus: newTour.tourStatus?.id,
-      }
+      };
 
       Object.assign(form, {
         title: newTour.title,
@@ -109,11 +109,11 @@ watch(
         days: Array.isArray(newTour.days) ? [...newTour.days] : [],
         points: Array.isArray(newTour.points) ? [...newTour.points] : [],
         parameters,
-      })
+      });
     }
   },
   { immediate: true },
-)
+);
 
 const resetForm = () => {
   Object.assign(form, {
@@ -126,42 +126,46 @@ const resetForm = () => {
     dates: [],
     days: [],
     points: [],
-  })
-}
+  });
+};
 
 const onSubmit = () => {
   if (!form.title || !form.route || form.price <= 0 || form.duration <= 0) {
-    toast.error('Заполните обязательные поля')
-    return
+    toast.error('Заполните обязательные поля');
+    return;
   }
 
   // Prepare points data for backend
   const pointsForBackend = form.points.map((point) => ({
-    entity_id: point.entity.id,
+    entity_id: Number.isInteger(point.entity?.id) ? Number(point.entity.id) : null,
+    title: point.title,
+    description: point.description,
+    latitude: point.location?.coordinates[1],
+    longitude: point.location?.coordinates[0],
     time: point.time,
     order_column: point.order_column,
-  }))
+  }));
 
   emit('submit', {
     ...form,
     points: pointsForBackend,
-  })
-}
+  });
+};
 
 // Map click handling
-const mapRef = ref()
+const mapRef = ref();
 
 const openPoint = (id) => {
-  mapRef.value?.flyToPointById(id)
-}
+  mapRef.value?.flyToPointById(id);
+};
 
 const handleMarkerClick = (id) => {
-  console.log('Клик по маркеру с entity ID:', id)
-}
+  console.log('Клик по маркеру с ID:', id);
+};
 
 const resetMapView = () => {
-  mapRef.value?.resetView()
-}
+  mapRef.value?.resetView();
+};
 </script>
 
 <template>
@@ -269,10 +273,10 @@ const resetMapView = () => {
               variant="outline"
               type="button"
               v-for="point in form.points"
-              :key="point.entity.id"
-              @click="openPoint(point.entity.id)"
+              :key="point.id"
+              @click="openPoint(point.id)"
             >
-              {{ point.entity.title }}
+              {{ point.title || point.entity.title }}
             </Button>
           </div>
           <div class="flex items-center gap-2">

@@ -1,137 +1,74 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import ConfirmDialog from '@/components/app/ConfirmDialog.vue'
+import { ref, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useToursStore } from '@/stores/tours.ts';
+import { storeToRefs } from 'pinia';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
+import DataTable from '@/components/dashboard/tours/DataTable.vue';
+import Pagination from '@/components/app/Pagination.vue';
+import TourListTags from '@/views/dashboard/views/tours/TourListTags.vue';
+import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue';
+import TourListHead from '@/components/dashboard/tours/TourListHead.vue';
+import TourListFilters from '@/components/dashboard/tours/TourListFilters.vue';
 
-import DataTable from '@/components/dashboard/tours/DataTable.vue'
-import TourForm from '@/components/dashboard/tours/TourForm.vue'
+const route = useRoute();
+const router = useRouter();
+const toursStore = useToursStore();
+const { handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel } = toursStore;
 
-import { tourApi } from '@/api/tours'
-import { useCrudActions } from '@/composables/useCrudActions'
+const tours = computed<Array<{ id: string | number; [key: string]: unknown }>>(
+  () => toursStore.items,
+);
+const isLoading = computed<boolean>(() => toursStore.isLoading);
+const currentPage = computed<number>(() => toursStore.currentPage);
+const pagination = computed<{
+  currentPage?: number | null;
+  lastPage?: number | null;
+  perPage?: number | null;
+  total?: number | null;
+}>(() => toursStore.pagination);
 
-import Pagination from '@/components/app/Pagination.vue'
-import { useRoute } from 'vue-router'
-const route = useRoute()
+const handleAddTour = (): void => {
+  router.push({ name: 'tour-create' });
+};
 
-import { usePaginationFilters } from '@/composables/usePaginationFilters'
-import CustomerForm from '@/components/dashboard/customers/CustomerForm.vue'
-
-// Инициализация с дефолтными фильтрами
-const { filters, complexFilters, applyFilters, resetFilters, handlePageChange, currentPage } =
-  usePaginationFilters({
-    search: '',
-    status: '',
-  })
-
-const {
-  isLoading,
-  showConfirm,
-  handledItemId,
-  items,
-  currentItem,
-  pagination,
-  loadCollection,
-  handleSubmit,
-  handleDelete,
-  onDeleteConfirm,
-  onCancel,
-} = useCrudActions(tourApi, {
-  successMessage: 'Данные сохранены',
-  deleteMessage: 'Данные удалены',
-})
-
-// Загрузка данных при изменении фильтров
-watch(
-  complexFilters,
-  (newFilters) => {
-    loadCollection(newFilters)
-  },
-  { immediate: true },
-)
-
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const handleAddTour = () => {
-  router.push({ name: 'tour-create' })
-}
-
-const handleEditTour = (id: string | number) => {
+const handleDownloadReport = (): void => {
+  console.log('DOWNLOAD REPORT');
+};
+const handleEditTour = (id: string | number): void => {
   router
     .push({
       name: 'tour-edit',
       params: { id: String(id) },
     })
-    .catch((err) => {
-      console.error('Navigation error:', err)
-    })
-}
-
-// const getCurrentPage = () => {
-//   return route.query?.page || 1
-// }
-//
-// // Load API data
-// loadCollection({ page: getCurrentPage() })
-//
-// // Filters
-// const filters = ref({
-//   search: '',
-//   status: '',
-// })
-//
-// const handlePageChange = (page: number) => {
-//   loadCollection({
-//     page,
-//     ...filters.value,
-//   })
-// }
-//
-// const applyFilters = () => {
-//   // Сбрасываем на первую страницу при применении фильтров
-//   loadCollection({
-//     page: 1,
-//     ...filters.value,
-//   })
-// }
+    .catch((err: Error) => {
+      console.error('Navigation error:', err);
+    });
+};
 </script>
 
 <template>
-  <div class="ml-70">
-    <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
-      <div class="flex shrink-0 items-center justify-between gap-2">
-        <!-- Левая часть -->
-        <div class="flex items-center gap-4 pl-4">
-          <h1 class="text-lg font-bold text-muted-foreground">Мои туры</h1>
-        </div>
-        <!-- Правая часть -->
-        <div class="flex items-center gap-4 pr-4">
-          <Button
-            class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
-            @click="handleAddTour"
-          >
-            Добавить тур
-          </Button>
-        </div>
-      </div>
-    </div>
+  <div class="main-content">
     <Card class="mb-8 gap-0">
       <CardContent>
-        <DataTable
-          :isLoading="isLoading"
-          :collection="items"
-          @edit="handleEditTour"
-          @delete="handleDelete"
-        />
+        <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+          <TourListHead @addTour="handleAddTour" @downloadReport="handleDownloadReport" />
+          <TourListFilters />
+          <TourListTags />
+          <TourListSort />
+        </div>
+        <DataTable @edit="handleEditTour" @delete="handleDelete" />
       </CardContent>
-      <CardFooter class="muted border-t" v-if="pagination.currentPage && pagination.lastPage > 1">
+      <CardFooter
+        class="muted border-t"
+        v-if="pagination?.currentPage && pagination?.lastPage && pagination.lastPage > 1"
+      >
         <Pagination
-          :current-page="currentPage"
-          :per-page="pagination.perPage"
-          :total="pagination.total"
-          :last-page="pagination.lastPage"
+          :current-page="currentPage || 1"
+          :per-page="pagination?.perPage || 10"
+          :total="pagination?.total || 0"
+          :last-page="pagination?.lastPage || 1"
           @update:current-page="handlePageChange"
         />
       </CardFooter>

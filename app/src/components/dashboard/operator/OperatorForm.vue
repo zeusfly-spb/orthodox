@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { ref, watch, nextTick } from 'vue';
+import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,21 +9,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { useCommonForm } from '@/composables/useCommonForm.ts'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
+import { useCommonForm } from '@/composables/useCommonForm.ts';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Operator {
-  id?: number
-  name: string
-  type: string | null
-  email: string | null
-  phone: string | null
-  description: string | null
+  id?: number;
+  name: string;
+  type: string | null;
+  email: string | null;
+  phone: string | null;
+  description: string | null;
   // json_attributes: {
   //   date?: string
   //   name?: string
@@ -31,23 +31,23 @@ interface Operator {
   //   number_date?: string
   // }
   requisite: {
-    id?: number
-    title: string
-    type: string | null
-    description: string | null
-    legal_name: string
-    opf_short: string | null
-    inn: string | null
-    ogrn: string | null
-    ogrn_date: string | null
-    kpp: string | null
-    okpo: string | null
-    legal_address: string | null
-    real_address: string | null
-    postal_address: string | null
-    email: string | null
-    phone: string | null
-  }
+    id?: number;
+    title: string;
+    type: string | null;
+    description: string | null;
+    legal_name: string;
+    opf_short: string | null;
+    inn: string | null;
+    ogrn: string | null;
+    ogrn_date: string | null;
+    kpp: string | null;
+    okpo: string | null;
+    legal_address: string | null;
+    real_address: string | null;
+    postal_address: string | null;
+    email: string | null;
+    phone: string | null;
+  };
 }
 
 const formTemplate: Operator = {
@@ -74,24 +74,24 @@ const formTemplate: Operator = {
     email: null,
     phone: null,
   },
-}
+};
 
-const requiredFields: Array<keyof Operator> = ['name', 'requisite.legal_name']
+const requiredFields: Array<keyof Operator> = ['name', 'requisite.legal_name'];
 
 const { form, resetForm, fillForm, validateForm } = useCommonForm<Operator>(
   formTemplate,
   requiredFields,
-)
+);
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    item?: Operator
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
+    open: boolean;
+    item?: Operator;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
   }>(),
   {
     createTitle: 'Добавить оператора',
@@ -100,13 +100,13 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: Operator): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: Operator): void;
+  (e: 'dismiss'): void;
+}>();
 
 watch(
   () => props.item,
@@ -117,40 +117,40 @@ watch(
         ...newItem,
         // json_attributes: newItem.json_attributes || {},
         requisite: newItem.requisite || formTemplate.requisite,
-      }
-      fillForm(formData)
+      };
+      fillForm(formData);
     }
   },
   { immediate: true },
-)
+);
 
-const firstInput = ref<HTMLInputElement | null>(null)
+const firstInput = ref<HTMLInputElement | null>(null);
 watch(
   () => props.open,
   async (isOpen) => {
-    await nextTick()
+    await nextTick();
     if (firstInput.value) {
-      firstInput.value.blur() // Убираем фокус
+      firstInput.value.blur(); // Убираем фокус
     }
 
     if (!isOpen) {
-      await nextTick()
+      await nextTick();
       // resetForm()
-      emit('dismiss')
+      emit('dismiss');
     }
   },
-)
+);
 
 const onSubmit = () => {
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
   const submitData = {
     ...form,
-  }
+  };
 
-  emit('submit', submitData)
-  emit('update:open', false)
-}
+  emit('submit', submitData);
+  emit('update:open', false);
+};
 </script>
 
 <template>

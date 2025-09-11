@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -14,48 +14,48 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { MoreHorizontal, Mail, Lock, Pencil, Trash2 } from 'lucide-vue-next'
+} from '@/components/ui/table';
+import { MoreHorizontal, Mail, Lock, Pencil, Trash2 } from 'lucide-vue-next';
 
 interface User {
-  id: string
-  name: string
-  email: string
-  avatar: string
-  role: 'admin' | 'editor' | 'viewer'
-  status: 'active' | 'pending' | 'suspended'
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: 'admin' | 'editor' | 'viewer';
+  status: 'active' | 'pending' | 'suspended';
 }
 
 const props = defineProps<{
-  isLoading: boolean
-  collection: User[]
-}>()
+  isLoading: boolean;
+  collection: User[];
+}>();
 
 const emit = defineEmits<{
-  (e: 'edit-manager', id: string): void
-  (e: 'delete-manager', id: string): void
-}>()
+  (e: 'edit-manager', id: string): void;
+  (e: 'delete-manager', id: string): void;
+}>();
 
 const getInitials = (name: string) => {
   return name
     .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase()
-}
+    .toUpperCase();
+};
 
 const getRoleLabel = (role: User['role']) => {
   switch (role) {
     case 'tour_admin':
-      return 'Администратор'
+      return 'Администратор';
     case 'tour_manager':
-      return 'Менеджер'
+      return 'Менеджер';
     case 'user':
-      return 'Менеджер'
+      return 'Менеджер';
     default:
-      return 'Пользователь'
+      return 'Пользователь';
   }
-}
+};
 </script>
 
 <template>

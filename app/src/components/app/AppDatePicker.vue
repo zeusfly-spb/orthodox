@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, watch, defineEmits, defineProps } from 'vue'
-import { Calendar as DatePicker } from '@/components/ui/calendar'
-import { Button } from '@/components/ui/button'
-import { parseDate } from '@internationalized/date'
+import { ref, watch, defineEmits, defineProps } from 'vue';
+import { Calendar as DatePicker } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { parseDate } from '@internationalized/date';
 
 const props = defineProps<{
-  modelValue?: string | object // Принимаем строку или объект internationalized date
-}>()
+  modelValue?: string | object; // Принимаем строку или объект internationalized date
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void // Всегда возвращаем строку в формате YYYY-MM-DD
-  (e: 'addDate'): void
-}>()
+  (e: 'update:modelValue', value: string): void; // Всегда возвращаем строку в формате YYYY-MM-DD
+  (e: 'addDate'): void;
+}>();
 
 // Конвертируем входное значение в объект даты для календаря
 const internalDate = ref(
@@ -20,14 +20,14 @@ const internalDate = ref(
       ? parseDate(props.modelValue)
       : props.modelValue
     : null,
-)
+);
 
 // Конвертируем обратно в строку при изменении
 watch(internalDate, (val) => {
   if (val) {
-    emit('update:modelValue', val.toString())
+    emit('update:modelValue', val.toString());
   }
-})
+});
 </script>
 
 <template>

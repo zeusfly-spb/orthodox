@@ -6,10 +6,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   FormControl,
   FormDescription,
@@ -17,12 +17,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
+} from '@/components/ui/form';
 
 //
-import { useForm } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import * as z from 'zod'
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import * as z from 'zod';
 
 // Схема валидации
 const formSchema = toTypedSchema(
@@ -33,15 +33,15 @@ const formSchema = toTypedSchema(
     phone: z.string().optional(),
     patronymic: z.string().optional(),
   }),
-)
+);
 
 const form = useForm({
   validationSchema: formSchema,
-})
+});
 
 const onSubmit = form.handleSubmit((values) => {
-  console.log('Form submitted', values)
-})
+  console.log('Form submitted', values);
+});
 </script>
 
 <template>

@@ -1,121 +1,130 @@
-import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
-import { fetchOperators, fetchUser, loginUser, logoutUser, registerUser } from '@/api/auth'
-import type { ApiUser, Credentials, RegisterData } from '@/types/auth'
+import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
+import { fetchOperators, fetchUser, loginUser, logoutUser, registerUser } from '@/api/auth';
+import type { ApiUser, Credentials, RegisterData, AuthError } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessTokenName = 'access_token'
-  const accessTokenType = 'Bearer'
-  const accessToken = ref<string | null>(localStorage.getItem(accessTokenName) || null)
-  const user = ref<ApiUser | null>(null)
-  const operators = ref<[] | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const accessTokenName = 'access_token';
+  const accessTokenType = 'Bearer';
+  const accessToken = ref<string | null>(localStorage.getItem(accessTokenName) || null);
+  const user = ref<ApiUser | null>(null);
+  const operators = ref<[] | null>(null);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
 
-  const isAuthenticated = computed(() => !!accessToken.value)
-  const isEmailVerified = computed(() => user.value?.email_verified ?? false)
-  const isInitialized = ref(false)
+  const isAuthenticated = computed(() => !!accessToken.value);
+  const isEmailVerified = computed(() => user.value?.data?.email_verified || false);
+  const isInitialized = ref(false);
 
   const initializeAuth = async () => {
-    if (isInitialized.value || !accessToken.value) return
+    if (isInitialized.value || !accessToken.value) return;
 
     try {
-      await loadUser()
-      isInitialized.value = true
+      await loadUser();
+      isInitialized.value = true;
     } catch (error) {
-      console.error('Initial user load failed:', error)
-      accessToken.value = null
-      localStorage.removeItem(accessTokenName)
+      console.error('Initial user load failed:', error);
+      accessToken.value = null;
+      localStorage.removeItem(accessTokenName);
     }
-  }
+  };
 
-  const loadUser = async () => {
-    await getUser()
-  }
+  const loadUser = async (): Promise<void> => {
+    await getUser();
+  };
+
+  loadUser().catch((error) => {
+    console.error('Initial user load failed:', error);
+  });
 
   async function login(credentials: Credentials) {
     try {
-      isLoading.value = true
-      error.value = null
-      const { data } = await loginUser(credentials)
-      accessToken.value = data.access_token
-      await localStorage.setItem(accessTokenName, data.access_token)
-      user.value = data.user
-      return data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      isLoading.value = true;
+      error.value = null;
+      const { data } = await loginUser(credentials);
+      accessToken.value = data.access_token;
+      await localStorage.setItem(accessTokenName, data.access_token);
+      user.value = data.user;
+      return data;
+    } catch (err: unknown) {
+      const authError = err as AuthError;
+      error.value = authError.response?.data?.message || authError.message || 'Ошибка авторизации';
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
   async function register(userData: RegisterData) {
     try {
-      isLoading.value = true
-      error.value = null
-      const { data } = await registerUser(userData)
-      return data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      isLoading.value = true;
+      error.value = null;
+      const { data } = await registerUser(userData);
+      return data;
+    } catch (err: unknown) {
+      const authError = err as AuthError;
+      error.value = authError.response?.data?.message || authError.message || 'Ошибка регистрации';
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
   async function logout() {
-    if (!accessToken.value) return
+    if (!accessToken.value) return;
 
-    localStorage.removeItem(accessTokenName)
-    accessToken.value = null
-    user.value = null
+    localStorage.removeItem(accessTokenName);
+    accessToken.value = null;
+    user.value = null;
 
     try {
-      await logoutUser()
-    } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      await logoutUser();
+    } catch (err: unknown) {
+      const authError = err as AuthError;
+      error.value = authError.response?.data?.message || authError.message || 'Ошибка выхода';
+      throw err;
     }
   }
 
   async function getUser() {
-    if (!accessToken.value) return
+    if (!accessToken.value) return;
 
     try {
-      isLoading.value = true
-      const { data } = await fetchUser()
-      user.value = data?.data || data
-      return data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      isLoading.value = true;
+      const { data } = await fetchUser();
+      user.value = data;
+      return data;
+    } catch (err: unknown) {
+      const authError = err as AuthError;
+      error.value =
+        authError.response?.data?.message || authError.message || 'Ошибка получения пользователя';
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
-  async function checkToken(headers) {
+  async function checkToken(headers: Record<string, string> | undefined): Promise<string | null> {
     if (headers?.authorization) {
-      const responseToken = headers.authorization
-      const cleanToken = responseToken.replace(accessTokenType, '').trim()
-      accessToken.value = cleanToken
-      await localStorage.setItem(accessTokenName, cleanToken)
+      const responseToken = headers.authorization;
+      const cleanToken = responseToken.replace(accessTokenType, '').trim();
+      accessToken.value = cleanToken;
+      await localStorage.setItem(accessTokenName, cleanToken);
     }
-    return accessToken.value
+    return accessToken.value;
   }
 
   async function loadOperators() {
     try {
-      isLoading.value = true
-      const { data } = await fetchOperators()
-      operators.value = data?.data || data
-      return data
+      isLoading.value = true;
+      const { data } = await fetchOperators();
+      operators.value = data?.data || data;
+      return data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || err.message
-      throw err
+      error.value = err.response?.data?.message || err.message;
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -136,5 +145,5 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     checkToken,
     loadOperators,
-  }
-})
+  };
+});

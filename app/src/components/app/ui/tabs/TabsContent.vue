@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject } from 'vue';
 
 const props = defineProps<{
-  value: string
-}>()
+  value: string;
+}>();
 
-const activeTab = inject<string>('activeTab')
+const activeTab = inject<string>('activeTab');
 </script>
 
 <template>

@@ -1,1 +1,1 @@
-export type { Role, User } from './shared'
+export type { Role, User } from './shared';

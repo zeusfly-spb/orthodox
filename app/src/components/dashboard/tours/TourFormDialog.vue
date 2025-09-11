@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { Trash2, Calendar as CalendarIcon } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover'
-import { toast } from 'vue-sonner'
+import { ref, reactive, computed, watch } from 'vue';
+import { Trash2, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
+import { toast } from 'vue-sonner';
 import {
   Dialog,
   DialogContent,
@@ -15,30 +15,30 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from '@/components/ui/dialog'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
+} from '@/components/ui/dialog';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
 
 export interface FormFields {
-  id?: number | string
-  title: string
-  route: string
-  price: number
-  duration: number
-  description: string
-  is_active: boolean
-  dates: string[]
-  days: string[]
+  id?: number | string;
+  title: string;
+  route: string;
+  price: number;
+  duration: number;
+  description: string;
+  is_active: boolean;
+  dates: string[];
+  days: string[];
 }
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
-    item?: FormFields
+    open: boolean;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
+    item?: FormFields;
   }>(),
   {
     createTitle: 'Добавить данные',
@@ -47,12 +47,12 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: Omit<FormFields, 'id' | 'created_at' | 'updated_at'>): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: Omit<FormFields, 'id' | 'created_at' | 'updated_at'>): void;
+}>();
 
 const form = reactive<Omit<FormFields, 'id'>>({
   title: '',
@@ -63,9 +63,9 @@ const form = reactive<Omit<FormFields, 'id'>>({
   is_active: true,
   dates: [],
   days: [],
-})
+});
 
-const newDay = ref('')
+const newDay = ref('');
 
 watch(
   () => props.item,
@@ -80,20 +80,20 @@ watch(
         is_active: newTour.is_active,
         dates: [...newTour.dates.map((item) => item.date)],
         days: [...newTour.days.map((item) => item.description)],
-      })
+      });
     }
   },
   { immediate: true },
-)
+);
 
 watch(
   () => props.open,
   (isOpen) => {
     if (!isOpen) {
-      resetForm()
+      resetForm();
     }
   },
-)
+);
 
 const resetForm = () => {
   Object.assign(form, {
@@ -105,81 +105,81 @@ const resetForm = () => {
     is_active: true,
     dates: [],
     days: [],
-  })
-  newDate.value = undefined
-  newDay.value = ''
-}
+  });
+  newDate.value = undefined;
+  newDay.value = '';
+};
 
-const newDate = ref<string>() // Храним дату как строку YYYY-MM-DD
+const newDate = ref<string>(); // Храним дату как строку YYYY-MM-DD
 
 const disabledDates = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return (date: Date) => date < today
-})
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return (date: Date) => date < today;
+});
 
 const formatDate = (date: Date | undefined): string => {
-  return date?.toISOString().split('T')[0] || ''
-}
+  return date?.toISOString().split('T')[0] || '';
+};
 
 const addDate = () => {
   if (!newDate.value) {
-    toast.error('Выберите дату')
-    return
+    toast.error('Выберите дату');
+    return;
   }
 
   if (form.dates.includes(newDate.value)) {
-    toast.error('Эта дата уже добавлена')
-    return
+    toast.error('Эта дата уже добавлена');
+    return;
   }
 
-  form.dates.push(newDate.value)
+  form.dates.push(newDate.value);
   // Сортируем даты как строки в формате YYYY-MM-DD
   form.dates.sort((a, b) => {
-    const dateA = new Date(a).getTime()
-    const dateB = new Date(b).getTime()
-    return dateA - dateB
-  })
-  newDate.value = undefined
-}
+    const dateA = new Date(a).getTime();
+    const dateB = new Date(b).getTime();
+    return dateA - dateB;
+  });
+  newDate.value = undefined;
+};
 
 const removeDate = (index: number) => {
-  form.dates.splice(index, 1)
-}
+  form.dates.splice(index, 1);
+};
 
 const addDay = () => {
   if (!newDay.value.trim()) {
-    toast.error('Введите описание дня')
-    return
+    toast.error('Введите описание дня');
+    return;
   }
 
   if (form.days.includes(newDay.value)) {
-    toast.error('Этот день уже добавлен')
-    return
+    toast.error('Этот день уже добавлен');
+    return;
   }
 
-  form.days.push(newDay.value)
-  newDay.value = ''
-}
+  form.days.push(newDay.value);
+  newDay.value = '';
+};
 
 const removeDay = (index: number) => {
-  form.days.splice(index, 1)
-}
+  form.days.splice(index, 1);
+};
 
 const onSubmit = () => {
   if (!form.title || !form.route || form.price <= 0 || form.duration <= 0) {
-    toast.error('Заполните обязательные поля')
-    return
+    toast.error('Заполните обязательные поля');
+    return;
   }
 
   if (form.dates.length === 0) {
-    toast.error('Добавьте хотя бы одну дату проведения тура')
-    return
+    toast.error('Добавьте хотя бы одну дату проведения тура');
+    return;
   }
 
-  emit('submit', form)
-  emit('update:open', false)
-}
+  emit('submit', form);
+  emit('update:open', false);
+};
 </script>
 
 <template>

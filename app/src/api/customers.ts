@@ -1,4 +1,4 @@
-import { createApiClient } from './generic'
-import type { Customer } from '@/types/customer'
+import { createApiClient } from './generic';
+import type { Customer } from '@/types/customer';
 
-export const customerApi = createApiClient<Customer>('customers')
+export const customerApi = createApiClient<Customer>('customers');

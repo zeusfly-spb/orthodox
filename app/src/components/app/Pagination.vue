@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import {
   Pagination,
   PaginationContent,
@@ -8,48 +8,48 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination'
-import { Button } from '@/components/ui/button'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
+} from '@/components/ui/pagination';
+import { Button } from '@/components/ui/button';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next';
 
-const PageParamName = 'page'
+const PageParamName = 'page';
 
 interface PaginationProps {
-  currentPage: number
-  perPage: number
-  total: number
-  lastPage?: number
+  currentPage: number;
+  perPage: number;
+  total: number;
+  lastPage?: number;
 }
 
-const props = defineProps<PaginationProps>()
+const props = defineProps<PaginationProps>();
 
 const emit = defineEmits<{
-  (e: 'update:currentPage', page: number): void
-}>()
+  (e: 'update:currentPage', page: number): void;
+}>();
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const lastPage = computed(() => props.lastPage || Math.ceil(props.total / props.perPage))
+const lastPage = computed(() => props.lastPage || Math.ceil(props.total / props.perPage));
 
 const shouldShowPage = (page) => {
-  return Math.abs(page - props.currentPage) < 3 || page === 1 || page === lastPage.value
-}
+  return Math.abs(page - props.currentPage) < 3 || page === 1 || page === lastPage.value;
+};
 
 const handlePageChange = (page: number) => {
-  if (page < 1 || page > lastPage.value) return
+  if (page < 1 || page > lastPage.value) return;
 
   router.push({
     query: {
       ...route.query,
       [PageParamName]: page > 1 ? page : undefined,
     },
-  })
+  });
 
   if (page !== props.currentPage) {
-    emit('update:currentPage', page)
+    emit('update:currentPage', page);
   }
-}
+};
 </script>
 
 <template>

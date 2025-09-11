@@ -1,3 +1,3 @@
-import { createApiClient } from '@/api/generic'
+import { createApiClient } from '@/api/generic';
 
-export const managerApi = createApiClient('operator/managers')
+export const managerApi = createApiClient('operator/managers');

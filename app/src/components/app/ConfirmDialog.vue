@@ -8,15 +8,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from '@/components/ui/alert-dialog';
 
 const props = withDefaults(
   defineProps<{
-    show: boolean
-    title?: string
-    description?: string
-    confirmText?: string
-    cancelText?: string
+    show: boolean;
+    title?: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
   }>(),
   {
     title: 'Вы уверены?',
@@ -24,23 +24,23 @@ const props = withDefaults(
     confirmText: 'Подтвердить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:show', value: boolean): void
-  (e: 'confirm'): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:show', value: boolean): void;
+  (e: 'confirm'): void;
+  (e: 'dismiss'): void;
+}>();
 
 const onConfirm = () => {
-  emit('update:show', false)
-  emit('confirm')
-}
+  emit('update:show', false);
+  emit('confirm');
+};
 
 const onCancel = () => {
-  emit('update:show', false)
-  emit('dismiss')
-}
+  emit('update:show', false);
+  emit('dismiss');
+};
 </script>
 
 <template>

@@ -1,56 +1,56 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { resetPassword } from '@/api/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'vue-sonner'
-import type { AuthError, ResetPasswordData } from '@/types/auth'
-import { Lock } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
+import { resetPassword } from '@/api/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'vue-sonner';
+import type { AuthError, ResetPasswordData } from '@/types/auth';
+import { Lock } from 'lucide-vue-next';
 
-const route = useRoute()
-const router = useRouter()
-const isLoading = ref(false)
+const route = useRoute();
+const router = useRouter();
+const isLoading = ref(false);
 
 const form = ref<ResetPasswordData>({
   token: '',
   email: '',
   password: '',
   password_confirmation: '',
-})
+});
 
 // Получаем параметры из URL при монтировании компонента
 onMounted(() => {
   if (!route.query.token || !route.query.email) {
-    toast.error('Invalid reset password link')
-    router.push({ name: 'login' })
+    toast.error('Invalid reset password link');
+    router.push({ name: 'login' });
   }
-  form.value.token = route.query.token as string
-  form.value.email = route.query.email as string
-})
+  form.value.token = route.query.token as string;
+  form.value.email = route.query.email as string;
+});
 
 const handleSubmit = async () => {
   try {
-    isLoading.value = true
-    await resetPassword(form.value)
-    toast.success('Пароль успешно восстановлен')
-    router.push({ name: 'login' })
+    isLoading.value = true;
+    await resetPassword(form.value);
+    toast.success('Пароль успешно восстановлен');
+    router.push({ name: 'login' });
   } catch (error: unknown) {
-    const apiError = error as AuthError
-    let errorMessage = apiError.response?.data?.message || apiError.message || 'An error occurred'
+    const apiError = error as AuthError;
+    let errorMessage = apiError.response?.data?.message || apiError.message || 'An error occurred';
 
     if (apiError.response?.status === 422 && apiError.response.data?.errors) {
-      errorMessage = Object.values(apiError.response.data.errors).flat().join('\n')
+      errorMessage = Object.values(apiError.response.data.errors).flat().join('\n');
     }
 
-    toast.error(errorMessage)
-    form.value.password = ''
-    form.value.password_confirmation = ''
+    toast.error(errorMessage);
+    form.value.password = '';
+    form.value.password_confirmation = '';
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <template>

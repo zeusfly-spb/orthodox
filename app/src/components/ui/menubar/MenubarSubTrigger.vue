@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { ChevronRight } from 'lucide-vue-next'
-import { MenubarSubTrigger, type MenubarSubTriggerProps, useForwardProps } from 'reka-ui'
-import { cn } from '@/lib/utils'
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { ChevronRight } from 'lucide-vue-next';
+import { MenubarSubTrigger, type MenubarSubTriggerProps, useForwardProps } from 'reka-ui';
+import { cn } from '@/lib/utils';
 
 const props = defineProps<
   MenubarSubTriggerProps & { class?: HTMLAttributes['class']; inset?: boolean }
->()
+>();
 
-const delegatedProps = reactiveOmit(props, 'class', 'inset')
-const forwardedProps = useForwardProps(delegatedProps)
+const delegatedProps = reactiveOmit(props, 'class', 'inset');
+const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>

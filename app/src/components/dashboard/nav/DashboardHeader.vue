@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Separator } from '@/components/ui/separator'
-import SidebarToggler from '@/components/dashboard/nav/SidebarToggler.vue'
-import NavUser from '@/components/dashboard/nav/NavUser.vue'
+import { Separator } from '@/components/ui/separator';
+import SidebarToggler from '@/components/dashboard/nav/SidebarToggler.vue';
+import NavUser from '@/components/dashboard/nav/NavUser.vue';
 </script>
 
 <template>

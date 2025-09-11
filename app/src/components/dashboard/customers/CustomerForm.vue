@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { watch, reactive, nextTick } from 'vue'
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { watch, reactive, nextTick } from 'vue';
+import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,28 +9,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import AppDatePicker from '@/components/app/AppDatePicker.vue'
-import { toast } from 'vue-sonner'
-import { useCommonForm } from '@/composables/useCommonForm.ts'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import AppDatePicker from '@/components/app/AppDatePicker.vue';
+import { toast } from 'vue-sonner';
+import { useCommonForm } from '@/composables/useCommonForm.ts';
 
 interface FormFields {
-  firstname: string
-  lastname: string
-  patronymic?: string
-  email: string
-  phone: string
-  passport_series: string
-  passport_number: string
-  passport_issue_date?: string
-  passport_unit_name?: string
-  passport_unit_code?: string
-  passport_birth_date?: string
-  passport_birth_place?: string
-  passport_address?: string
+  firstname: string;
+  lastname: string;
+  patronymic?: string;
+  email: string;
+  phone: string;
+  passport_series: string;
+  passport_number: string;
+  passport_issue_date?: string;
+  passport_unit_name?: string;
+  passport_unit_code?: string;
+  passport_birth_date?: string;
+  passport_birth_place?: string;
+  passport_address?: string;
 }
 
 const formTemplate: FormFields = {
@@ -47,7 +47,7 @@ const formTemplate: FormFields = {
   passport_birth_date: '',
   passport_birth_place: '',
   passport_address: '',
-}
+};
 
 const requiredFields: Array<keyof FormFields> = [
   'firstname',
@@ -56,22 +56,22 @@ const requiredFields: Array<keyof FormFields> = [
   'phone',
   'passport_series',
   'passport_number',
-]
+];
 
 const { form, resetForm, fillForm, validateForm } = useCommonForm<FormFields>(
   formTemplate,
   requiredFields,
-)
+);
 
 const props = withDefaults(
   defineProps<{
-    open: boolean
-    createTitle?: string
-    editTitle?: string
-    description?: string
-    submitText?: string
-    cancelText?: string
-    item?: FormFields
+    open: boolean;
+    createTitle?: string;
+    editTitle?: string;
+    description?: string;
+    submitText?: string;
+    cancelText?: string;
+    item?: FormFields;
   }>(),
   {
     createTitle: 'Добавить данные',
@@ -80,39 +80,39 @@ const props = withDefaults(
     submitText: 'Сохранить',
     cancelText: 'Отмена',
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'submit', item: FormFields): void
-  (e: 'dismiss'): void
-}>()
+  (e: 'update:open', value: boolean): void;
+  (e: 'submit', item: FormFields): void;
+  (e: 'dismiss'): void;
+}>();
 
-watch(() => props.item, fillForm, { immediate: true })
+watch(() => props.item, fillForm, { immediate: true });
 
 watch(
   () => props.open,
   async (isOpen) => {
     if (!isOpen) {
-      await nextTick()
-      resetForm()
-      emit('dismiss')
+      await nextTick();
+      resetForm();
+      emit('dismiss');
     }
   },
-)
+);
 
 const onSubmit = () => {
-  if (!validateForm()) return
-  emit('submit', { ...form })
-  emit('update:open', false)
-}
+  if (!validateForm()) return;
+  emit('submit', { ...form });
+  emit('update:open', false);
+};
 
 const addDate = (field: 'passport_issue_date' | 'passport_birth_date') => {
   if (!form[field]) {
-    toast.error('Выберите дату')
-    return
+    toast.error('Выберите дату');
+    return;
   }
-}
+};
 </script>
 
 <template>

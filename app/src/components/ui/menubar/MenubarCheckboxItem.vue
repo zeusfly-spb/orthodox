@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { Check } from 'lucide-vue-next'
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { Check } from 'lucide-vue-next';
 import {
   MenubarCheckboxItem,
   type MenubarCheckboxItemEmits,
   type MenubarCheckboxItemProps,
   MenubarItemIndicator,
   useForwardPropsEmits,
-} from 'reka-ui'
-import { cn } from '@/lib/utils'
+} from 'reka-ui';
+import { cn } from '@/lib/utils';
 
-const props = defineProps<MenubarCheckboxItemProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<MenubarCheckboxItemEmits>()
+const props = defineProps<MenubarCheckboxItemProps & { class?: HTMLAttributes['class'] }>();
+const emits = defineEmits<MenubarCheckboxItemEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class')
+const delegatedProps = reactiveOmit(props, 'class');
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,18 +8,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar'
-import { Skeleton } from '@/components/ui/skeleton'
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import IconUser from '@/components/icons/IconUser.vue'
-import { useAuthStore } from '@/stores/auth'
+} from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import IconUser from '@/components/icons/IconUser.vue';
+import { useAuthStore } from '@/stores/auth';
 
 // const props = defineProps<{
 //   user: {
@@ -29,15 +29,15 @@ import { useAuthStore } from '@/stores/auth'
 //   }
 // }>()
 
-const { isMobile } = useSidebar()
+const { isMobile } = useSidebar();
 
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
 const handleLogout = async () => {
-  await authStore.logout()
-  router.push({ name: 'login' })
-}
+  await authStore.logout();
+  router.push({ name: 'login' });
+};
 </script>
 
 <template>

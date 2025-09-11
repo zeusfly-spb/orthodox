@@ -1,8 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 // Auth Views
-import Login from '@/views/auth/Login.vue'
+import Login from '@/views/auth/Login.vue';
 // import Register from '@/views/auth/Register.vue'
 // import ForgotPassword from '@/views/auth/ForgotPassword.vue'
 // import ResetPassword from '@/views/auth/ResetPassword.vue'
@@ -32,7 +32,7 @@ const routes = [
         component: () => import('@/views/auth/Register.vue'),
         meta: { guestOnly: true },
       },
-    ]
+    ],
   },
   {
     path: '/forgot-password',
@@ -85,13 +85,13 @@ const routes = [
       {
         path: 'tours/new',
         name: 'tour-create',
-        component: () => import('@/views/dashboard/views/tours/TourFormPage.vue'),
+        component: () => import('@/views/dashboard/views/tours/TourFormPage/index.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'tours/:id/edit',
         name: 'tour-edit',
-        component: () => import('@/views/dashboard/views/tours/TourFormPage.vue'),
+        component: () => import('@/views/dashboard/views/tours/TourFormPage/index.vue'),
         meta: { requiresAuth: true },
         props: true,
       },
@@ -144,7 +144,7 @@ const routes = [
     name: 'not-found',
     component: () => import('@/views/errors/NotFound.vue'),
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -152,28 +152,28 @@ const router = createRouter({
     return { top: 0 };
   },
   routes,
-})
+});
 
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
+  const authStore = useAuthStore();
 
   if (authStore.accessToken && !authStore.isInitialized) {
     try {
-      await authStore.initializeAuth()
+      await authStore.initializeAuth();
     } catch (error) {
-      console.error('Failed to initialize auth:', error)
+      console.error('Failed to initialize auth:', error);
     }
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login' })
+    next({ name: 'login' });
   } else if (to.meta.requiresAuth && authStore.isAuthenticated && !authStore.isEmailVerified) {
-    next({ name: 'email-verify-code' })
+    next({ name: 'email-verify-code' });
   } else if (to.meta.guestOnly && authStore.isAuthenticated) {
-    next({ name: 'home' })
+    next({ name: 'dashboard-home' });
   } else {
-    next()
+    next();
   }
-})
+});
 
-export default router
+export default router;

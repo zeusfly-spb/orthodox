@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Menu } from 'lucide-vue-next'
-import { useSidebar } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
+import { Menu } from 'lucide-vue-next';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 
-const { toggleSidebar } = useSidebar()
+const { toggleSidebar } = useSidebar();
 </script>
 
 <template>
