@@ -59,6 +59,19 @@ const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
   return changedFields;
 };
 
+const cleanNullParameters = (parameters: any) => {
+  if (!parameters) return parameters;
+  
+  const cleaned: any = {};
+  Object.keys(parameters).forEach(key => {
+    if (parameters[key] !== null) {
+      cleaned[key] = parameters[key];
+    }
+  });
+  
+  return cleaned;
+};
+
 const updateUrlTab = (tab: string) => {
   router.replace({
     name: route.name as string,
@@ -103,11 +116,22 @@ const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
       const changedFields = getChangedFields(backupItem.value!, currentItem.value!);
+      
+      // Очищаем parameters от null значений
+      if (changedFields.parameters) {
+        changedFields.parameters = cleanNullParameters(changedFields.parameters);
+      }
+      
       const params = { ...changedFields, title: currentItem.value!.title};
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      await tourApi.storeData(currentItem.value!);
+      // Для создания нового тура также очищаем parameters
+      const itemToSave = { ...currentItem.value! };
+      if (itemToSave.parameters) {
+        itemToSave.parameters = cleanNullParameters(itemToSave.parameters);
+      }
+      await tourApi.storeData(itemToSave);
       toast.success('Тур успешно создан');
     }
     backupItem.value = cloneDeep(currentItem.value);

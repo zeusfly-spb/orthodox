@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToursStore } from '@/stores/tours.ts';
-import { storeToRefs } from 'pinia';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
 import DataTable from '@/components/dashboard/tours/DataTable.vue';
@@ -12,10 +11,9 @@ import TourListSort from '@/views/dashboard/views/tours/TourListSort.vue';
 import TourListHead from '@/components/dashboard/tours/TourListHead.vue';
 import TourListFilters from '@/components/dashboard/tours/TourListFilters.vue';
 
-const route = useRoute();
 const router = useRouter();
 const toursStore = useToursStore();
-const { handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel } = toursStore;
+const { handlePageChange, handleDelete, showConfirm, onDeleteConfirm, onCancel, init } = toursStore;
 
 const tours = computed<Array<{ id: string | number; [key: string]: unknown }>>(
   () => toursStore.items,
@@ -36,6 +34,7 @@ const handleAddTour = (): void => {
 const handleDownloadReport = (): void => {
   console.log('DOWNLOAD REPORT');
 };
+
 const handleEditTour = (id: string | number): void => {
   router
     .push({
@@ -46,6 +45,8 @@ const handleEditTour = (id: string | number): void => {
       console.error('Navigation error:', err);
     });
 };
+
+init();
 </script>
 
 <template>

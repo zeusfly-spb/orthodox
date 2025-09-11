@@ -186,10 +186,6 @@ export const useToursStore = defineStore('toursStore', () => {
   }
 
   async function init() {
-    if (isInitialized.value) {
-      return;
-    }
-
     try {
       resetQueryFilters();
       watch(
@@ -252,5 +248,6 @@ export const useToursStore = defineStore('toursStore', () => {
     onCancel,
     handlePageChange,
     resetQueryFilters,
+    init,
   };
 });
