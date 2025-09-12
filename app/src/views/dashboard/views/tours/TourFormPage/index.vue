@@ -207,10 +207,23 @@ onMounted(() => {
         v-else-if="activeTab === 'ObjectsTab'"
         v-model:currentItem="currentItem"
       />
-      <TourFormProgram v-else-if="activeTab === 'Program'" v-model:currentItem="currentItem" />
-      <TourFormMap v-else-if="activeTab === 'Map'" v-model:currentItem="currentItem" />
-      <TourFormDesc v-else-if="activeTab === 'Desc'" v-model:currentItem="currentItem" />
-      <TourFormTreeView v-else-if="activeTab === 'TreeView'" :currentItem="currentItem" />
+      <TourFormProgram 
+        v-else-if="activeTab === 'Program'" 
+        v-model:currentItem="currentItem" 
+      />
+      <TourFormMap 
+        v-else-if="activeTab === 'Map'" 
+        v-model:currentItem="currentItem" 
+      />
+      <TourFormDesc 
+        v-else-if="activeTab === 'Desc'" 
+        v-model:currentItem="currentItem" 
+        v-model:editMode="editMode" 
+      />
+      <TourFormTreeView 
+        v-else-if="activeTab === 'TreeView'" 
+        :currentItem="currentItem" 
+      />
     </div>
   </div>
 </template>

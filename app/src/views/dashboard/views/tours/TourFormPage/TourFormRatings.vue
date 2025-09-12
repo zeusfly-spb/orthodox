@@ -5,7 +5,7 @@
       <DotControl 
         v-model:currentItem="tour"
         fieldName="difficulty"
-        :editMode="false"
+        :editMode="editMode"
       />
     </div>
 
@@ -14,7 +14,7 @@
       <DotControl 
         v-model:currentItem="tour"
         fieldName="comfort"
-        :editMode="false"
+        :editMode="editMode"
       />
     </div>
   </div>
@@ -27,10 +27,12 @@ import DotControl from '@/components/dashboard/tours/DotControl.vue';
 
 const props = defineProps<{
   currentItem: Tour;
+  editMode: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:editMode', value: boolean): void;
 }>();
 
 const tour = computed({
@@ -39,6 +41,15 @@ const tour = computed({
   },
   set(value) {
     emit('update:currentItem', value);
+  },
+});
+
+const editMode = computed({
+  get() {
+    return props.editMode;
+  },
+  set(value) {
+    emit('update:editMode', value);
   },
 });
 </script>

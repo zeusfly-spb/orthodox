@@ -16,7 +16,7 @@
 
     <TourFormObjects v-model:currentItem="tour" />
 
-    <TourFormRatings v-model:currentItem="tour" />
+    <TourFormRatings v-model:currentItem="tour" v-model:editMode="editing" />
 
     <TourFormExtras v-model:currentItem="tour" />
 
