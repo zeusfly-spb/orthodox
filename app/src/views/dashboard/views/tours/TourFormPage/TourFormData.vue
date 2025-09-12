@@ -35,7 +35,6 @@ import TourFormObjects from './TourFormObjects.vue';
 import TourFormRatings from './TourFormRatings.vue';
 import TourFormExtras from './TourFormExtras.vue';
 import TourFormSummary from './TourFormSummary.vue';
-import { ref } from 'vue';
 
 
 const props = defineProps<{
