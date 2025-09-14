@@ -22,16 +22,12 @@ const backupItem = ref<Tour | null>(null);
 const activeTab = ref('Data');
 const editMode = ref(false);
 
-// Computed для отслеживания изменений
-const hasChanges = computed(() => {
-  if (!currentItem.value || !backupItem.value) return false;
-  return !isEqual(currentItem.value, backupItem.value);
-});
-
-const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
+const requestBody = computed(() => {
+  if (!currentItem.value || !backupItem.value) return {};
+  
   const changedFields: Partial<Tour> = {};
   
-  const primitiveFields: (keyof Tour)[] = [
+  const apiFields: (keyof Tour)[] = [
     'time',
     'title',
     'route', 
@@ -47,17 +43,25 @@ const getChangedFields = (original: Tour, current: Tour): Partial<Tour> => {
     'parameters'
   ];
   
-  primitiveFields.forEach(key => {
-    const currentValue = (current as any)[key];
-    const originalValue = (original as any)[key];
+  apiFields.forEach(key => {
+    const currentValue = (currentItem.value as any)[key];
+    const originalValue = (backupItem.value as any)[key];
     
     if (!isEqual(currentValue, originalValue)) {
       (changedFields as any)[key] = currentValue;
     }
   });
   
+  if (changedFields.parameters) {
+    changedFields.parameters = cleanNullParameters(changedFields.parameters);
+  }
+  
   return changedFields;
-};
+});
+
+const hasChanges = computed(() => {
+  return Object.keys(requestBody.value).length > 0;
+});
 
 const cleanNullParameters = (parameters: any) => {
   if (!parameters) return parameters;
@@ -115,18 +119,10 @@ const loadItem = async (): Promise<void> => {
 const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
-      const changedFields = getChangedFields(backupItem.value!, currentItem.value!);
-      
-      // Очищаем parameters от null значений
-      if (changedFields.parameters) {
-        changedFields.parameters = cleanNullParameters(changedFields.parameters);
-      }
-      
-      const params = { ...changedFields, title: currentItem.value!.title};
+      const params = { ...requestBody.value, title: currentItem.value!.title };
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      // Для создания нового тура также очищаем parameters
       const itemToSave = { ...currentItem.value! };
       if (itemToSave.parameters) {
         itemToSave.parameters = cleanNullParameters(itemToSave.parameters);
@@ -167,7 +163,6 @@ onMounted(() => {
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Уникальный тур</h1>
         
-        <!-- Кнопки сохранения и отмены -->
         <div v-if="hasChanges || editMode" class="flex gap-3">
           <button
             @click="handleCancel"
