@@ -5,6 +5,8 @@ import deepEqual from 'deep-equal';
 import { usePaginationFilters } from '@/composables/usePaginationFilters.ts';
 import { useCrudActions } from '@/composables/useCrudActions.ts';
 import { tourApi } from '@/api/tours.ts';
+import { entityApi } from '@/api/entities';
+import type { Entity } from '@/types/entity';
 
 interface FilterItem {
   param: string;
@@ -93,8 +95,17 @@ export const useToursStore = defineStore('toursStore', () => {
   const customerNumbers = ref<number[]>([]);
   const customerCount = ref<number>(0);
   const isInitialized = ref<boolean>(false);
+  const entities = ref<Entity[]>([]);
+  const isLoadingEntities = ref<boolean>(false);
+  const entitiesError = ref<string | null>(null);
+
+  const guides = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'guide'));
+  const hotels = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'accommodation'));
+  const restaurants = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'meal'));
+  const transportations = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'transportation'));
 
   const filtered = computed(() => !deepEqual(queryFilters.value, blankFilters));
+
   const formattedDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date
@@ -185,6 +196,24 @@ export const useToursStore = defineStore('toursStore', () => {
     }
   }
 
+  /**
+   * Загружает список всех сущностей с типом "гид" с сервера
+   */
+  async function fetchEntities() {
+    isLoadingEntities.value = true;
+    entitiesError.value = null;
+    
+    try {
+      const response = await entityApi.fetchData();
+      entities.value = response.data || [];
+    } catch (err) {
+      console.error('Entities error:', err);
+      throw err;
+    } finally {
+      isLoadingEntities.value = false;
+    }
+  }
+
   async function init() {
     try {
       resetQueryFilters();
@@ -248,6 +277,14 @@ export const useToursStore = defineStore('toursStore', () => {
     onCancel,
     handlePageChange,
     resetQueryFilters,
+    entities,
     init,
+    guides,
+    hotels,
+    restaurants,
+    transportations,
+    fetchEntities,
+    isLoadingEntities,
+    entitiesError,
   };
 });

@@ -12,7 +12,7 @@
 
     <TourFormCards v-model:currentItem="tour" />
 
-    <TourFormLogistics v-model:currentItem="tour" />
+    <TourFormLogistics v-model:currentItem="tour" :editMode="editing" />
 
     <TourFormObjects v-model:currentItem="tour" />
 

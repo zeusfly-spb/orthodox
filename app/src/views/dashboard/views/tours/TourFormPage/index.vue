@@ -40,7 +40,8 @@ const requestBody = computed(() => {
     'is_active',
     'ownerable_id',
     'ownerable_type',
-    'parameters'
+    'parameters',
+    'services',
   ];
   
   apiFields.forEach(key => {
