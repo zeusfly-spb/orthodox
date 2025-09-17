@@ -206,6 +206,7 @@ onMounted(() => {
       <TourFormObjectsTab
         v-else-if="activeTab === 'ObjectsTab'"
         v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
       />
       <TourFormProgram 
         v-else-if="activeTab === 'Program'" 
