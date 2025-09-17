@@ -27,8 +27,8 @@
             Выберите гида
           </option>
           <option 
-            v-for="guide in guides" 
-            :key="guide.id" 
+            v-for="guide in [...guides, selectedGuide]" 
+            :key="guide.title" 
             :value="guide"
           >
             {{ guide.title }}
@@ -80,7 +80,7 @@ const { isLoadingEntities, entitiesError, fetchEntities } = toursStore;
 // Выбранный гид
 
 const isLoading = computed(() => toursStore.isLoadingEntities);
-const guides = computed(() => toursStore.guides);
+const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
 
 
 // Обработчик изменения гида
@@ -92,6 +92,15 @@ const handleGuideChange = () => {
   };
   
   tour.value = updatedTour;
+};
+
+const removeService = (slug: string) => {
+  tour.value = {
+    ...tour.value,
+    services: tour.value.services.filter(service => 
+      !(service.entity && service.entity.entityType && service.entity.entityType.slug === slug)
+    ),
+  };
 };
 
 onMounted(async () => {
@@ -109,16 +118,17 @@ onMounted(async () => {
     }
     
     watch(selectedGuide, (newVal) => {
+      removeService('guide');
+
       if (newVal && newVal.id && newVal.id !== '') {
-        // Добавляем сервис с правильной структурой
+        
         const newService: Service = {
-          // id: Date.now(), // временный ID
           title: newVal.title,
           description: newVal.description || '',
           is_active: true,
           price: 0,
-          type: 'basic', // добавляем обязательное поле type (допустимые значения: basic, extra)
-          entity_id: newVal.id, // ID сущности
+          type: 'basic',
+          entity_id: newVal.id,
         };
         
         const filteredServices = tour.value.services.filter(service => 
@@ -129,16 +139,8 @@ onMounted(async () => {
           ...tour.value,
           services: [...filteredServices, newService],
         };
-      } else {
-        // Удаляем сервис-гид (ищем по entity.entityType.slug)
-        tour.value = {
-          ...tour.value,
-          services: tour.value.services.filter(service => 
-            !(service.entity && service.entity.entityType && service.entity.entityType.slug === 'guide')
-          ),
-        };
       }
-    }, {immediate: true, deep: true});
+    }, {deep: true});
   } catch (error) {
     console.error('Ошибка при загрузке сущностей:', error);
   }
