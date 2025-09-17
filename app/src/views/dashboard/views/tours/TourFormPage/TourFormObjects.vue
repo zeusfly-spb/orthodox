@@ -5,15 +5,12 @@
     </div>
     <div class="flex gap-2 overflow-x-auto">
       <span
-        v-for="object in Array(5)
-          .fill(1)
-          .map((item, index) => index + 1)"
-        :key="object"
-        class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full whitespace-nowrap"
+        v-for="object in objects"
+        :key="object.id"
+        class="px-3 py-3 bg-gray-100 text-gray-700 text-sm rounded-full whitespace-nowrap"
       >
-        {{ object }}
+        {{ object.title }}
       </span>
-      <span class="px-2 text-gray-400">→</span>
     </div>
   </div>
 </template>
@@ -38,4 +35,6 @@ const tour = computed({
     emit('update:currentItem', value);
   },
 });
+
+const objects = computed(() => tour.value.entities.map(item => item.entity));
 </script>

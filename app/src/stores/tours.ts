@@ -103,6 +103,7 @@ export const useToursStore = defineStore('toursStore', () => {
   const hotels = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'accommodation'));
   const restaurants = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'meal'));
   const transportations = computed<Entity[]>(() => entities.value.filter((entity) => entity.entityType.slug === 'transport'));
+  const objects = computed<Entity[]>(() => entities.value.filter((entity) => !['guide', 'accommodation', 'meal', 'transport'].includes(entity.entityType.slug)));
 
   const filtered = computed(() => !deepEqual(queryFilters.value, blankFilters));
 
@@ -286,5 +287,6 @@ export const useToursStore = defineStore('toursStore', () => {
     fetchEntities,
     isLoadingEntities,
     entitiesError,
+    objects,
   };
 });
