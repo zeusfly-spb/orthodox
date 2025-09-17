@@ -60,7 +60,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
-  (e: 'update:guide', value: Entity): void;
+  (e: 'update:guide', value: Entity | null): void;
 }>();
 
 const tour = computed({

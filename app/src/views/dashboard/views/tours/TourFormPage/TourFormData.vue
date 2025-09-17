@@ -19,7 +19,8 @@
     <TourFormLogistics
       v-model:guide="selectedGuide"
       v-model:hotel="selectedHotel"
-      v-model:currentItem="tour" 
+      v-model:currentItem="tour"
+      v-model:restaurant="selectedRestaurant"
       :editMode="editing" 
     />
 
@@ -73,6 +74,7 @@ const emit = defineEmits<{
 
 const selectedGuide = ref<Entity | null>(null);
 const selectedHotel = ref<Entity | null>(null);
+const selectedRestaurant = ref<Entity | null>(null);
 
 const editing = computed({
   get() {
@@ -113,6 +115,9 @@ const setDefaultServices = () => {
     const existingHotelService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'accommodation'
     );
+    const existingRestaurantService = tour.value.services.find(service => 
+      service.entity && service.entity.entityType && service.entity.entityType.slug === 'meal'
+    );
 
     if (existingGuideService && existingGuideService.entity) {
       selectedGuide.value = existingGuideService.entity;
@@ -124,6 +129,12 @@ const setDefaultServices = () => {
       selectedHotel.value = existingHotelService.entity;
     } else {
       selectedHotel.value = { id: '', title: '--' } as Entity;
+    }
+
+    if (existingRestaurantService && existingRestaurantService.entity) {
+      selectedRestaurant.value = existingRestaurantService.entity;
+    } else {
+      selectedRestaurant.value = { id: '', title: '--' } as Entity;
     }
 };
 
@@ -143,6 +154,20 @@ const filterServices = (slug: string) => {
 
 const realEntity = (entity: Entity | null) => entity && entity.id !== '';
 
+const applyService = (entity: Entity | null, slug: string) => {
+  const services = filterServices(slug);
+  if (realEntity(entity)) {
+    const newService = createService(entity!);
+    if (newService) {
+      services.push(newService);
+    }
+  }
+  tour.value = {
+  ...tour.value,
+    services: [...services],
+  };
+};
+
 onMounted(async () => {
   try {
     await fetchEntities();
@@ -150,32 +175,17 @@ onMounted(async () => {
     setDefaultServices();
     
     watch(selectedGuide, (newVal) => {
-      const services = filterServices('guide');
-      if (realEntity(newVal)) {
-        const newService = createService(newVal);
-        if (newService) {
-          services.push(newService);
-        }
-        tour.value = {
-          ...tour.value,
-          services: [...services],
-        };
-      }
-    }, {deep: true});
+      applyService(newVal, 'guide');
+    });
 
     watch(selectedHotel, (newVal) => {
-      const services = filterServices('accommodation');
-      if (realEntity(newVal)) {
-        const newService = createService(newVal);
-        if (newService) {
-          services.push(newService);
-        }
-        tour.value = {
-          ...tour.value,
-          services: [...services],
-        };
-      }
-    }, {deep: true});
+      applyService(newVal, 'accommodation');
+    });
+
+    watch(selectedRestaurant, (newVal) => {
+      applyService(newVal, 'meal');
+    });
+    
   } catch (error) {
     console.error('Ошибка при загрузке сущностей:', error);
   }
