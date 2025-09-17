@@ -21,6 +21,7 @@
       v-model:hotel="selectedHotel"
       v-model:currentItem="tour"
       v-model:restaurant="selectedRestaurant"
+      v-model:transportation="selectedTransportation"
       :editMode="editing" 
     />
 
@@ -75,6 +76,7 @@ const emit = defineEmits<{
 const selectedGuide = ref<Entity | null>(null);
 const selectedHotel = ref<Entity | null>(null);
 const selectedRestaurant = ref<Entity | null>(null);
+const selectedTransportation = ref<Entity | null>(null);
 
 const editing = computed({
   get() {
@@ -118,6 +120,9 @@ const setDefaultServices = () => {
     const existingRestaurantService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'meal'
     );
+    const existingTransportationService = tour.value.services.find(service => 
+      service.entity && service.entity.entityType && service.entity.entityType.slug === 'transport'
+    );
 
     if (existingGuideService && existingGuideService.entity) {
       selectedGuide.value = existingGuideService.entity;
@@ -136,10 +141,16 @@ const setDefaultServices = () => {
     } else {
       selectedRestaurant.value = { id: '', title: '--' } as Entity;
     }
+
+    if (existingTransportationService && existingTransportationService.entity) {
+      selectedTransportation.value = existingTransportationService.entity;
+    } else {
+      selectedTransportation.value = { id: '', title: '--' } as Entity;
+    }
 };
 
 const stripService = (service: Service) => {
-  delete service.id;
+  delete service.id;  
   service.entity_id = service.entity?.id;
   delete service.entity;
   return service;
@@ -155,12 +166,10 @@ const filterServices = (slug: string) => {
 const realEntity = (entity: Entity | null) => entity && entity.id !== '';
 
 const applyService = (entity: Entity | null, slug: string) => {
-  const services = filterServices(slug);
+  let services = filterServices(slug);
   if (realEntity(entity)) {
-    const newService = createService(entity!);
-    if (newService) {
-      services.push(newService);
-    }
+    services = services.filter(service => service.title !== entity!.title);
+    services.push(createService(entity!));
   }
   tour.value = {
   ...tour.value,
@@ -185,7 +194,11 @@ onMounted(async () => {
     watch(selectedRestaurant, (newVal) => {
       applyService(newVal, 'meal');
     });
-    
+
+    watch(selectedTransportation, (newVal) => {
+      applyService(newVal, 'transport');
+    });
+
   } catch (error) {
     console.error('Ошибка при загрузке сущностей:', error);
   }

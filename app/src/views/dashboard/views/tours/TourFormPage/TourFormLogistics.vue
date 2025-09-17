@@ -2,7 +2,31 @@
   <div class="space-y-4 mb-8">
     <div class="flex items-center">
       <span class="text-gray-700 font-medium w-32">Перевозчик:</span>
-      <span class="text-gray-900">--</span>
+      <div class="flex-1">
+        <select 
+          v-if="editMode"
+          v-model="selectedTransportation" 
+          :disabled="isLoadingEntities"
+          class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          <option :value="{ id: '', title: '--' }">
+            Выберите перевозчика
+          </option>
+          <option 
+            v-for="transportation in [...transportations, ...(selectedTransportation ? [selectedTransportation] : [])]" 
+            :key="`transportation-${transportation.title}`" 
+            :value="transportation"
+          >
+            {{ transportation.title }}
+          </option>
+        </select>
+        <span v-else class="text-gray-900">
+          {{ selectedTransportation?.title || '--' }}
+        </span>
+        <div v-if="entitiesError" class="text-red-500 text-sm mt-1">
+          {{ entitiesError }}
+        </div>
+      </div>
     </div>
     <div class="flex items-center">
       <span class="text-gray-700 font-medium w-32">Отель:</span>
@@ -58,9 +82,6 @@
         <div v-if="entitiesError" class="text-red-500 text-sm mt-1">
           {{ entitiesError }}
         </div>
-        <div v-if="entitiesError" class="text-red-500 text-sm mt-1">
-          {{ entitiesError }}
-        </div>
       </div>
     </div>
     <div class="flex items-center">
@@ -91,6 +112,7 @@
         </div>
       </div>
     </div>
+  
   </div>
 </template>
 
@@ -107,6 +129,7 @@ const props = defineProps<{
   guide: Entity | null;
   hotel: Entity | null;
   restaurant: Entity | null;
+  transportation: Entity | null;
 }>();
 
 const emit = defineEmits<{
@@ -114,6 +137,7 @@ const emit = defineEmits<{
   (e: 'update:guide', value: Entity | null): void;
   (e: 'update:hotel', value: Entity | null): void;
   (e: 'update:restaurant', value: Entity | null): void;
+  (e: 'update:transportation', value: Entity | null): void;
 }>();
 
 
@@ -160,4 +184,14 @@ const isLoading = computed(() => toursStore.isLoadingEntities);
 const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
 const hotels = computed(() => toursStore.hotels.filter(hotel => hotel.id !== selectedHotel.value?.id));
 const restaurants = computed(() => toursStore.restaurants.filter(restaurant => restaurant.id !== selectedRestaurant.value?.id));
+const transportations = computed(() => toursStore.transportations.filter(transportation => transportation.id !== selectedTransportation.value?.id));
+
+const selectedTransportation = computed({
+  get() {
+    return props.transportation;
+  },
+  set(value) {
+    emit('update:transportation', value);
+  },
+});
 </script>
