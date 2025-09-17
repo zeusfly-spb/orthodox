@@ -6,7 +6,31 @@
     </div>
     <div class="flex items-center">
       <span class="text-gray-700 font-medium w-32">Отель:</span>
-      <span class="text-gray-900">--</span>
+      <div class="flex-1">
+        <select 
+          v-if="editMode"
+          v-model="selectedHotel" 
+          :disabled="isLoadingEntities"
+          class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          <option :value="{ id: '', title: '--' }">
+            Выберите отель
+          </option>
+          <option 
+            v-for="hotel in [...hotels, ...(selectedHotel ? [selectedHotel] : [])]" 
+            :key="`hotel-${hotel.title}`" 
+            :value="hotel"
+          >
+            {{ hotel.title }}
+          </option>
+        </select>
+        <span v-else class="text-gray-900">
+          {{ selectedHotel?.title || '--' }}
+        </span>
+        <div v-if="entitiesError" class="text-red-500 text-sm mt-1">
+          {{ entitiesError }}
+        </div>
+      </div>
     </div>
     <div class="flex items-center">
       <span class="text-gray-700 font-medium w-32">Объект питания:</span>
@@ -15,11 +39,9 @@
     <div class="flex items-center">
       <span class="text-gray-700 font-medium w-32">Гид:</span>
       <div class="flex-1">
-        <!-- В режиме редактирования показываем селект -->
         <select 
           v-if="editMode"
           v-model="selectedGuide" 
-          @change="handleGuideChange"
           :disabled="isLoadingEntities"
           class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
@@ -27,14 +49,13 @@
             Выберите гида
           </option>
           <option 
-            v-for="guide in [...guides, selectedGuide]" 
-            :key="guide.title" 
+            v-for="guide in [...guides, ...(selectedGuide ? [selectedGuide] : [])]" 
+            :key="`guide-${guide.title}`" 
             :value="guide"
           >
             {{ guide.title }}
           </option>
         </select>
-        <!-- В режиме просмотра показываем просто текст -->
         <span v-else class="text-gray-900">
           {{ selectedGuide?.title || '--' }}
         </span>
@@ -56,13 +77,16 @@ import { useToursStore } from '@/stores/tours';
 const props = defineProps<{
   currentItem: Tour;
   editMode: boolean;
+  guide: Entity | null;
+  hotel: Entity | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:guide', value: Entity): void;
+  (e: 'update:hotel', value: Entity): void;
 }>();
 
-const selectedGuide = ref<Entity | null>(null);
 
 const tour = computed({
   get() {
@@ -73,76 +97,28 @@ const tour = computed({
   },
 });
 
-// Используем хранилище туров для работы с гидами
+const selectedGuide = computed({
+  get() {
+    return props.guide;
+  },
+  set(value) {
+    emit('update:guide', value);
+  },
+});
+
+const selectedHotel = computed({
+  get() {
+    return props.hotel;
+  },
+  set(value) {
+    emit('update:hotel', value);
+  },
+});
+
 const toursStore = useToursStore();
 const { isLoadingEntities, entitiesError, fetchEntities } = toursStore;
 
-// Выбранный гид
-
 const isLoading = computed(() => toursStore.isLoadingEntities);
 const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
-
-
-// Обработчик изменения гида
-const handleGuideChange = () => {
-  
-  // Обновляем тур с выбранным гидом
-  const updatedTour = {
-    ...tour.value,
-  };
-  
-  tour.value = updatedTour;
-};
-
-const removeService = (slug: string) => {
-  tour.value = {
-    ...tour.value,
-    services: tour.value.services.filter(service => 
-      !(service.entity && service.entity.entityType && service.entity.entityType.slug === slug)
-    ),
-  };
-};
-
-onMounted(async () => {
-  try {
-    await fetchEntities();
-    
-    // Инициализируем выбранного гида, если он уже есть в туре
-    const existingGuideService = tour.value.services.find(service => 
-      service.entity && service.entity.entityType && service.entity.entityType.slug === 'guide'
-    );
-    if (existingGuideService && existingGuideService.entity) {
-      selectedGuide.value = existingGuideService.entity;
-    } else {
-      selectedGuide.value = { id: '', title: '--' } as Entity;
-    }
-    
-    watch(selectedGuide, (newVal) => {
-      removeService('guide');
-
-      if (newVal && newVal.id && newVal.id !== '') {
-        
-        const newService: Service = {
-          title: newVal.title,
-          description: newVal.description || '',
-          is_active: true,
-          price: 0,
-          type: 'basic',
-          entity_id: newVal.id,
-        };
-        
-        const filteredServices = tour.value.services.filter(service => 
-          !service.entity
-        );
-        
-        tour.value = {
-          ...tour.value,
-          services: [...filteredServices, newService],
-        };
-      }
-    }, {deep: true});
-  } catch (error) {
-    console.error('Ошибка при загрузке сущностей:', error);
-  }
-});
+const hotels = computed(() => toursStore.hotels.filter(hotel => hotel.id !== selectedHotel.value?.id));
 </script>

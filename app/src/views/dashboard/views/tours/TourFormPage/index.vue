@@ -143,13 +143,17 @@ const handleCancel = (): void => {
   editMode.value = false;
 };
 
-onMounted(() => {
+const init = () => {
   loadTabFromUrl();
   const routeId = router.currentRoute.value.params.id;
   if (routeId && routeId !== 'new') {
     id.value = routeId as string;
     loadItem();
   }
+};
+
+onMounted(() => {
+  init();
 });
 </script>
 
