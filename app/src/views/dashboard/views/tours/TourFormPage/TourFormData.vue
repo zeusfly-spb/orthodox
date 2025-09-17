@@ -13,6 +13,7 @@
     <TourFormCards 
       v-model:currentItem="tour" 
       :editMode="editing" 
+      v-model:guide="selectedGuide"
     />
 
     <TourFormLogistics

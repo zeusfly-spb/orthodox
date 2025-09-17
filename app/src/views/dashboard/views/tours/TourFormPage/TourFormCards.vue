@@ -11,7 +11,6 @@
         <select 
           v-if="editMode"
           v-model="selectedGuide" 
-          @change="handleGuideChange"
           :disabled="isLoadingEntities"
           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
@@ -56,13 +55,13 @@ const { formatCurrency } = useToursStore();
 const props = defineProps<{
   currentItem: Tour;
   editMode: boolean;
+  guide: Entity | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:guide', value: Entity): void;
 }>();
-
-const selectedGuide = ref<Entity | null>(null);
 
 const tour = computed({
   get() {
@@ -77,64 +76,13 @@ const toursStore = useToursStore();
 const { isLoadingEntities, entitiesError, fetchEntities } = toursStore;
 
 const isLoading = computed(() => toursStore.isLoadingEntities);
-const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
-
-const handleGuideChange = () => {
-  const updatedTour = {
-    ...tour.value,
-  };
-  
-  tour.value = updatedTour;
-};
-
-const removeService = (slug: string) => {
-  tour.value = {
-    ...tour.value,
-    services: tour.value.services.filter(service => 
-      !(service.entity && service.entity.entityType && service.entity.entityType.slug === slug)
-    ),
-  };
-};
-
-onMounted(async () => {
-  try {
-    await fetchEntities();
-    
-    const existingGuideService = tour.value.services.find(service => 
-      service.entity && service.entity.entityType && service.entity.entityType.slug === 'guide'
-    );
-    if (existingGuideService && existingGuideService.entity) {
-      selectedGuide.value = existingGuideService.entity;
-    } else {
-      selectedGuide.value = { id: '', title: '--' } as Entity;
-    }
-    
-    watch(selectedGuide, (newVal) => {
-      removeService('guide');
-
-      if (newVal && newVal.id && newVal.id !== '') {
-        
-        const newService: Service = {
-          title: newVal.title,
-          description: newVal.description || '',
-          is_active: true,
-          price: 0,
-          type: 'basic',
-          entity_id: newVal.id,
-        };
-        
-        const filteredServices = tour.value.services.filter(service => 
-          !service.entity
-        );
-        
-        tour.value = {
-          ...tour.value,
-          services: [...filteredServices, newService],
-        };
-      }
-    }, {deep: true});
-  } catch (error) {
-    console.error('Ошибка при загрузке сущностей:', error);
-  }
+const selectedGuide = computed({
+  get() {
+    return props.guide;
+  },
+  set(value) {
+    emit('update:guide', value);
+  },
 });
+const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
 </script>
