@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { Pencil } from 'lucide-vue-next';
 import type { Tour, DayItem } from '@/types/tour';
-import { computed, ref } from 'vue';
+import { computed, ref, nextTick, watch } from 'vue';
 
 const props = defineProps<{
   currentItem: Tour;
@@ -100,8 +100,22 @@ const editMode = computed({
   },
 });
 
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
 const handleEdit = () => {
   editMode.value = !editMode.value;
+  
+  if (editMode.value) {
+    focusFirstInput();
+  }
 };
 
 const selectedDay = ref(0);

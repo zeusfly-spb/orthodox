@@ -15,7 +15,7 @@ const props = withDefaults(
     draggable?: boolean;
   }>(),
   {
-    mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
+    mapStyle: import.meta.env.VITE_MAP_STREETS_URL || 'https://demotiles.maplibre.org/style.json',
     center: () => [110.32128708, 65.53927338],
     zoom: 2,
     height: '300px',

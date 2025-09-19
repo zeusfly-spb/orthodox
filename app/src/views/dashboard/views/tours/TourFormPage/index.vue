@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { tourApi } from '@/api/tours';
 import { toast } from 'vue-sonner';
@@ -158,6 +158,12 @@ const handleCancel = (): void => {
   editMode.value = false;
 };
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && editMode.value && !hasChanges.value) {
+    handleCancel();
+  }
+};
+
 const init = () => {
   loadTabFromUrl();
   const routeId = router.currentRoute.value.params.id;
@@ -169,6 +175,11 @@ const init = () => {
 
 onMounted(() => {
   init();
+  document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -186,6 +197,7 @@ onMounted(() => {
         <div v-if="hasChanges || editMode" class="flex gap-3">
           <button
             @click="handleCancel"
+            data-cancel-edit
             class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Отмена

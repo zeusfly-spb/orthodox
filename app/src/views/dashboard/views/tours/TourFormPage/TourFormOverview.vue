@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import Badge from '@/components/app/Badge.vue';
 import type { Tour } from '@/types/tour';
 import { useToursStore } from '@/stores/tours';
@@ -98,6 +98,22 @@ const tourTitle = computed({
   set(value) {
     tour.value = { ...tour.value, title: value };
   },
+});
+
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
+watch(() => props.editMode, async (newValue) => {
+  if (newValue) {
+    await focusFirstInput();
+  }
 });
 
 const handleStatusChange = () => {

@@ -58,7 +58,7 @@ import TourFormRatings from './TourFormRatings.vue';
 import TourFormExtras from './TourFormExtras.vue';
 import TourFormSummary from './TourFormSummary.vue';
 import type { Entity } from '@/types/entity';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import { useToursStore } from '@/stores/tours';
 import type { Service } from '@/types/service';
 
@@ -85,6 +85,22 @@ const editing = computed({
   set(value) {
     emit('update:editMode', value);
   },
+});
+
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
+watch(editing, async (newValue) => {
+  if (newValue) {
+    await focusFirstInput();
+  }
 });
 
 const tour = computed({

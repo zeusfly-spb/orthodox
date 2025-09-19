@@ -1,5 +1,8 @@
 <template>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <div v-if="isLoading">
+    <Spinner />
+  </div>
+  <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
       <p class="text-sm text-gray-500 mb-1">Количество мест в туре</p>
       <p class="text-lg font-semibold text-gray-900">{{ tour.seats - tour.customers_count }} / {{ tour.seats }}</p>
@@ -47,7 +50,7 @@
 import type { Tour } from '@/types/tour';
 import type { Entity } from '@/types/entity';
 import type { Service } from '@/types/service';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import { useToursStore } from '@/stores/tours';
 
 const { formatCurrency } = useToursStore();
@@ -85,4 +88,20 @@ const selectedGuide = computed({
   },
 });
 const guides = computed(() => toursStore.guides.filter(guide => guide.id !== selectedGuide.value?.id));
+
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
+watch(() => props.editMode, async (newValue) => {
+  if (newValue) {
+    await focusFirstInput();
+  }
+});
 </script>

@@ -5,6 +5,28 @@ export interface DayItem {
   description: string;
 }
 
+export interface TourPoint {
+  id: string | number;
+  title?: string | null;
+  description?: string | null;
+  address?: string | null;
+  location?: {
+    type: string;
+    coordinates: [number, number];
+  };
+  time: string;
+  order_column: number;
+  entity?: {
+    id: number;
+    title?: string;
+    description?: string | null;
+    location?: {
+      type: string;
+      coordinates: [number, number];
+    };
+  };
+}
+
 export interface Tour {
   id: number | string;
   title: string;
@@ -20,6 +42,7 @@ export interface Tour {
   days: DayItem[];
   services: Service[];
   entities: any[];
+  points?: TourPoint[];
   ownerable_id: number;
   ownerable_type: string;
   created_at: string;

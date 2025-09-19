@@ -181,7 +181,7 @@
 import { Pencil } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import type { Tour } from '@/types/tour';
-import { computed } from 'vue';
+import { computed, nextTick, watch } from 'vue';
 import { useToursStore } from '@/stores/tours';
 import DotControl from '@/components/dashboard/tours/DotControl.vue';
 
@@ -225,6 +225,22 @@ const tourTitle = computed({
   set(value: string) {
     tour.value = { ...tour.value, title: value };
   },
+});
+
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
+watch(() => props.editMode, async (newValue) => {
+  if (newValue) {
+    await focusFirstInput();
+  }
 });
 
 const selectedTourTypeId = computed({

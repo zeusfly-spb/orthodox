@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, nextTick, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
@@ -66,11 +66,35 @@ function handleRemoveItem(index) {
   }
 }
 
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    console.log('ESC pressed - exit edit mode');
+  }
+};
+
 onMounted(async () => {
   await bookingStore.fetchBookingData(bookingId);
   await customerStore.fetchClientNames();
   await orderStore.fetchOrderStatuses();
   await tourStore.fetchTours();
+  
+  await focusFirstInput();
+  
+  document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 

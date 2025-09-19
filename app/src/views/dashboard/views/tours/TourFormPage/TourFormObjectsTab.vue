@@ -16,9 +16,7 @@
       </button>
     </div>
     <div v-if="isLoading">
-      <div class="flex justify-center items-center h-full">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
+      <Spinner />
     </div>
     <div v-else class="flex items-center w-full mt-4">
         <table class="w-full">
@@ -74,9 +72,10 @@
 
 <script setup lang="ts">
 import type { Tour } from '@/types/tour';
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { useToursStore } from '@/stores/tours';
 import { Pencil, Trash2, Plus } from 'lucide-vue-next';
+import Spinner from '@/components/app/Spinner.vue';
 
 const props = defineProps<{
   currentItem: Tour;
@@ -114,14 +113,27 @@ const { isLoadingEntities, entitiesError, fetchEntities } = toursStore;
 const isLoading = computed(() => toursStore.isLoadingEntities);
 const selectedEntityId = ref<string | number>('');
 
-// Фильтруем объекты, которые есть в общем списке, но нет в туре
 const availableEntities = computed(() => {
   const currentEntityIds = entities.value.map((entity: any) => entity.id);
   return toursStore.objects.filter((entity: any) => !currentEntityIds.includes(entity.id));
 });
 
+const focusFirstInput = async () => {
+  await nextTick();
+  
+  const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
+  
+  if (firstInput) {
+    firstInput.focus();
+  }
+};
+
 const handleEdit = () => {
   editMode.value = !editMode.value;
+  
+  if (editMode.value) {
+    focusFirstInput();
+  }
 };
 
 const removeEntity = (entityId: number) => {
@@ -133,7 +145,6 @@ const addEntity = () => {
   
   const entityToAdd = availableEntities.value.find((entity: any) => entity.id === selectedEntityId.value);
   if (entityToAdd) {
-    // Добавляем объект в тур в формате, который ожидает API
     const newEntityItem = {
       entity: entityToAdd
     };
@@ -143,12 +154,10 @@ const addEntity = () => {
       entities: [...tour.value.entities, newEntityItem] 
     };
     
-    // Очищаем выбранный объект
     selectedEntityId.value = '';
   }
 };
 
-// Загружаем список объектов при монтировании компонента
 onMounted(async () => {
   try {
     await fetchEntities();

@@ -55,7 +55,7 @@ const props = withDefaults(
     };
   }>(),
   {
-    mapStyle: import.meta.env.VITE_MAP_STREETS_URL,
+    mapStyle: import.meta.env.VITE_MAP_STREETS_URL || 'https://demotiles.maplibre.org/style.json',
     height: '300px',
     points: () => [],
     linePaint: {
@@ -194,7 +194,6 @@ const resetView = () => {
   }
 };
 
-// GeoJSON
 const routeData = computed(() => {
   const features = normalizedPoints.value.map((point) => ({
     type: 'Feature' as const,
@@ -210,7 +209,6 @@ const routeData = computed(() => {
     },
   }));
 
-  // Добавляем линию если есть хотя бы 2 точки
   if (normalizedPoints.value.length >= 2) {
     features.push({
       type: 'Feature' as const,
@@ -278,7 +276,6 @@ const flyToPointById = (id: string | number) => {
   }
 };
 
-// Map click handler
 const handleMapClick = async (e: any) => {
   const map = mapRef.value?.map;
   if (!map) return;
