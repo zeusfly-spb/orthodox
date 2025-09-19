@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import { config } from '@/config/env';
 
-const DEFAULT_TIMEOUT = import.meta.env.VITE_REQUEST_TIMEOUT || 20000;
+
+const DEFAULT_TIMEOUT = config.requestTimeout || 20000;
 
 let retryCount = 0;
 const maxRetries = 2;
@@ -22,7 +24,7 @@ const handleExit = (): Promise<void> => {
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: config.apiUrl || 'http://localhost:8080/api',
   withCredentials: false,
   headers: {
     Accept: 'application/json',

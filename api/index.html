@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrthodoxTours API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 16px;
+        }
+
+        .nav-item {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f8f9fa;
+        }
+
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s;
+        }
+
+        .main-content.shifted {
+            margin-left: 280px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .section-header:hover {
+            background: #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .section-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .section-content {
+            display: none;
+            padding: 0;
+        }
+
+        .section.expanded .section-content {
+            display: block;
+        }
+
+        .request-item {
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.2s;
+        }
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+        .request-header {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .request-header:hover {
+            background: #f8f9fa;
+        }
+
+        .method-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method-get { background: #d4edda; color: #155724; }
+        .method-post { background: #fff3cd; color: #856404; }
+        .method-put { background: #cce5ff; color: #004085; }
+        .method-patch { background: #e2e3e5; color: #383d41; }
+        .method-delete { background: #f8d7da; color: #721c24; }
+
+        .request-name {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .request-details {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+            background: #f8f9fa;
+        }
+
+        .request-item.expanded .request-details {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+
+        .detail-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .url-display {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .json-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .query-params {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .param-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .param-key {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 150px;
+        }
+
+        .param-value {
+            color: #495057;
+        }
+
+        .param-disabled {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .expand-icon {
+            transition: transform 0.2s;
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content.shifted {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Навигация</button>
+    
+    <div class="sidebar" id="sidebar">
+        <h3 style="margin-bottom: 1rem; color: #495057;">Разделы API</h3>
+        <div class="nav-item active" onclick="scrollToSection('tour-templates')">
+            📋 Шаблоны туров
+        </div>
+        <div class="nav-item" onclick="scrollToSection('tours')">
+            🎯 Туры
+        </div>
+        <div class="nav-item" onclick="scrollToSection('entities')">
+            🏢 Сущности
+        </div>
+        <div class="nav-item" onclick="scrollToSection('customers')">
+            👥 Клиенты
+        </div>
+        <div class="nav-item" onclick="scrollToSection('bookings')">
+            📅 Бронирования
+        </div>
+        <div class="nav-item" onclick="scrollToSection('counter-parties')">
+            🤝 Контрагенты
+        </div>
+        <div class="nav-item" onclick="scrollToSection('dictionaries')">
+            📚 Справочники
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1>OrthodoxTours API</h1>
+                <p>Документация REST API для системы управления православными турами</p>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Поиск по названию запроса..." 
+                       oninput="filterRequests(this.value)">
+            </div>
+
+            <!-- Tour Templates Section -->
+            <div class="section" id="tour-templates">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">📋 Шаблоны туров</div>
+                        <small>Управление шаблонами туров</small>
+                    </div>
+                    <div class="section-count">5</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить шаблоны туров</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/templates</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Параметры запроса:</div>
+                                <div class="query-params">
+                                    <div class="param-item param-disabled">
+                                        <div class="param-key">filter[tourTransport.id]</div>
+                                        <div class="param-value">38</div>
+                                    </div>
+                                    <div class="param-item param-disabled">
+                                        <div class="param-key">filter[tourTransport.title]</div>
+                                        <div class="param-value">пеший</div>
+                                    </div>
+                                    <div class="param-item param-disabled">
+                                        <div class="param-key">sort</div>
+                                        <div class="param-value">-id</div>
+                                    </div>
+                                    <div class="param-item param-disabled">
+                                        <div class="param-key">filter[price][min]</div>
+                                        <div class="param-value">6000</div>
+                                    </div>
+                                    <div class="param-item param-disabled">
+                                        <div class="param-key">filter[price][max]</div>
+                                        <div class="param-value">4000</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить дочерние шаблоны тура</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/templates/{{id}}/children</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить шаблон тура по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/templates/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать тур из шаблона</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "template_id": 3,
+    "date": "2025-10-06",
+    "time": "14:10"
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать шаблон тура</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/templates</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "title": "Вот новый шаблон",
+    "route": "Troyport - Winnifredmouth",
+    "price": 7990,
+    "duration": 3,
+    "description": "Tempore qui delectus dolores sint ut sit rem...",
+    "is_active": true,
+    "dates": [
+        "2025-08-07",
+        "2025-08-14",
+        "2025-08-18"
+    ],
+    "days": [
+        {
+            "title": "День 1: Основная программа",
+            "description": "Основная экскурсионная программа"
+        }
+    ],
+    "points": [
+        {
+            "title": "Point one",
+            "time": "12:00:00",
+            "latitude": "64.54566",
+            "longitude": "40.542587",
+            "order_column": 1
+        }
+    ],
+    "parameters": {
+        "tourType": 17,
+        "tourCategory": 20,
+        "tourTransport": 26,
+        "tourStatus": 35
+    }
+}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tours Section -->
+            <div class="section" id="tours">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">🎯 Туры</div>
+                        <small>Управление турами</small>
+                    </div>
+                    <div class="section-count">8</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить туры</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить параметры туров</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/parameters</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить тур по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать тур</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "title": "Вот вам новый тур",
+    "route": "Troyport - Winnifredmouth",
+    "price": 7990,
+    "duration": 3,
+    "description": "Tempore qui delectus dolores...",
+    "is_active": true,
+    "parameters": {
+        "tourType": 17,
+        "tourCategory": 20,
+        "tourTransport": 26,
+        "tourStatus": 35
+    },
+    "dates": [
+        "2025-08-07",
+        "2025-08-14",
+        "2025-08-18 11:30:00"
+    ],
+    "services": [
+        {
+            "title": "Гид",
+            "description": "Гид тура",
+            "price": 1500,
+            "entity_id": 3
+        }
+    ]
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-patch">PATCH</span>
+                            <span class="request-name">Обновить тур по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить изображения тура</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/{{id}}/images</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Добавить изображение</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/{{id}}/images</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тип:</div>
+                                <div class="param-item">
+                                    <div class="param-key">Content-Type</div>
+                                    <div class="param-value">multipart/form-data</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить загрузки тура</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/tours/{{id}}/uploads</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entities Section -->
+            <div class="section" id="entities">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">🏢 Сущности</div>
+                        <small>Управление сущностями (места, объекты)</small>
+                    </div>
+                    <div class="section-count">12</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить сущности</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить параметры сущностей</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities/parameters</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить сущность по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать сущность</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "title": "Церковь Сретения Господня",
+    "description": null,
+    "phone": null,
+    "email": null,
+    "latitude": 60.024752,
+    "longitude": 30.411045,
+    "parameters": {
+        "entityType": 39
+    },
+    "requisite": {
+        "legal_name": null,
+        "real_address": "г Санкт-Петербург, Гражданский пр-кт, д 101"
+    }
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-patch">PATCH</span>
+                            <span class="request-name">Обновить сущность по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-delete">DELETE</span>
+                            <span class="request-name">Удалить сущность</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/entities/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Section -->
+            <div class="section" id="customers">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">👥 Клиенты</div>
+                        <small>Управление клиентами</small>
+                    </div>
+                    <div class="section-count">5</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить клиентов</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/customers</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить клиента по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/customers/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать клиента</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/customers</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Поля формы:</div>
+                                <div class="query-params">
+                                    <div class="param-item">
+                                        <div class="param-key">firstname</div>
+                                        <div class="param-value">Федор</div>
+                                    </div>
+                                    <div class="param-item">
+                                        <div class="param-key">lastname</div>
+                                        <div class="param-value">Михайлов</div>
+                                    </div>
+                                    <div class="param-item">
+                                        <div class="param-key">patronymic</div>
+                                        <div class="param-value">(пусто)</div>
+                                    </div>
+                                    <div class="param-item">
+                                        <div class="param-key">passport_series</div>
+                                        <div class="param-value">(пусто)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-put">PUT</span>
+                            <span class="request-name">Обновить клиента</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/customers/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-delete">DELETE</span>
+                            <span class="request-name">Удалить клиента</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/customers/27</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Section -->
+            <div class="section" id="bookings">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">📅 Бронирования</div>
+                        <small>Управление бронированиями</small>
+                    </div>
+                    <div class="section-count">4</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить бронирования</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/bookings</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить параметры бронирований</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/bookings/parameters</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать бронирование</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/bookings</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "tour_id": 2,
+    "tour_date_id": "4",
+    "time": "12:00",
+    "datetime": "2025-09-24 00:00:00",
+    "status": "confirmed",
+    "customers": [
+        {
+            "firstname": "Эрих-Мария",
+            "lastname": "Ремарк",
+            "email": "erick.sidorova@example.com",
+            "phone": "+79994445566",
+            "passport_series": "2276",
+            "passport_number": "573210"
+        }
+    ]
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-patch">PATCH</span>
+                            <span class="request-name">Обновить бронирование по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/bookings/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Counter Parties Section -->
+            <div class="section" id="counter-parties">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">🤝 Контрагенты</div>
+                        <small>Управление партнерами и контрагентами</small>
+                    </div>
+                    <div class="section-count">6</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить контрагентов</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить контрагента по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить изображения контрагента</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners/{{id}}/images</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить файлы контрагента</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners/{{id}}/uploads</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Добавить изображение</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners/{{id}}/images</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Добавить файл</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/partners/{{id}}/uploads</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dictionaries Section -->
+            <div class="section" id="dictionaries">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div>
+                        <div class="section-title">📚 Справочники</div>
+                        <small>Управление справочниками и тегами</small>
+                    </div>
+                    <div class="section-count">7</div>
+                    <span class="expand-icon">▶</span>
+                </div>
+                <div class="section-content">
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить справочники</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить справочник по ID</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать справочник</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-patch">PATCH</span>
+                            <span class="request-name">Обновить справочник</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="request-name">Получить теги справочника</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies/tags</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="request-name">Создать тег справочника</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Тело запроса:</div>
+                                <div class="json-display">{
+    "title": "Discount",
+    "slug": "sale",
+    "type": "tag"
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-item">
+                        <div class="request-header" onclick="toggleRequest(this)">
+                            <span class="method-badge method-patch">PATCH</span>
+                            <span class="request-name">Обновить тег справочника</span>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">URL:</div>
+                                <div class="url-display">{{base_url}}/manage/taxonomies/{{id}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('shifted');
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+                
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            }
+        }
+
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('expanded');
+        }
+
+        function toggleRequest(header) {
+            const requestItem = header.parentElement;
+            requestItem.classList.toggle('expanded');
+        }
+
+        function filterRequests(searchTerm) {
+            const sections = document.querySelectorAll('.section');
+            const term = searchTerm.toLowerCase();
+            
+            sections.forEach(section => {
+                const requests = section.querySelectorAll('.request-item');
+                let hasVisibleRequests = false;
+                
+                requests.forEach(request => {
+                    const requestName = request.querySelector('.request-name').textContent.toLowerCase();
+                    const isVisible = requestName.includes(term);
+                    
+                    request.style.display = isVisible ? 'block' : 'none';
+                    if (isVisible) hasVisibleRequests = true;
+                });
+                
+                // Show/hide entire section based on whether it has visible requests
+                section.style.display = hasVisibleRequests || term === '' ? 'block' : 'none';
+                
+                // Expand sections with matches
+                if (hasVisibleRequests && term !== '') {
+                    section.classList.add('expanded');
+                }
+            });
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('open') && 
+                !sidebar.contains(event.target) && 
+                !sidebarToggle.contains(event.target)) {
+                toggleSidebar();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('open');
+                mainContent.classList.remove('shifted');
+            }
+        });
+    </script>
+</body>
+</html>
