@@ -33,7 +33,7 @@ function handleLogout() {
       </div>
       <div class="user-info" @click="isOpened = !isOpened">
         <img class="user-avatar" :src="authStore.user?.avatar || '/svg/unknown-user.svg'" />
-        <div class="user-name">{{ `${authStore.user?.full_name || 'unknown'}` }}</div>
+        <div class="user-name">{{ `${authStore.user?.data.full_name || 'unknown'}` }}</div>
         <img :class="['verse', { inverse: isOpened }]" src="/svg/arrow-down.svg" />
       </div>
       <ul :class="['dropdown-menu', `${isOpened ? 'opened' : 'closed'}`]">
