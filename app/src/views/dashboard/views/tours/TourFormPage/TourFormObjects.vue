@@ -3,7 +3,7 @@
     <div class="flex items-center mb-4">
       <span class="text-gray-700 font-medium">Объекты в туре:</span>
     </div>
-    <div class="flex gap-2 overflow-x-auto">
+    <div class="flex flex-wrap gap-2">
       <span
         v-for="object in objects"
         :key="object.id"

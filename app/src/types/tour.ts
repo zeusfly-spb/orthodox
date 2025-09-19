@@ -1,4 +1,10 @@
 import type { Service } from './service';
+
+export interface DayItem {
+  title: string;
+  description: string;
+}
+
 export interface Tour {
   id: number | string;
   title: string;
@@ -11,8 +17,9 @@ export interface Tour {
   is_active: boolean;
   date: string;
   date_end: string;
-  days: string[];
+  days: DayItem[];
   services: Service[];
+  entities: any[];
   ownerable_id: number;
   ownerable_type: string;
   created_at: string;

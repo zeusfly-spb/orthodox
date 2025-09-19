@@ -42,6 +42,8 @@ const requestBody = computed(() => {
     'ownerable_type',
     'parameters',
     'services',
+    'entities',
+    'days',
   ];
   
   apiFields.forEach(key => {
@@ -117,16 +119,29 @@ const loadItem = async (): Promise<void> => {
   }
 };
 
+const prepareEntities = (entities: any) => entities.map((entity: any) => ({...entity, entity_id: entity.entity.id}));
+
 const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
       const params = { ...requestBody.value, title: currentItem.value!.title };
+
+      if (params.entities) {
+        params.entities = prepareEntities(params.entities);
+      }
+      if (params.parameters) {
+        params.parameters = cleanNullParameters(params.parameters);
+      }
+
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
       const itemToSave = { ...currentItem.value! };
       if (itemToSave.parameters) {
         itemToSave.parameters = cleanNullParameters(itemToSave.parameters);
+      }
+      if (itemToSave.entities) {
+        itemToSave.entities = prepareEntities(itemToSave.entities);
       }
       await tourApi.storeData(itemToSave);
       toast.success('Тур успешно создан');
@@ -211,6 +226,7 @@ onMounted(() => {
       <TourFormProgram 
         v-else-if="activeTab === 'Program'" 
         v-model:currentItem="currentItem" 
+        v-model:editMode="editMode"
       />
       <TourFormMap 
         v-else-if="activeTab === 'Map'" 
