@@ -24,28 +24,18 @@
   </div>
   <div
     v-if="showHint"
-    class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center mb-6"
+    class="hide-banner"
   >
-    <span class="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white mr-4">
-      <svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="8" fill="gray" /></svg>
-    </span>
+    <div><img src="/svg/hide-b.svg" /></div>
     <div>
-      <div class="font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit</div>
-      <div class="text-gray-500 text-sm">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-        labore et dolore magna aliqua.
+      <div class="title-banners">Lorem, ipsum dolor sit amet consectetur adipisicing elit.</div>
+      <div class="desc-banners">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus temporibus sit,
+        impedit adipisci perferendis incidunt accusantium neque, fuga, molestiae harum quae
+        maiores expedita beatae sapiente voluptatibus? Aut distinctio atque facilis!
       </div>
     </div>
-    <button
-      type="button"
-      class="ml-auto text-gray-400 hover:text-gray-600"
-      @click="showHint = false"
-      aria-label="Закрыть сообщение"
-    >
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
-        <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" />
-      </svg>
-    </button>
+    <img src="/svg/cancel.svg" class="absl-cancel" @click="showHint = false" />
   </div>
 </template>
 
@@ -61,3 +51,36 @@ const emit = defineEmits<{
 
 const showHint = ref(true);
 </script>
+
+<style scoped>
+.title-banners {
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 24px;
+  color: rgba(53, 53, 53, 1);
+}
+
+.desc-banners {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(106, 110, 117, 1);
+}
+
+.hide-banner {
+  background: rgba(249, 249, 250, 1);
+  border-radius: 16px;
+  padding: 24px;
+  display: grid;
+  position: relative;
+  grid-template-columns: 50px 1fr;
+  grid-gap: 24px;
+  margin-bottom: 24px;
+}
+
+.absl-cancel {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+}
+</style>
