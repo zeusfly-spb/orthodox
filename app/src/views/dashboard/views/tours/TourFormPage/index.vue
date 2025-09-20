@@ -120,35 +120,44 @@ const loadItem = async (): Promise<void> => {
 };
 
 const prepareEntities = (entities: any) => entities.map((entity: any) => ({...entity, entity_id: entity.entity.id}));
+const prepareServices = (services: any) => services.map((service: any) => {
+  service.entity_id = service.entity?.id;
+  delete service.id;
+  delete service.entity;
+  return service;
+});
+
+const prepareParams = (params: any) => {
+  if (params.entities) {
+    params.entities = prepareEntities(params.entities);
+  }
+  if (params.parameters) {
+    params.parameters = cleanNullParameters(params.parameters);
+  }
+  if (params.services) {
+    params.services = prepareServices(params.services);
+  }
+  return params;
+};
+
 
 const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
-      const params = { ...requestBody.value, title: currentItem.value!.title };
-
-      if (params.entities) {
-        params.entities = prepareEntities(params.entities);
-      }
-      if (params.parameters) {
-        params.parameters = cleanNullParameters(params.parameters);
-      }
-
+      let params = { ...requestBody.value, title: currentItem.value!.title };
+      params = prepareParams(params);
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      const itemToSave = { ...currentItem.value! };
-      if (itemToSave.parameters) {
-        itemToSave.parameters = cleanNullParameters(itemToSave.parameters);
-      }
-      if (itemToSave.entities) {
-        itemToSave.entities = prepareEntities(itemToSave.entities);
-      }
+      let itemToSave = { ...currentItem.value! };
+      itemToSave = prepareParams(itemToSave);
       await tourApi.storeData(itemToSave);
       toast.success('Тур успешно создан');
     }
     backupItem.value = cloneDeep(currentItem.value);
     editMode.value = false;
   } catch (error: unknown) {
+    console.error(error);
     toast.error('Ошибка сохранения данных');
   }
 };

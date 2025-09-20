@@ -26,7 +26,20 @@
             class="border-b border-gray-200"
           >
             <td class="py-3 px-4">{{ service.title }}</td>
-            <td class="py-3 px-4">{{ formatCurrency(service.price) }}</td>
+            <td class="py-3 px-4">
+              <div v-if="editMode" class="flex items-center">
+                <input
+                  :value="service.price"
+                  @input="updateServicePrice(service, $event)"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-20 px-1 py-0.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span class="ml-1 text-xs text-gray-500">₽</span>
+              </div>
+              <span v-else>{{ formatCurrency(service.price) }}</span>
+            </td>
             <td class="py-3 px-4">{{ tour.customers_count }}</td>
             <td class="py-3 px-4 font-semibold">
               {{ formatCurrency(service.price * tour.customers_count) }}
@@ -45,6 +58,7 @@ import { useToursStore } from '@/stores/tours';
 
 const props = defineProps<{
   currentItem: Tour;
+  editMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -60,5 +74,20 @@ const tour = computed({
   },
 });
 
+
 const { formatCurrency } = useToursStore();
+
+const updateServicePrice = (service: any, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const newPrice = parseFloat(target.value) || 0;
+  
+  const updatedServices = tour.value.services.map(s => 
+    s.id === service.id ? { ...s, price: newPrice } : s
+  );
+  
+  tour.value = {
+    ...tour.value,
+    services: updatedServices,
+  };
+};
 </script>

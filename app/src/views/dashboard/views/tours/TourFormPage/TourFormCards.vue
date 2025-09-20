@@ -49,9 +49,9 @@
 <script lang="ts" setup>
 import type { Tour } from '@/types/tour';
 import type { Entity } from '@/types/entity';
-import type { Service } from '@/types/service';
-import { computed, onMounted, ref, watch, nextTick } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { useToursStore } from '@/stores/tours';
+import Spinner from '@/components/app/Spinner.vue';
 
 const { formatCurrency } = useToursStore();
 
