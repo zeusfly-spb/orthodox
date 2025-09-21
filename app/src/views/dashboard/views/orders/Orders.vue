@@ -10,8 +10,6 @@ import { useBookingStore } from '@/stores/booking';
 
 const booking = useBookingStore();
 
-const isOpenModal = ref(false);
-
 const filters = reactive({
   days: 1,
   status: 'Статус заявки',
@@ -61,7 +59,7 @@ onMounted(() => {
               text="Добавить новую заявку"
               size="medium"
               variant="primary"
-              @click="isOpenModal = true"
+              @click="$router.push({ name: 'order-create' })"
             />
           </div>
         </div>
