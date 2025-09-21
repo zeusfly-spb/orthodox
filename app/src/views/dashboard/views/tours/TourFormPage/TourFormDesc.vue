@@ -30,7 +30,6 @@
         class="description-html"
         v-html="tour.description || 'Описание не указано'"
       />
-
       <button v-if="!editMode" class="read-more-link" @click="handleReadMore">Читать подробнее</button>
     </div>
   </div>
