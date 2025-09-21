@@ -317,11 +317,19 @@ const tourDuration = computed({
 
 const tourStartDate = computed({
   get() {
-    return tour.value.date ? tour.value.date.split('T')[0] : '';
+    if (!tour.value.date) return '';
+    if (tour.value.date.includes('T')) {
+      return tour.value.date.split('T')[0];
+    }
+    return tour.value.date;
   },
   set(value: string) {
-    const currentTime = tour.value.date ? tour.value.date.split('T')[1]?.split('.')[0] : '00:00';
-    tour.value = { ...tour.value, date: `${value}T${currentTime}` };
+    if (!value) {
+      tour.value = { ...tour.value, date: '' };
+      return;
+    }
+    
+    tour.value = { ...tour.value, date: value };
   },
 });
 

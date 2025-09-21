@@ -29,6 +29,7 @@ const requestBody = computed(() => {
   
   const apiFields: (keyof Tour)[] = [
     'time',
+    'date',
     'title',
     'route', 
     'price',
