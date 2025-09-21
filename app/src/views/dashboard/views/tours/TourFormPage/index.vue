@@ -49,15 +49,11 @@ const requestBody = computed(() => {
   apiFields.forEach(key => {
     const currentValue = (currentItem.value as any)[key];
     const originalValue = (backupItem.value as any)[key];
-    
     if (!isEqual(currentValue, originalValue)) {
       (changedFields as any)[key] = currentValue;
     }
   });
-  
-  if (changedFields.parameters) {
-    changedFields.parameters = cleanNullParameters(changedFields.parameters);
-  }
+
   
   return changedFields;
 });
@@ -137,6 +133,8 @@ const prepareParams = (params: any) => {
   if (params.services) {
     params.services = prepareServices(params.services);
   }
+  params.countries = [];
+  params.cities = [];
   return params;
 };
 
@@ -144,14 +142,14 @@ const prepareParams = (params: any) => {
 const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
-      let params = { ...requestBody.value, title: currentItem.value!.title };
-      params = prepareParams(params);
+      let body = { ...requestBody.value, title: currentItem.value!.title };
+      const params = prepareParams(body);
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      let itemToSave = { ...currentItem.value! };
-      itemToSave = prepareParams(itemToSave);
-      await tourApi.storeData(itemToSave);
+      let body = { ...currentItem.value! };
+      const params = prepareParams(body);
+      await tourApi.storeData(params);
       toast.success('Тур успешно создан');
     }
     backupItem.value = cloneDeep(currentItem.value);
