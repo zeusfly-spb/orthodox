@@ -17,6 +17,9 @@
             <th class="text-left py-3 px-4 font-medium text-gray-700 border-b border-gray-200">
               ОБЩАЯ СТОИМОСТЬ
             </th>
+            <th v-if="editMode" class="text-left py-3 px-4 font-medium text-gray-700 border-b border-gray-200">
+              ДЕЙСТВИЯ
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -43,6 +46,17 @@
             <td class="py-3 px-4">{{ tour.customers_count }}</td>
             <td class="py-3 px-4 font-semibold">
               {{ formatCurrency(service.price * tour.customers_count) }}
+            </td>
+            <td v-if="editMode" class="py-3 px-4">
+              <button
+                @click="removeService(service)"
+                class="text-red-600 hover:text-red-800 transition-colors duration-200"
+                title="Удалить сервис"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -89,5 +103,16 @@ const updateServicePrice = (service: any, event: Event) => {
     ...tour.value,
     services: updatedServices,
   };
+};
+
+const removeService = (serviceToRemove: any) => {
+  if (confirm('Вы уверены, что хотите удалить этот сервис?')) {
+    const updatedServices = tour.value.services.filter(s => s.id !== serviceToRemove.id);
+    
+    tour.value = {
+      ...tour.value,
+      services: updatedServices,
+    };
+  }
 };
 </script>
