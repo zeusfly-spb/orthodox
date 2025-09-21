@@ -117,9 +117,11 @@ const loadItem = async (): Promise<void> => {
 
 const prepareEntities = (entities: any) => entities.map((entity: any) => ({...entity, entity_id: entity.entity.id}));
 const prepareServices = (services: any) => services.map((service: any) => {
-  service.entity_id = service.entity?.id;
-  delete service.id;
+  if (service.entity) {
+    service.entity_id = service.entity.id;
+  }
   delete service.entity;
+  delete service.id;
   return service;
 });
 
