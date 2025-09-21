@@ -11,20 +11,45 @@ function matchRouteName() {
     paragraph.find((item) => item.linkName === route.name)?.id || selectedItem.value; //TODO: исправить соответствие
 }
 
+const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
+const logo = ref("/logo.png")
+
+const ToggleMenu = () => {
+	is_expanded.value = !is_expanded.value
+	localStorage.setItem("is_expanded", is_expanded.value)
+  switch(is_expanded.value) {
+    case true:
+      return logo.value = "/logo-icon.png"
+    default:
+      return logo.value = "/logo.png"
+  }
+}
+
 onMounted(() => matchRouteName());
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="`${is_expanded ? 'is-expanded' : ''}`">
     <div class="sidebar-header">
       <div class="logo">
         <router-link to="/" class="active-block">
-          <img src="/logo.png" />
+          <img :src="logo" />
         </router-link>
       </div>
     </div>
 
     <div class="sidebar-menu">
+
+      <div class="menu-toggle-wrap">
+        <button class="menu-toggle" @click="ToggleMenu">
+          <span class="material-icons">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 -960 960 960">
+              <path d="M411-481 213-679l42-42 240 240-240 240-42-42 198-198Zm253 0L466-679l42-42 240 240-240 240-42-42 198-198Z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
       <div class="left-title-s">Раздел</div>
       <router-link
         v-for="item in paragraph"
@@ -58,6 +83,10 @@ onMounted(() => matchRouteName());
   </aside>
 </template>
 <style lang="scss" scoped>
+.menu-toggle {
+  transform: rotate(-180deg);
+  cursor: pointer;
+}
 .sidebar {
   font-family: 'Inter', sans-serif;
   width: 255px;
@@ -68,6 +97,26 @@ onMounted(() => matchRouteName());
   height: 100vh;
   z-index: 10;
   overflow-y: auto;
+  &.is-expanded {
+    width: 70px;
+      
+      .menu-toggle {
+        transform: rotate(0deg);
+      }
+
+      .menu-text{
+        display: none;
+      }
+
+      .menu-item {
+        padding: 12px 10px;
+      }
+
+      .submenu-item,
+      .left-title-s { 
+        display: none;
+      }
+  }
 }
 
 .sidebar-header {
