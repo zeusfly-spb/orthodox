@@ -28,6 +28,13 @@
         >
           {{ index + 1 }} день
         </button>
+        <button
+          v-if="editMode"
+          @click="addNewDay"
+          class="day-tab day-tab-add"
+        >
+          + Добавить день
+        </button>
       </div>
 
       <div class="day-activities mb-8">
@@ -170,6 +177,31 @@ const currentDayDescription = computed({
     emit('update:currentItem', updatedTour);
   }
 });
+
+const addNewDay = () => {
+  const newDay: DayItem = {
+    title: `День ${(tour.value.days?.length || 0) + 1}`,
+    description: ''
+  };
+  
+  const days = [...(tour.value.days || []), newDay];
+  const updatedTour = {
+    ...tour.value,
+    days: days
+  };
+  
+  emit('update:currentItem', updatedTour);
+  
+  selectedDay.value = days.length - 1;
+  
+  nextTick(() => {
+    const titleInput = document.querySelector('.form-input') as HTMLInputElement;
+    if (titleInput) {
+      titleInput.focus();
+      titleInput.select();
+    }
+  });
+};
 </script>
 
 <style scoped>
@@ -234,6 +266,23 @@ const currentDayDescription = computed({
 .day-tab-inactive:hover {
   background-color: #f9fafb;
   border-color: #9ca3af;
+}
+
+.day-tab-add {
+  background-color: #10b981;
+  color: white;
+  border-color: #10b981;
+  font-weight: 600;
+}
+
+.day-tab-add:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.day-tab-add:active {
+  background-color: #047857;
+  border-color: #047857;
 }
 
 .day-activities {
