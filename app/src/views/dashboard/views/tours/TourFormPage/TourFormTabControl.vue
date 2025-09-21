@@ -27,6 +27,14 @@
     <button
       :disabled="hasChanges"
       class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Notes' }"
+      @click="activeTab = 'Notes'"
+    >
+      Важно знать
+    </button>
+    <button
+      :disabled="hasChanges"
+      class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'ObjectsTab' }"
       @click="activeTab = 'ObjectsTab'"
     >

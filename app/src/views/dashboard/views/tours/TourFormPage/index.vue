@@ -11,6 +11,7 @@ import TourFormProgram from './TourFormProgram.vue';
 import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
+import TourFormNotes from './TourFormNotes.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
 
@@ -38,6 +39,7 @@ const requestBody = computed(() => {
     'difficulty',
     'seats',
     'description',
+    'notes',
     'is_active',
     'ownerable_id',
     'ownerable_type',
@@ -90,7 +92,7 @@ const loadTabFromUrl = () => {
   const tabFromUrl = route.query.tab as string;
   if (
     tabFromUrl &&
-    ['Data', 'Params', 'Desc', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
+    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
   ) {
     activeTab.value = tabFromUrl;
   }
@@ -110,8 +112,8 @@ const loadItem = async (): Promise<void> => {
       tourStatus: data.tourStatus?.id || null,
     };
     data.parameters = parameters;
-    currentItem.value = data;
-    backupItem.value = data;
+    currentItem.value = cloneDeep(data);
+    backupItem.value = cloneDeep(data);
   } catch (error: unknown) {
     toast.error('Ошибка загрузки данных');
     router.push({ name: 'tours-list' });
@@ -267,6 +269,11 @@ onUnmounted(() => {
       />
       <TourFormDesc 
         v-else-if="activeTab === 'Desc'" 
+        v-model:currentItem="currentItem" 
+        v-model:editMode="editMode" 
+      />
+      <TourFormNotes 
+        v-else-if="activeTab === 'Notes'" 
         v-model:currentItem="currentItem" 
         v-model:editMode="editMode" 
       />
