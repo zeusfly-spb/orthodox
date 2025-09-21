@@ -95,23 +95,43 @@
 
         <div class="param-item">
           <span class="param-label">Страны</span>
-          <span class="param-value">--</span>
+          <CountrySelector 
+            v-if="editMode" 
+            v-model="countries"
+            :all-countries="allCountries"
+            class="param-input"
+          />
+          <span v-else class="param-value">
+            {{ countries.map(country => country.name).join(', ') || 'Не указаны' }}
+          </span>
         </div>
 
         <div class="param-item">
           <span class="param-label">Страна начала</span>
-          <span class="param-value">--</span>
+          <span class="param-value">
+            {{ countries[0]?.name || 'Не указана' }}
+          </span>
         </div>
 
         <div class="param-item">
           <span class="param-label">Город начала</span>
-          <span class="param-value">--</span>
+          <span class="param-value">
+            {{ cities.length > 0 ? cities[0].name : 'Не указан' }}
+          </span>
         </div>
       </div>
       <div class="params-column">
         <div class="param-item">
           <span class="param-label">Города</span>
-          <span class="param-value">--</span>
+          <CitySelector 
+            v-if="editMode" 
+            v-model="cities"
+            :selected-country-ids="selectedCountryIds"
+            class="param-input"
+          />
+          <span v-else class="param-value">
+            {{ cities.map(city => city.name).join(', ') || 'Не указаны' }}
+          </span>
         </div>
 
         <div class="param-item">
@@ -184,6 +204,11 @@ import type { Tour } from '@/types/tour';
 import { computed, nextTick, watch } from 'vue';
 import { useToursStore } from '@/stores/tours';
 import DotControl from '@/components/dashboard/tours/DotControl.vue';
+import CountrySelector from '@/components/dashboard/tours/CountrySelector.vue';
+import CitySelector from '@/components/dashboard/tours/CitySelector.vue';
+import { usePlacesStore } from '@/stores/places';
+import type { City } from '@/types/city';
+
 
 const props = defineProps<{
   currentItem: Tour;
@@ -212,6 +237,9 @@ const editMode = computed({
     emit('update:editMode', value);
   },
 });
+
+const placesStore = usePlacesStore();
+const allCountries = computed(() => placesStore.allCountries);
 
 const toursStore = useToursStore();
 const tourTypes = computed(() => toursStore.tourTypes);
@@ -365,6 +393,35 @@ const formatTime = (dateString: string) => {
 const handleEdit = () => {
   editMode.value = !editMode.value;
 };
+
+const countries = computed({
+  get() {
+    return tour.value.countries;
+  },
+  set(value: any[]) {
+    tour.value = { ...tour.value, countries: value };
+  },
+});
+
+const selectedCountryIds = computed(() => {
+  return countries.value.map(country => country.id);
+});
+
+const cities = computed({
+  get() {
+    return tour.value.cities || [];
+  },
+  set(value: City[]) {
+    tour.value = { ...tour.value, cities: value };
+  },
+});
+
+// Отслеживаем изменения в списке стран и удаляем города удаленных стран
+watch(() => countries.value, (val) => {
+  const countryIds = val.map(country => country.id);
+  const availableCityIds = placesStore.getCitiesForCountries(countryIds).map(city => city.id);
+  cities.value = cities.value.filter(city => availableCityIds.includes(city.id));
+}, { deep: true });
 </script>
 
 <style scoped>

@@ -45,6 +45,8 @@ const requestBody = computed(() => {
     'services',
     'entities',
     'days',
+    'countries',
+    'cities',
   ];
   
   apiFields.forEach(key => {
@@ -136,8 +138,17 @@ const prepareParams = (params: any) => {
   if (params.services) {
     params.services = prepareServices(params.services);
   }
-  params.countries = [];
-  params.cities = [];
+  // Сохраняем выбранные страны и города
+  // if (params.countries) {
+  //   params.countries = params.countries.map((country: any) => country.id);
+  // }
+  params.countries = currentItem.value?.countries.map((country: any) => country.id);
+
+
+  // if (params.cities) {
+  //   params.cities = params.cities.map((city: any) => city.id);
+  // }
+  params.cities = currentItem.value?.cities.map((city: any) => city.id);
   return params;
 };
 

@@ -50,6 +50,8 @@ export interface Tour {
   time: string;
   comfort: number | null;
   difficulty: number | null;
+  countries: any[];
+  cities: any[];
   parameters: {
     tourStatus: number | null | string;
   };
