@@ -41,12 +41,13 @@ onMounted(() => matchRouteName());
     <div class="sidebar-menu">
 
       <div class="menu-toggle-wrap">
-        <button class="menu-toggle" @click="ToggleMenu">
-          <span class="material-icons">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 -960 960 960">
-              <path d="M411-481 213-679l42-42 240 240-240 240-42-42 198-198Zm253 0L466-679l42-42 240 240-240 240-42-42 198-198Z"/>
-            </svg>
-          </span>
+        <button class="menu-toggle modern-toggle" @click="ToggleMenu">
+          <div class="toggle-icon">
+            <span class="line line1"></span>
+            <span class="line line2"></span>
+            <span class="line line3"></span>
+          </div>
+          <span class="toggle-text">{{ is_expanded ? 'Развернуть' : 'Свернуть' }}</span>
         </button>
       </div>
 
@@ -83,10 +84,6 @@ onMounted(() => matchRouteName());
   </aside>
 </template>
 <style lang="scss" scoped>
-.menu-toggle {
-  transform: rotate(-180deg);
-  cursor: pointer;
-}
 .sidebar {
   font-family: 'Inter', sans-serif;
   width: 255px;
@@ -99,10 +96,6 @@ onMounted(() => matchRouteName());
   overflow-y: auto;
   &.is-expanded {
     width: 70px;
-      
-      .menu-toggle {
-        transform: rotate(0deg);
-      }
 
       .menu-text{
         display: none;
@@ -117,6 +110,58 @@ onMounted(() => matchRouteName());
         display: none;
       }
   }
+}
+
+.menu-toggle.modern-toggle {
+  background: rgb(16, 185, 129);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  width: 100%;
+  
+  &:hover {
+    background-color: #0f9166;
+  }
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.line {
+  width: 100%;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+}
+
+.toggle-text {
+  color: white;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sidebar.is-expanded .toggle-text {
+  display: none;
+}
+
+.sidebar.is-expanded .menu-toggle.modern-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  justify-content: center;
+  padding: 12px;
 }
 
 .sidebar-header {
