@@ -56,14 +56,14 @@
     >
       Карта маршрута
     </button>
-    <button
+    <!-- <button
       :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'TreeView' }"
       @click="activeTab = 'TreeView'"
     >
       Структура данных
-    </button>
+    </button> -->
   </div>
 </template>
 

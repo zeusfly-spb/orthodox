@@ -215,7 +215,12 @@ onUnmounted(() => {
   <div v-else class="main-content" style="margin-left: 279px; margin-top: 20px">
     <div class="mb-8">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Уникальный тур</h1>
+        <h1 class="text-3xl font-bold text-gray-900">
+          <span class="text-gray-500 text-2xl">
+            Уникальный тур
+          </span>
+          {{ currentItem.title }}
+        </h1>
         
         <div v-if="hasChanges || editMode" class="flex gap-3">
           <button
@@ -277,10 +282,10 @@ onUnmounted(() => {
         v-model:currentItem="currentItem" 
         v-model:editMode="editMode" 
       />
-      <TourFormTreeView 
+      <!-- <TourFormTreeView 
         v-else-if="activeTab === 'TreeView'" 
         :currentItem="currentItem" 
-      />
+      /> -->
     </div>
   </div>
 </template>
