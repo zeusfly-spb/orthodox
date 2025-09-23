@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted, nextTick, onUnmounted } from 'vue';
+import { reactive, ref, onMounted, nextTick, onUnmounted,computed } from 'vue';
 import { useRoute } from 'vue-router';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
@@ -83,10 +83,11 @@ const handleKeydown = (event) => {
 };
 
 onMounted(async () => {
-  await bookingStore.fetchBookingData(bookingId);
+  // await bookingStore.fetchBookingData(bookingId);
   await customerStore.fetchClientNames();
   await orderStore.fetchOrderStatuses();
   await tourStore.fetchTours();
+  console.log(tourStore.$state)
   
   await focusFirstInput();
   
@@ -102,7 +103,7 @@ onUnmounted(() => {
   <div class="main-content">
     <div class="content">
       <div class="title-bread-com">
-        Мои заявки / Создание заявки #{{ bookingStore.booking.id }}
+        Мои заявки / Создание новой заявки 
       </div>
       <div class="grid-tours-fd">
         <div>
@@ -115,21 +116,20 @@ onUnmounted(() => {
               :withSearch="true"
               @update:modelValue="handleTourSelect"
             />
-            <div class="info-grid">
+           <div class="info-grid">
               <div class="info-item">
                 <label class="info-label">Номер тура</label>
                 <div class="input-field">{{ bookingStore.booking.tourId }}</div>
               </div>
               <div class="info-item">
-                <label class="info-label">Номер заявки</label>
-                <div class="input-field">{{ bookingStore.booking.id }}</div>
-              </div>
-              <div class="info-item">
                 <label class="info-label">Менеджер</label>
-                <div class="input-field">Иванов А. А.</div>
+                <div class="input-field">{{ bookingStore.booking.manager }}</div>
               </div>
-            </div>
-
+            </div> 
+<!-- <div>
+  {{ 
+    bookingStore.mainInfo.tourrice }}
+</div> -->
             <div class="info-grid">
               <div class="info-item">
                 <label class="info-label">Кол-во ночей</label>
@@ -160,64 +160,54 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="info-grid">
-              <div class="info-item">
-                <label class="info-label">Дата начала тура</label>
-                <div class="flex">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button
-                        variant="outline"
-                        class="w-full justify-start text-left font-normal flex gap-2"
-                        @click="isCalendarOpened.startDate = true"
-                      >
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ bookingStore.booking.dates.start || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker
-                        v-if="isCalendarOpened.startDate"
-                        v-model="bookingStore.booking.dates.start"
-                        @addDate="isCalendarOpened.startDate = false"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              <div class="info-item">
-                <label class="info-label">Дата окончания тура</label>
-                <div class="flex">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button
-                        variant="outline"
-                        class="w-full justify-start text-left font-normal flex gap-2"
-                        @click="isCalendarOpened.finish = true"
-                      >
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ bookingStore.booking.dates.finish || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker
-                        v-if="isCalendarOpened.finish"
-                        v-model="bookingStore.booking.dates.finish"
-                        @addDate="isCalendarOpened.finish = false"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              <div class="info-item">
-                <label class="info-label">Статус</label>
-                <UDropdown
-                  :list="orderStore.orderStatusList"
-                  v-model="bookingStore.booking.status"
-                  :withSearch="false"
-                />
-              </div>
-            </div>
+  <div class="info-grid">
+  <div class="info-item">
+    <label class="info-label">Дата начала тура</label>
+    <div class="flex">
+      <Popover v-model:open="isCalendarOpened.startDate">
+        <PopoverTrigger as-child>
+          <Button
+            variant="outline"
+            class="w-full justify-start text-left font-normal flex gap-2"
+          >
+            <CalendarIcon class="mr-2 h-4 w-4" />
+            <span>{{ bookingStore.booking.dates.start ? new Date(bookingStore.booking.dates.start).toLocaleDateString('ru-RU') : 'Выберите дату' }}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-auto p-0">
+          <AppDatePicker
+            v-model="bookingStore.booking.dates.start"
+            @update:modelValue="isCalendarOpened.startDate = false"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  </div>
+  
+  <div class="info-item">
+    <label class="info-label">Дата окончания тура</label>
+    <div class="flex">
+      <Popover v-model:open="isCalendarOpened.endDate">
+        <PopoverTrigger as-child>
+          <Button
+            variant="outline"
+            class="w-full justify-start text-left font-normal flex gap-2"
+          >
+            <CalendarIcon class="mr-2 h-4 w-4" />
+            <span>{{ bookingStore.booking.dates.finish ? new Date(bookingStore.booking.dates.finish).toLocaleDateString('ru-RU') : 'Выберите дату' }}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-auto p-0">
+          <AppDatePicker
+            v-model="bookingStore.booking.dates.finish"
+            :min-date="bookingStore.booking.dates.start"
+            @update:modelValue="isCalendarOpened.endDate = false"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  </div>
+</div>
           </div>
 
           <ContactPerson
@@ -227,7 +217,7 @@ onUnmounted(() => {
             :countContacts="index + 1"
             :index="index"
             @add-item="handleAddItem"
-            @remove-item="handleRemoveItem"
+            @remove-item="handleRemoveItem"   
             v-model:fullname="contact.fullname"
             v-model:email="contact.email"
             v-model:phone="contact.phone"

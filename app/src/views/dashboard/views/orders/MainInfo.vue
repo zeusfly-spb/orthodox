@@ -6,12 +6,26 @@ const bookingStore = useBookingStore();
 
 const payType = ref('full');
 const inputValue = ref('');
+const isTouristsExpanded = ref(false); // состояние свернуто/развернуто
 
 // Получаем данные из стора
 const bookingData = computed(() => bookingStore.booking);
 const totalPrice = computed(
   () => bookingData.value.mainInfo.tourPrice * bookingData.value.counts.people,
 );
+
+// Отображаемые туристы (все или только первые 3)
+const displayedTourists = computed(() => {
+  if (isTouristsExpanded.value) {
+    return bookingData.value.counts.people;
+  }
+  return Math.min(bookingData.value.counts.people, 3);
+});
+
+// Показывать ли кнопку "Показать еще"
+const showMoreButton = computed(() => {
+  return bookingData.value.counts.people > 3;
+});
 
 const displayValue = computed({
   get: () => {
@@ -37,6 +51,8 @@ function handleInput(event) {
   if (payType.value === 'partial') {
     let value = event.target.value.replace(/[^\d]/g, '');
     inputValue.value = value;
+    // Сохраняем числовое значение в стейт
+    bookingStore.booking.payment.amount = parseInt(value) || 0;
   }
 }
 
@@ -47,9 +63,20 @@ function formatValue() {
   }
 }
 
+function toggleTourists() {
+  isTouristsExpanded.value = !isTouristsExpanded.value;
+}
+
 async function handleSaveTourist() {
   try {
-    await bookingStore.updateBooking();
+    // Обновляем данные оплаты перед сохранением
+    bookingStore.booking.payment.type = payType.value;
+    if (payType.value === 'full') {
+      bookingStore.booking.payment.amount = totalPrice.value;
+    }
+    
+    await bookingStore.saveBooking();
+    console.log('Booking saved:', bookingStore.$state);
   } catch (error) {
     console.error('Error updating tourist:', error);
   }
@@ -58,21 +85,41 @@ async function handleSaveTourist() {
 watch(
   () => payType.value,
   (newValue) => {
+    // Сохраняем тип оплаты в стейт
+    bookingStore.booking.payment.type = newValue;
+    
     if (newValue === 'full') {
       inputValue.value = formatCurrency(totalPrice.value);
+      bookingStore.booking.payment.amount = totalPrice.value;
     } else if (newValue === 'partial') {
       if (!inputValue.value) {
         inputValue.value = '';
+        bookingStore.booking.payment.amount = 0;
       }
     }
   },
+  { immediate: true }
 );
 
 watch(totalPrice, (newPrice) => {
   if (payType.value === 'full') {
     inputValue.value = formatCurrency(newPrice);
+    bookingStore.booking.payment.amount = newPrice;
   }
 });
+
+// Инициализация при монтировании
+watch(() => bookingStore.booking.payment.type, (newType) => {
+  if (newType) {
+    payType.value = newType;
+  }
+}, { immediate: true });
+
+watch(() => bookingStore.booking.payment.amount, (newAmount) => {
+  if (payType.value === 'partial' && newAmount > 0) {
+    inputValue.value = formatCurrency(newAmount);
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -92,16 +139,24 @@ watch(totalPrice, (newPrice) => {
           </div>
         </div>
 
-        <div v-for="(item, index) in bookingData.counts.people" :key="index">
-          <div class="tourist-item2">
+        <!-- Сворачиваемый список туристов -->
+        <div class="tourists-list">
+          <div v-for="(item, index) in displayedTourists" :key="index" class="tourist-item2">
             <div class="tourist-name2">Турист {{ index + 1 }}</div>
             <div class="tourist-price2">{{ bookingData.mainInfo.tourPrice }} ₽</div>
+          </div>
+          
+          <!-- Кнопка "Показать еще/Свернуть" -->
+          <div v-if="showMoreButton" class="show-more-container">
+            <button class="show-more-btn" @click="toggleTourists">
+              {{ isTouristsExpanded ? 'Свернуть' : `Показать еще ${bookingData.counts.people - 3}` }}
+            </button>
           </div>
         </div>
 
         <div class="total-price2">
           <div>Общая стоимость:</div>
-          <div class="tot-pr">{{ totalPrice }} ₽</div>
+          <div class="tot-pr">{{ formatCurrency(totalPrice) }}</div>
         </div>
 
         <hr />
@@ -119,20 +174,25 @@ watch(totalPrice, (newPrice) => {
           </label>
         </div>
 
-        <div class="partial-payment-section">
+        <div v-if="payType === 'partial'" class="partial-payment-section">
           <label class="info-label">Сумма частичной оплаты</label>
           <input
             type="text"
             class="amount-input"
             v-model="displayValue"
-            :disabled="payType === 'full'"
             @input="handleInput"
             @blur="formatValue"
+            placeholder="Введите сумму"
           />
 
           <label class="info-label">Дата полной оплаты</label>
           <!-- Добавьте date picker здесь -->
         </div>
+      </div>
+
+      <div class="booking-store-view">
+        <h3>Payment State</h3>
+        <pre class="json-view">{{ bookingStore.booking }}</pre>
       </div>
 
       <div class="action-buttons3">
@@ -142,7 +202,48 @@ watch(totalPrice, (newPrice) => {
     </div>
   </div>
 </template>
+
 <style scoped lang="scss">
+.json-view {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #007bff;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.tourists-list {
+  margin: 10px 0;
+}
+
+.show-more-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.show-more-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+  }
+}
+
+/* Остальные стили остаются без изменений */
 .main-content {
   margin-left: 250px;
   flex: 1;
@@ -200,60 +301,6 @@ watch(totalPrice, (newPrice) => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 1000px;
-}
-
-td,
-th {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  white-space: nowrap;
-}
-
-td {
-  font-weight: 400;
-  font-size: 14px;
-  color: rgba(53, 53, 53, 1);
-}
-
-th {
-  font-weight: 500;
-  color: rgba(106, 110, 117, 1);
-  text-transform: uppercase;
-  font-size: 11px;
-}
-
-tr:hover {
-  background-color: rgba(76, 175, 80, 0.05);
-}
-
-.edit-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    color: #4caf50;
-
-    svg path {
-      fill: #4caf50;
-    }
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
 .section {
   margin-bottom: 30px;
 }
@@ -266,40 +313,11 @@ tr:hover {
   margin-bottom: 20px;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-  margin-top: 10px;
-}
-
-.info-item {
-  margin-bottom: 12px;
-}
-
 .info-label {
   font-size: 12px;
   color: #64748b;
   margin-bottom: 4px;
   display: block;
-}
-
-.input-field {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: #f8fafc;
-}
-
-.title-bread-com {
-  font-weight: 400;
-  color: rgba(106, 110, 117, 1);
-  font-size: 16px;
-  line-height: 24px;
-  margin-bottom: 20px;
 }
 
 .order-meta {
@@ -318,59 +336,14 @@ tr:hover {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
 
-.checkbox {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  position: relative;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
-input[type='checkbox'] {
-  position: absolute;
-  opacity: 0;
-
-  &:checked + .checkbox {
-    background-color: rgba(16, 185, 129, 1);
-    border-color: rgba(16, 185, 129, 1);
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 5px;
-      top: 2px;
-      width: 4px;
-      height: 8px;
-      border: solid #fff;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
-  }
-}
-
-.date-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.calendar-icon {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 20px;
-}
-
-.grid-tours-fd {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 16px;
+.header-sec-right-col {
+  display: flex;
+  align-items: top;
+  gap: 20px;
 }
 
 .order-item {
@@ -387,7 +360,8 @@ input[type='checkbox'] {
 .tourist-item2 {
   display: flex;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
 }
 
 .tourist-name2 {
@@ -398,8 +372,7 @@ input[type='checkbox'] {
 .tourist-price2 {
   color: rgba(53, 53, 53, 1);
   font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
 }
 
 .tot-pr {
@@ -414,21 +387,12 @@ input[type='checkbox'] {
   font-size: 16px;
   background: rgba(249, 249, 250, 1);
   padding: 16px;
+  margin-top: 10px;
 }
 
 .payment-options2 {
   display: block;
   margin-top: 16px;
-}
-
-.payment-options2 .payment-option {
-  margin-bottom: 15px;
-}
-
-.header-sec-right-col {
-  display: flex;
-  align-items: top;
-  gap: 20px;
 }
 
 .partial-payment-section {
@@ -463,181 +427,29 @@ hr {
   margin-bottom: 12px;
 }
 
-.table-wrapper2 {
-  width: 100%;
-  overflow-x: auto;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.users-table th {
-  text-align: left;
-  padding: 12px 16px;
-  background: #f9fafb;
-  font-weight: 500;
-  color: #6a6e75;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.users-table td {
-  padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
-  vertical-align: middle;
-}
-
-.user-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.actions-container {
-  position: relative;
-}
-
-.date-rekz {
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: rgba(53, 53, 53, 1);
-}
-
-.stacked-avatars2 {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-}
-
-.avatar3 {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  position: relative;
-  margin-left: -10px;
-  background-color: rgba(214, 224, 255, 1);
-}
-
-.avatar3:first-child {
-  margin-left: 0;
-  background-color: rgba(220, 242, 234, 1);
-}
-
-.avatar3:nth-child(2) {
-  background-color: rgba(255, 239, 210, 1);
-}
-
-.plus-count {
-  margin-left: 5px;
-  font-weight: 400;
-  font-size: 14px;
-  color: rgba(53, 53, 53, 1);
-}
-
-.avtor-dog-tab {
-  font-weight: 400;
-  font-size: 12px;
-  margin-top: 10px;
-  line-height: 100%;
-  color: rgba(106, 110, 117, 1);
-}
-
-.name-dog {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.name-dogov-tab {
-  font-weight: 500;
-}
-
-.more-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-
-  &:hover svg path {
-    fill: #4caf50;
-  }
-}
-
-@media (max-width: 768px) {
-  .grid-tours-fd {
-    grid-template-columns: 1fr;
-  }
-
-  .table-wrapper2 {
-    border-radius: 0;
-  }
-
-  .users-table td,
-  .users-table th {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  .action-buttons3 {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-@media (max-width: 1600px) {
-  .table-wrapper2 {
-    overflow-x: auto;
-  }
-}
-
-.table-wrapper2::-webkit-scrollbar {
-  height: 6px;
-}
-
-.table-wrapper2::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
+/* Стили для radio кнопок */
 .payment-option input[type='radio'] {
   position: absolute;
   opacity: 0;
 }
 
-/* Стили для кастомных radio кнопок (квадратиков) */
 .custom-radio {
   display: inline-block;
   width: 16px;
   height: 16px;
   border: 1px solid #cbd5e1;
-  border-radius: 4px; /* Квадратные с небольшим скруглением */
+  border-radius: 4px;
   position: relative;
   vertical-align: middle;
   margin-right: 8px;
   background: white;
 }
 
-/* Стиль для выбранной radio кнопки */
 .payment-option input[type='radio']:checked + .custom-radio {
   background-color: rgba(16, 185, 129, 1);
   border-color: rgba(16, 185, 129, 1);
 }
 
-/* Галочка внутри квадратика */
 .payment-option input[type='radio']:checked + .custom-radio::after {
   content: '';
   position: absolute;
@@ -648,10 +460,5 @@ hr {
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
-}
-
-/* Убираем старые стили чекбоксов */
-.checkbox {
-  display: none;
 }
 </style>
