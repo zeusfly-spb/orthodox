@@ -105,109 +105,84 @@ onUnmounted(() => {
       <div class="title-bread-com">
         Мои заявки / Создание новой заявки 
       </div>
-      <div class="grid-tours-fd">
-        <div>
-          <div class="section filters">
-            <h2 class="section-title">Общая информация</h2>
-            <label class="info-label">Название паломнического тура</label>
-            <UDropdown
-              :list="tourStore.toursTitles"
-              v-model="bookingStore.booking.title"
-              :withSearch="true"
-              @update:modelValue="handleTourSelect"
-            />
-           <div class="info-grid">
-              <div class="info-item">
-                <label class="info-label">Номер тура</label>
-                <div class="input-field">{{ bookingStore.booking.tourId }}</div>
-              </div>
-              <div class="info-item">
-                <label class="info-label">Менеджер</label>
-                <div class="input-field">{{ bookingStore.booking.manager }}</div>
-              </div>
-            </div> 
-<!-- <div>
-  {{ 
-    bookingStore.mainInfo.tourrice }}
-</div> -->
-            <div class="info-grid">
-              <div class="info-item">
-                <label class="info-label">Кол-во ночей</label>
-                <UInput
-                  inputType="number"
-                  v-model="bookingStore.booking.counts.nights"
-                  :allowNegative="false"
-                  :inputHeightPx="43"
-                />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Кол-во свободных мест</label>
-                <UInput
-                  inputType="number"
-                  v-model="bookingStore.booking.counts.freePlaces"
-                  :allowNegative="false"
-                  :inputHeightPx="43"
-                />
-              </div>
-              <div class="info-item">
-                <label class="info-label">Кол-во человек</label>
-                <UInput
-                  inputType="number"
-                  v-model="bookingStore.booking.counts.people"
-                  :allowNegative="false"
-                  :inputHeightPx="43"
-                />
-              </div>
-            </div>
+<div class="grid-tours-fd">
+  <div>
+    <div class="section filters">
+      <h2 class="section-title">Общая информация</h2>
+      <label class="info-label">Название паломнического тура</label>
+      <UDropdown
+        :list="tourStore.toursTitles"
+        v-model="bookingStore.booking.title"
+        :withSearch="true"
+        @update:modelValue="handleTourSelect"
+      />
+      <div class="info-grid">
+        <div class="info-item">
+          <label class="info-label">Номер тура</label>
+          <div class="input-field">{{ bookingStore.booking.tourId }}</div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">Менеджер</label>
+          <div class="input-field">{{ bookingStore.booking.manager }}</div>
+        </div>
+      </div>
 
-  <div class="info-grid">
-  <div class="info-item">
-    <label class="info-label">Дата начала тура</label>
-    <div class="flex">
-      <Popover v-model:open="isCalendarOpened.startDate">
-        <PopoverTrigger as-child>
-          <Button
-            variant="outline"
-            class="w-full justify-start text-left font-normal flex gap-2"
-          >
-            <CalendarIcon class="mr-2 h-4 w-4" />
-            <span>{{ bookingStore.booking.dates.start ? new Date(bookingStore.booking.dates.start).toLocaleDateString('ru-RU') : 'Выберите дату' }}</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent class="w-auto p-0">
-          <AppDatePicker
-            v-model="bookingStore.booking.dates.start"
-            @update:modelValue="isCalendarOpened.startDate = false"
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  </div>
-  
-  <div class="info-item">
-    <label class="info-label">Дата окончания тура</label>
-    <div class="flex">
-      <Popover v-model:open="isCalendarOpened.endDate">
-        <PopoverTrigger as-child>
-          <Button
-            variant="outline"
-            class="w-full justify-start text-left font-normal flex gap-2"
-          >
-            <CalendarIcon class="mr-2 h-4 w-4" />
-            <span>{{ bookingStore.booking.dates.finish ? new Date(bookingStore.booking.dates.finish).toLocaleDateString('ru-RU') : 'Выберите дату' }}</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent class="w-auto p-0">
-          <AppDatePicker
-            v-model="bookingStore.booking.dates.finish"
-            :min-date="bookingStore.booking.dates.start"
-            @update:modelValue="isCalendarOpened.endDate = false"
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  </div>
-</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <label class="info-label">Кол-во ночей</label>
+    
+           <div class="input-field">{{ bookingStore.booking.counts.nights }}</div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">Кол-во свободных мест</label>
+           <div class="input-field">{{ bookingStore.booking.counts.freePlaces }}</div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">Кол-во человек</label>
+
+
+           <div class="input-field">{{ bookingStore.booking.counts.people}}</div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <label class="info-label">Дата начала тура</label>
+          <div class="flex">
+            <Popover :open="false">
+              <PopoverTrigger as-child>
+                <Button
+                  variant="outline"
+                  class="w-full justify-start text-left font-normal flex gap-2"
+                  disabled
+                >
+                  <CalendarIcon class="mr-2 h-4 w-4 opacity-50" />
+                  <span>{{ bookingStore.booking.dates.start ? new Date(bookingStore.booking.dates.start).toLocaleDateString('ru-RU') : 'Дата не доступна' }}</span>
+                </Button>
+              </PopoverTrigger>
+            </Popover>
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <label class="info-label">Дата окончания тура</label>
+          <div class="flex">
+            <Popover :open="false">
+              <PopoverTrigger as-child>
+                <Button
+                  variant="outline"
+                  class="w-full justify-start text-left font-normal flex gap-2"
+                  disabled
+                >
+                  <CalendarIcon class="mr-2 h-4 w-4 opacity-50" />
+                  <span>{{ bookingStore.booking.dates.finish ? new Date(bookingStore.booking.dates.finish).toLocaleDateString('ru-RU') : 'Дата не доступна' }}</span>
+                </Button>
+              </PopoverTrigger>
+            </Popover>
+          </div>
+        </div>
+      </div>
+
           </div>
 
           <ContactPerson

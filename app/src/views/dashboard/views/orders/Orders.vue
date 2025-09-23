@@ -17,7 +17,7 @@ const filters = reactive({
   days: 1
 });
 
-const statusList = ['confirmed', 'pending', 'Подтверждена', 'Отклонена', 'Завершена'];
+const statusList = ['confirmed', 'pending'];
 const managerList = computed(() => booking.managers || []);
 
 // Фильтрация заказов
@@ -254,8 +254,15 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+                 <UButton
+              text="Сбросить фильтры"
+              size="medium"
+              variant="primary"
+              @click="resetFilters()"
+            />
             </div>
           </div>
+        
           <!-- Теги -->
           <div class="tags-container">
             <div class="tags-list">

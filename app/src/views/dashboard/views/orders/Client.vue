@@ -131,8 +131,8 @@ onMounted(async () => {
       
       <!-- Отладочная информация -->
       <div  class="debug-info">
-        <h4>Текущий клиент:</h4>
-        <pre>{{ JSON.stringify(bookingStore.booking.customers[0], null, 2) }}</pre>
+        <h4>Заказчик(тест на заполняемость):</h4>
+        <pre>{{ JSON.stringify(bookingStore.booking.customers, null, 2) }}</pre>
     </div>
     </div>
   </div>

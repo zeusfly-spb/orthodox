@@ -191,7 +191,7 @@ watch(() => bookingStore.booking.payment.amount, (newAmount) => {
       </div>
 
       <div class="booking-store-view">
-        <h3>Payment State</h3>
+        <h3>Данные для отправки (тест на заполняемость)</h3>
         <pre class="json-view">{{ bookingStore.booking }}</pre>
       </div>
 
