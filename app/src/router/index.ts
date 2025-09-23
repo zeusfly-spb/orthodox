@@ -137,6 +137,12 @@ const routes = [
         component: () => import('@/views/dashboard/views/entities/EntityList.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: 'order/new',
+        name: 'order-create',
+        component: () => import('@/views/dashboard/views/orders/CreateOrder.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
   {

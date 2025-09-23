@@ -20,6 +20,9 @@ export const useBookingStore = defineStore('booking', () => {
       start: '',
       finish: '',
     },
+    customers: {
+
+    },
     contactPersons: [],
     client: {
       id: null,
@@ -140,8 +143,8 @@ export const useBookingStore = defineStore('booking', () => {
   const saveBooking = async () => {
     isLoading.value = true;
     try {
-      console.log('Saving booking:', booking);
-      // await bookingApi.updateData(booking.id, booking)
+      console.log( booking);
+       await bookingApi.storeData(booking)
     } catch (err) {
       error.value = 'Ошибка при сохранении заявки';
       console.error('Save booking error:', err);

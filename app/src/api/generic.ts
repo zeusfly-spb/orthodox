@@ -14,6 +14,7 @@ export function createApiClient<T>(endpoint: string) {
     },
     storeData: async (data: Partial<T>): Promise<T> => {
       const response = await api.post(`${route}`, data);
+      console.log(data)
       return response?.data;
     },
     patchData: async (id: number | string, data: Partial<T>): Promise<T> => {

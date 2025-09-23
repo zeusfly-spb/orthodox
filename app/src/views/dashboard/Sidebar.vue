@@ -11,20 +11,46 @@ function matchRouteName() {
     paragraph.find((item) => item.linkName === route.name)?.id || selectedItem.value; //TODO: исправить соответствие
 }
 
+const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
+const logo = ref("/logo.png")
+
+const ToggleMenu = () => {
+	is_expanded.value = !is_expanded.value
+	localStorage.setItem("is_expanded", is_expanded.value)
+  switch(is_expanded.value) {
+    case true:
+      return logo.value = "/logo-icon.png"
+    default:
+      return logo.value = "/logo.png"
+  }
+}
+
 onMounted(() => matchRouteName());
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="`${is_expanded ? 'is-expanded' : ''}`">
     <div class="sidebar-header">
       <div class="logo">
         <router-link to="/" class="active-block">
-          <img src="/logo.png" />
+          <img :src="logo" />
         </router-link>
       </div>
     </div>
 
     <div class="sidebar-menu">
+
+      <div class="menu-toggle-wrap">
+        <button class="menu-toggle modern-toggle" @click="ToggleMenu">
+          <div class="toggle-icon">
+            <span class="line line1"></span>
+            <span class="line line2"></span>
+            <span class="line line3"></span>
+          </div>
+          <span class="toggle-text">{{ is_expanded ? 'Развернуть' : 'Свернуть' }}</span>
+        </button>
+      </div>
+
       <div class="left-title-s">Раздел</div>
       <router-link
         v-for="item in paragraph"
@@ -68,6 +94,74 @@ onMounted(() => matchRouteName());
   height: 100vh;
   z-index: 10;
   overflow-y: auto;
+  &.is-expanded {
+    width: 70px;
+
+      .menu-text{
+        display: none;
+      }
+
+      .menu-item {
+        padding: 12px 10px;
+      }
+
+      .submenu-item,
+      .left-title-s { 
+        display: none;
+      }
+  }
+}
+
+.menu-toggle.modern-toggle {
+  background: rgb(16, 185, 129);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  width: 100%;
+  
+  &:hover {
+    background-color: #0f9166;
+  }
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.line {
+  width: 100%;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+}
+
+.toggle-text {
+  color: white;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sidebar.is-expanded .toggle-text {
+  display: none;
+}
+
+.sidebar.is-expanded .menu-toggle.modern-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  justify-content: center;
+  padding: 12px;
 }
 
 .sidebar-header {

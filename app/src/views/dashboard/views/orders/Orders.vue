@@ -3,23 +3,51 @@ import { managerApi } from '@/api/managers';
 import UButton from '@/components/ui/UButton.vue';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive,computed } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
 
 const booking = useBookingStore();
 
-const isOpenModal = ref(false);
-
 const filters = reactive({
-  days: 1,
-  status: 'Статус заявки',
-  manager: 'Менеджер',
-  operator: '',
+  searchText: '',
+  status: '',
+  manager: '',
+  days: 1
 });
 
-const statusList = ['Новая', 'В обработке', 'Подтверждена', 'Отклонена', 'Завершена'];
+const statusList = ['confirmed', 'pending'];
+const managerList = computed(() => booking.managers || []);
+
+// Фильтрация заказов
+const filteredOrders = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+
+  return booking.orders.filter(order => {
+    // Поиск по названию тура
+    const matchesSearch = !filters.searchText || 
+      order.title?.toLowerCase().includes(filters.searchText.toLowerCase());
+
+    // Фильтр по статусу (ищем в bookings)
+    const matchesStatus = !filters.status || 
+      order.bookings?.some(booking => booking.status === filters.status);
+
+    // Фильтр по менеджеру
+    const matchesManager = !filters.manager || 
+      order.bookings?.some(booking => booking.manager === filters.manager);
+
+    return matchesSearch && matchesStatus && matchesManager;
+  });
+});
+
+// Сброс фильтров
+function resetFilters() {
+  filters.searchText = '';
+  filters.status = '';
+  filters.manager = '';
+  filters.days = 1;
+}
 
 async function loadAllData() {
   try {
@@ -61,7 +89,7 @@ onMounted(() => {
               text="Добавить новую заявку"
               size="medium"
               variant="primary"
-              @click="isOpenModal = true"
+              @click="$router.push({ name: 'order-create' })"
             />
           </div>
         </div>
@@ -226,8 +254,15 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+                 <UButton
+              text="Сбросить фильтры"
+              size="medium"
+              variant="primary"
+              @click="resetFilters()"
+            />
             </div>
           </div>
+        
           <!-- Теги -->
           <div class="tags-container">
             <div class="tags-list">
@@ -265,72 +300,76 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="filters" v-for="item in booking.orders" :key="item.id">
-          <div class="page-header">
-            <div class="title-table-n-za">{{ item.title }}</div>
-            <div>
-              <div class="tags-list">
-                <div class="tag-item">
-                  <span>Ter 1</span>
-                </div>
-              </div>
+       <div class="filters" v-for="item in filteredOrders" :key="item.id">
+      <div class="page-header">
+        <div class="title-table-n-za">{{ item.title }}</div>
+        <div>
+          <div class="tags-list">
+            <div class="tag-item">
+              <span>Ter 1</span>
             </div>
           </div>
-          <div class="table-wrapper2">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>Дата начала тура</th>
-                  <th>Дата окончания тура</th>
-                  <th>Забронировано</th>
-                  <th>Всего</th>
-                  <th>Статус</th>
-                  <th style="width: 100px"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(val, index) in item.bookings" :key="index">
-                  <td>
-                    {{ item.date_start }}
-                  </td>
-                  <td>
-                    {{ item.date_end }}
-                  </td>
-                  <td>
-                    {{ item.bookings[index].customers.length }}
-                  </td>
-                  <td>
-                    {{ item.bookings.length }}
-                  </td>
-                  <td>
-                    <div class="status-item">
-                      <span class="status-name" v-show="val.status">{{ val.status }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="actions-container">
-                      <div class="user-actions">
-                        <button class="edit-btn">
-                          <img src="/svg/eye.svg" alt="view" />
-                        </button>
-                        <button class="edit-btn">
-                          <router-link
-                            :to="{ name: 'order-edit', params: { id: item.bookings[index].id } }"
-                          >
-                            <img src="/svg/pencil.svg" alt="edit" />
-                          </router-link>
-                        </button>
-                        <button class="more-btn">
-                          <img src="/svg/more-horiz.svg" alt="edit" />
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
+      </div>
+      <div class="table-wrapper2">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Дата начала тура</th>
+              <th>Дата окончания тура</th>
+              <th>Забронировано</th>
+              <th>Всего</th>
+              <th>Статус</th>
+              <th style="width: 100px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(val, index) in item.bookings" :key="index">
+              <td>
+                {{ item.date_start }}
+              </td>
+              <td>
+                {{ item.date_end }}
+              </td>
+              <td>
+                {{ val.customers ? val.customers.length : 0 }}
+              </td>
+              <td>
+                {{ item.bookings.length }}
+              </td>
+              <td>
+                <div class="status-item">
+                  <span class="status-name" v-show="val.status">{{ val.status }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="actions-container">
+                  <div class="user-actions">
+                    <button class="edit-btn">
+                      <img src="/svg/eye.svg" alt="view" />
+                    </button>
+                    <button class="edit-btn">
+                      <router-link
+                        :to="{ name: 'order-edit', params: { id: val.id } }"
+                      >
+                        <img src="/svg/pencil.svg" alt="edit" />
+                      </router-link>
+                    </button>
+                    <button class="more-btn">
+                      <img src="/svg/more-horiz.svg" alt="edit" />
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    
+        <div v-if="filteredOrders.length === 0" class="no-results">
+      <p>По вашему запросу ничего не найдено</p>
+    </div>
       </div>
     </div>
 
