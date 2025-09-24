@@ -140,17 +140,12 @@ const prepareParams = (params: any) => {
   if (params.services) {
     params.services = prepareServices(params.services);
   }
-  // Сохраняем выбранные страны и города
-  // if (params.countries) {
-  //   params.countries = params.countries.map((country: any) => country.id);
-  // }
-  params.countries = currentItem.value?.countries.map((country: any) => country.id);
-
-
-  // if (params.cities) {
-  //   params.cities = params.cities.map((city: any) => city.id);
-  // }
-  params.cities = currentItem.value?.cities.map((city: any) => city.id);
+  if (params.countries) {
+    params.countries = params.countries.map((country: any) => country.id);
+  }
+  if (params.cities) {
+    params.cities = params.cities.map((city: any) => city.id);
+  }
   return params;
 };
 
