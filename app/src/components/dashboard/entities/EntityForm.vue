@@ -300,7 +300,7 @@ const onSubmit = () => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[800px]" @openAutoFocus.prevent>
+    <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-[800px]" @openAutoFocus.prevent>
       <DialogHeader data-autofocus>
         <DialogTitle>
           {{ item ? props.editTitle : props.createTitle }}

@@ -11,6 +11,7 @@ import TourFormProgram from './TourFormProgram.vue';
 import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
+import TourFormNotes from './TourFormNotes.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
 
@@ -29,6 +30,7 @@ const requestBody = computed(() => {
   
   const apiFields: (keyof Tour)[] = [
     'time',
+    'date',
     'title',
     'route', 
     'price',
@@ -37,6 +39,7 @@ const requestBody = computed(() => {
     'difficulty',
     'seats',
     'description',
+    'notes',
     'is_active',
     'ownerable_id',
     'ownerable_type',
@@ -44,20 +47,18 @@ const requestBody = computed(() => {
     'services',
     'entities',
     'days',
+    'countries',
+    'cities',
   ];
   
   apiFields.forEach(key => {
     const currentValue = (currentItem.value as any)[key];
     const originalValue = (backupItem.value as any)[key];
-    
     if (!isEqual(currentValue, originalValue)) {
       (changedFields as any)[key] = currentValue;
     }
   });
-  
-  if (changedFields.parameters) {
-    changedFields.parameters = cleanNullParameters(changedFields.parameters);
-  }
+
   
   return changedFields;
 });
@@ -91,7 +92,7 @@ const loadTabFromUrl = () => {
   const tabFromUrl = route.query.tab as string;
   if (
     tabFromUrl &&
-    ['Data', 'Params', 'Desc', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
+    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
   ) {
     activeTab.value = tabFromUrl;
   }
@@ -111,8 +112,8 @@ const loadItem = async (): Promise<void> => {
       tourStatus: data.tourStatus?.id || null,
     };
     data.parameters = parameters;
-    currentItem.value = data;
-    backupItem.value = data;
+    currentItem.value = cloneDeep(data);
+    backupItem.value = cloneDeep(data);
   } catch (error: unknown) {
     toast.error('Ошибка загрузки данных');
     router.push({ name: 'tours-list' });
@@ -120,35 +121,52 @@ const loadItem = async (): Promise<void> => {
 };
 
 const prepareEntities = (entities: any) => entities.map((entity: any) => ({...entity, entity_id: entity.entity.id}));
+const prepareServices = (services: any) => services.map((service: any) => {
+  if (service.entity) {
+    service.entity_id = service.entity.id;
+  }
+  delete service.entity;
+  delete service.id;
+  return service;
+});
+
+const prepareParams = (params: any) => {
+  if (params.entities) {
+    params.entities = prepareEntities(params.entities);
+  }
+  if (params.parameters) {
+    params.parameters = cleanNullParameters(params.parameters);
+  }
+  if (params.services) {
+    params.services = prepareServices(params.services);
+  }
+  if (params.countries) {
+    params.countries = params.countries.map((country: any) => country.id);
+  }
+  if (params.cities) {
+    params.cities = params.cities.map((city: any) => city.id);
+  }
+  return params;
+};
+
 
 const handleSubmit = async (): Promise<void> => {
   try {
     if (id.value) {
-      const params = { ...requestBody.value, title: currentItem.value!.title };
-
-      if (params.entities) {
-        params.entities = prepareEntities(params.entities);
-      }
-      if (params.parameters) {
-        params.parameters = cleanNullParameters(params.parameters);
-      }
-
+      let body = { ...requestBody.value, title: currentItem.value!.title };
+      const params = prepareParams(body);
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      const itemToSave = { ...currentItem.value! };
-      if (itemToSave.parameters) {
-        itemToSave.parameters = cleanNullParameters(itemToSave.parameters);
-      }
-      if (itemToSave.entities) {
-        itemToSave.entities = prepareEntities(itemToSave.entities);
-      }
-      await tourApi.storeData(itemToSave);
+      let body = { ...currentItem.value! };
+      const params = prepareParams(body);
+      await tourApi.storeData(params);
       toast.success('Тур успешно создан');
     }
     backupItem.value = cloneDeep(currentItem.value);
     editMode.value = false;
   } catch (error: unknown) {
+    console.error(error);
     toast.error('Ошибка сохранения данных');
   }
 };
@@ -192,7 +210,12 @@ onUnmounted(() => {
   <div v-else class="main-content" style="margin-left: 279px; margin-top: 20px">
     <div class="mb-8">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Уникальный тур</h1>
+        <h1 class="text-3xl font-bold text-gray-900">
+          <span class="text-gray-500 text-2xl">
+            Уникальный тур
+          </span>
+          {{ currentItem.title }}
+        </h1>
         
         <div v-if="hasChanges || editMode" class="flex gap-3">
           <button
@@ -249,10 +272,15 @@ onUnmounted(() => {
         v-model:currentItem="currentItem" 
         v-model:editMode="editMode" 
       />
-      <TourFormTreeView 
+      <TourFormNotes 
+        v-else-if="activeTab === 'Notes'" 
+        v-model:currentItem="currentItem" 
+        v-model:editMode="editMode" 
+      />
+      <!-- <TourFormTreeView 
         v-else-if="activeTab === 'TreeView'" 
         :currentItem="currentItem" 
-      />
+      /> -->
     </div>
   </div>
 </template>

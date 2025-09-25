@@ -184,7 +184,7 @@ const realEntity = (entity: Entity | null) => entity && entity.id !== '';
 const applyService = (entity: Entity | null, slug: string) => {
   let services = filterServices(slug);
   if (realEntity(entity)) {
-    services = services.filter(service => service.title !== entity!.title);
+    services = services.filter(service => service.title !== entity!.title && service.entity_id !== entity!.id);
     services.push(createService(entity!));
   }
   tour.value = {

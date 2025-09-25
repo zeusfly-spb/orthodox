@@ -28,12 +28,31 @@
         >
           {{ index + 1 }} день
         </button>
+        <button
+          v-if="editMode && canAddDay"
+          @click="addNewDay"
+          class="day-tab day-tab-add"
+        >
+          + Добавить день
+        </button>
       </div>
 
       <div class="day-activities mb-8">
         <div class="activities-list">
           <div v-if="currentDay" class="activity-item">
             <div v-if="editMode" class="edit-form">
+              <div class="form-header">
+                <h3 class="form-title">Редактирование дня {{ selectedDay + 1 }}</h3>
+                <button
+                  v-if="canDeleteDay"
+                  @click="deleteCurrentDay"
+                  class="delete-day-btn"
+                  type="button"
+                >
+                  <Trash2 class="w-4 h-4" />
+                  Удалить день
+                </button>
+              </div>
               <div class="form-group">
                 <label class="form-label">Название дня:</label>
                 <input 
@@ -68,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import type { Tour, DayItem } from '@/types/tour';
 import { computed, ref, nextTick, watch } from 'vue';
 
@@ -170,6 +189,62 @@ const currentDayDescription = computed({
     emit('update:currentItem', updatedTour);
   }
 });
+
+const canAddDay = computed(() => {
+  const currentDaysCount = tour.value.days?.length || 0;
+  const maxDays = tour.value.duration || 0;
+  return currentDaysCount < maxDays;
+});
+
+const canDeleteDay = computed(() => {
+  const currentDaysCount = tour.value.days?.length || 0;
+  return currentDaysCount > 1;
+});
+
+const addNewDay = () => {
+  if (!canAddDay.value) return;
+  
+  const newDay: DayItem = {
+    title: `День ${(tour.value.days?.length || 0) + 1}`,
+    description: ''
+  };
+  
+  const days = [...(tour.value.days || []), newDay];
+  const updatedTour = {
+    ...tour.value,
+    days: days
+  };
+  
+  emit('update:currentItem', updatedTour);
+  
+  selectedDay.value = days.length - 1;
+  
+  nextTick(() => {
+    const titleInput = document.querySelector('.form-input') as HTMLInputElement;
+    if (titleInput) {
+      titleInput.focus();
+      titleInput.select();
+    }
+  });
+};
+
+const deleteCurrentDay = () => {
+  if (!canDeleteDay.value || !currentDay.value) return;
+  
+  const days = [...(tour.value.days || [])];
+  days.splice(selectedDay.value, 1);
+  
+  const updatedTour = {
+    ...tour.value,
+    days: days
+  };
+  
+  emit('update:currentItem', updatedTour);
+  
+  if (selectedDay.value >= days.length) {
+    selectedDay.value = Math.max(0, days.length - 1);
+  }
+};
 </script>
 
 <style scoped>
@@ -236,6 +311,23 @@ const currentDayDescription = computed({
   border-color: #9ca3af;
 }
 
+.day-tab-add {
+  background-color: #10b981;
+  color: white;
+  border-color: #10b981;
+  font-weight: 600;
+}
+
+.day-tab-add:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.day-tab-add:active {
+  background-color: #047857;
+  border-color: #047857;
+}
+
 .day-activities {
   margin-bottom: 2rem;
 }
@@ -273,6 +365,43 @@ const currentDayDescription = computed({
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.delete-day-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.delete-day-btn:hover {
+  background-color: #dc2626;
+}
+
+.delete-day-btn:active {
+  background-color: #b91c1c;
 }
 
 .form-group {
@@ -362,6 +491,16 @@ const currentDayDescription = computed({
     flex: 1;
     min-width: 80px;
     text-align: center;
+  }
+
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .delete-day-btn {
+    align-self: flex-start;
   }
 
   .gallery-images {

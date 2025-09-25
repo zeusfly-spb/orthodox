@@ -5,6 +5,11 @@ export interface DayItem {
   description: string;
 }
 
+export interface TourNote {
+  title: string;
+  content: string;
+}
+
 export interface TourPoint {
   id: string | number;
   title?: string | null;
@@ -36,6 +41,7 @@ export interface Tour {
   seats: number;
   customers_count: number;
   description: string;
+  notes: TourNote[];
   is_active: boolean;
   date: string;
   date_end: string;
@@ -50,6 +56,8 @@ export interface Tour {
   time: string;
   comfort: number | null;
   difficulty: number | null;
+  countries: any[];
+  cities: any[];
   parameters: {
     tourStatus: number | null | string;
   };
