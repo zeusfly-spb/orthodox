@@ -40,13 +40,13 @@
                       <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </div>
-                  
+
                   <div v-if="searchQuery.trim()" class="search-results">
                     <div class="search-results-header">
                       <span class="search-results-count">
                         Найдено: {{ availableEntities.length }} {{ getResultsText(availableEntities.length) }}
                       </span>
-                      <button 
+                      <button
                         @click="clearSearch"
                         class="clear-search-btn"
                         title="Очистить поиск"
@@ -54,10 +54,10 @@
                         ✕
                       </button>
                     </div>
-                    
+
                     <div v-if="availableEntities.length > 0" class="search-results-list">
-                      <div 
-                        v-for="entity in availableEntities" 
+                      <div
+                        v-for="entity in availableEntities"
                         :key="entity.id"
                         @click="selectEntity(entity)"
                         class="search-result-item"
@@ -69,10 +69,10 @@
                         <div class="add-icon">+</div>
                       </div>
                     </div>
-                    
+
                     <div v-else class="no-results">
                       <p>По вашему запросу ничего не найдено</p>
-                      <button 
+                      <button
                         @click="createNewObject"
                         class="create-object-btn"
                       >
@@ -83,10 +83,10 @@
                       </button>
                     </div>
                   </div>
-                  
+
                   <select 
                     v-if="!searchQuery.trim()"
-                    v-model="selectedEntityId" 
+                    v-model="selectedEntityId"
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     @change="addEntity"
                   >
@@ -174,15 +174,15 @@ const selectedEntityId = ref<string | number>('');
 const availableEntities = computed(() => {
   const currentEntityIds = entities.value.map((entity: any) => entity.id);
   let filtered = toursStore.objects.filter((entity: any) => !currentEntityIds.includes(entity.id));
-  
+
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
-    filtered = filtered.filter((entity: any) => 
+    filtered = filtered.filter((entity: any) =>
       entity.title?.toLowerCase().includes(query) ||
       entity.entityType?.title?.toLowerCase().includes(query)
     );
   }
-  
+
   return filtered;
 });
 
@@ -223,7 +223,6 @@ const addEntity = () => {
     };
     
     selectedEntityId.value = '';
-    searchQuery.value = '';
   }
 };
 
@@ -242,12 +241,12 @@ const selectEntity = (entity: any) => {
   const newEntityItem = {
     entity: entity
   };
-  
-  tour.value = { 
-    ...tour.value, 
-    entities: [...tour.value.entities, newEntityItem] 
+
+  tour.value = {
+    ...tour.value,
+    entities: [...tour.value.entities, newEntityItem]
   };
-  
+
   searchQuery.value = '';
 };
 
