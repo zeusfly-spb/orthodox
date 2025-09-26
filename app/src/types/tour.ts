@@ -81,5 +81,12 @@ export interface Tour {
     slug: string;
     title: string;
   };
-
+  conditions?: string;
+  requirements?: string;
+  included_in_price?: string;
+  not_included_in_price?: string;
+  additional_services?: string;
+  cancellation_policy?: string;
+  medical_requirements?: string;
+  required_documents?: string;
 }
