@@ -56,6 +56,14 @@
     >
       Карта маршрута
     </button>
+    <button
+      :disabled="hasChanges"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Conditions' }"
+      @click="activeTab = 'Conditions'"
+    >
+      Условия тура
+    </button>
     <!-- <button
       :disabled="hasChanges"
       class="tab-button"
