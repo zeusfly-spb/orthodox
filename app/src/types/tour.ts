@@ -58,9 +58,6 @@ export interface Tour {
   difficulty: number | null;
   countries: any[];
   cities: any[];
-  parameters: {
-    tourStatus: number | null | string;
-  };
   tourStatus?: {
     id: number;
     slug: string;

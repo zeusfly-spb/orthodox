@@ -1,5 +1,6 @@
 
 import type { Tour } from '@/types/tour';
+import type { BookingStatuses, PaymentStatuses } from './statuses/statuses';
 export interface Customer {
   id?: number | string;
   firstname: string;
@@ -25,17 +26,24 @@ export interface Customer {
 export interface Booking {
   id: number | string;
   description: string;
-  status: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   participants_count: number;
   tour: Tour;
-  customer: Customer;
-  ownerable_id?: number;
-  ownerable_type?: string;
+  customers: Array<Customer>;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Tourist {
+  passport_series: any;
+  passport_number: any;
+  passport_issue_date: any;
+  passport_unit_name: any;
+  passport_unit_code: any;
+  passport_birth_date: any;
+  passport_birth_place: any;
+  passport_address: any;
+  gender: any;
+  snils: any;
   id?: number | string;
   firstname: string;
   lastname: string;
@@ -71,23 +79,14 @@ export interface BookingDates {
 }
 
 export interface BookingState {
+  tour_id: number ;
   id: number | string;
-  title: string;
-  tourId: number | string;
-  manager: string;
-  status: string;
-  counts: BookingCounts;
-  dates: BookingDates;
-  customer: Customer;
-  contactPersons: ContactPerson[];
-  client: CustomerFromEditPage;
-  tourists: Tourist[];
-  payment: PaymentInfo;
-  mainInfo: {
-    tourPrice: number;
-    date: string;
-    time: string;
-  };
+  desciption: string;
+  created_at?: string;
+  status: BookingStatuses;
+  payment_status:PaymentStatuses
+  customers: Customer;
+  tour?: Tour;
 }
 
 export interface RoomType {

@@ -69,41 +69,15 @@ interface BookingApiResponse {
 export const useBookingStore = defineStore('booking', () => {
   // Реактивное состояние бронирования
   const booking = reactive<BookingState>({
+    tour_id: 0,
     id: '',
-    title: '',
-    tourId: '',
-    manager: '',
-    status: '',
-    counts: {
-      nights: 0,
-      freePlaces: 0,
-      people: 0,
-    },
-    dates: {
-      start: '',
-      finish: '',
-    },
-    customer:{
+    desciption: '',
+    payment_status:"pending",
+    status: 'pending',
+    customers: {
       firstname:'',
       lastname:'',
-      payment_status:'pending'
-    },
-    contactPersons: [],
-    client: {
-      id: null,
-      name: '',
-      type: 'individual',
-      comment: '',
-    },
-    tourists: [],
-    payment: {
-      type: 'full',
-      amount: 0,
-    },
-    mainInfo: {
-      tourPrice: 0,
-      date: '',
-      time: '',
+      payment_status:""
     },
   });
 
@@ -126,7 +100,7 @@ export const useBookingStore = defineStore('booking', () => {
       if (statusObject) {
         return statusObject.children;
       }
-      return undefined;
+      return;
     } catch (err) {
       error.value = 'Ошибка при загрузке статусов';
       console.error('Order status fetch error:', err);
@@ -140,75 +114,38 @@ export const useBookingStore = defineStore('booking', () => {
    * Загрузка данных конкретного бронирования
    * @param {string | number} bookingId - ID бронирования
    */
-  const fetchBookingData = async (bookingId: string | number): Promise<void> => {
+  const fetchBookingData = async (bookingId: number): Promise<void> => {
     isLoading.value = true;
     error.value = null;
 
     try {
       // Загружаем статусы и данные бронирования параллельно для оптимизации
       const [statuses, bookingsResponse] = await Promise.all([
-        fetchBookingStatuses(),
-        bookingApi.getData(bookingId) as Promise<BookingApiResponse>
+      fetchBookingStatuses(),
+        // bookingApi.getData(bookingId) as Promise<BookingApiResponse>
+      bookingApi.getData(Number(bookingId)) 
+
       ]);
 
       const bookingData = bookingsResponse.data;
-      const { customers, status, tour } = bookingData;
+      const {  customers,status, tour,created_at, } = bookingData;
       const { 
         title, 
         id, 
-        night_count, 
         seats, 
-        date, 
-        date_start, 
-        date_end, 
+        date,  
         price, 
         time 
       } = tour;
 
       // Обновление основного состояния бронирования
-      booking.id = bookingId.toString();
+      booking.id = Number(bookingId)
       booking.title = title;
-      booking.tourId = id.toString(); // Исправлено: приведение к string
+      booking.tour_id = Number(id) 
       
       // Использование статуса из API или значения по умолчанию
       booking.status = statuses?.[status] || status;
-      
-      booking.counts.nights = night_count;
-      booking.counts.people = customers.length;
-      booking.counts.freePlaces = Math.max(0, seats - customers.length); // Исправлено: защита от отрицательных значений
-      
       // Форматирование дат
-      booking.dates.start = format(parseISO(date_start), 'yyyy-MM-dd');
-      booking.dates.finish = format(parseISO(date_end), 'yyyy-MM-dd');
-
-      booking.mainInfo.tourPrice = price;
-      booking.mainInfo.date = date;
-      booking.mainInfo.time = time;
-
-      // Преобразование клиентов из API в туристов
-      booking.tourists = customers.map((customer: ApiCustomer): Tourist => ({
-        id: customer.id,
-        firstname: customer.firstname,
-        lastname: customer.lastname,
-        patronymic: customer.patronymic,
-        email: customer.email,
-        phone: customer.phone,
-        payment_status: customer.payment_status,
-        description: customer.description,
-        json_attributes: customer.json_attributes,
-        passport_series: customer.passport_series,
-        passport_number: customer.passport_number,
-        passport_issue_date: customer.passport_issue_date,
-        passport_unit_name: customer.passport_unit_name,
-        passport_unit_code: customer.passport_unit_code,
-        passport_birth_date: customer.passport_birth_date,
-        passport_birth_place: customer.passport_birth_place,
-        passport_address: customer.passport_address,
-        gender: customer.gender,
-        snils: customer.snils,
-        created_at: customer.created_at,
-        updated_at: customer.updated_at,
-      }));
 
     } catch (err) {
       error.value = 'Ошибка при загрузке данных заявки';
@@ -219,20 +156,13 @@ export const useBookingStore = defineStore('booking', () => {
     }
   };
 
-  /**
-   * Добавление контактного лица
-   * @param {ContactPerson} contact - Данные контактного лица
-   */
-  const addContactPerson = (contact: ContactPerson): void => {
-    booking.contactPersons.push(contact);
-  };
 
   /**
    * Обновление данных клиента
    * @param {Partial<Customer>} clientData - Частичные данные клиента
    */
   const updateClient = (clientData: Partial<Customer>): void => {
-    Object.assign(booking.client, clientData);
+    Object.assign(booking.customer, clientData);
   };
 
   /**
@@ -417,7 +347,6 @@ export const useBookingStore = defineStore('booking', () => {
 
     // Actions
     fetchBookingData,
-    addContactPerson,
     updateClient,
     updatePayment,
     updateTourists,

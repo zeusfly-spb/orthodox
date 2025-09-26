@@ -1,11 +1,9 @@
 <script setup>
 import { managerApi } from '@/api/managers';
 import UButton from '@/components/ui/UButton.vue';
-import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
 import { ref, onMounted, reactive,computed } from 'vue';
 import { tourApi } from '@/api/tours';
-import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
 import { useOrderStore } from '@/stores/order';
 
@@ -18,10 +16,9 @@ const filters = reactive({
   searchText: '',
   status: '',
   manager: '',
-  creationPeriodStart: '',
-  creationPeriodEnd: '',
-  tourDatesStart: '',
-  tourDatesEnd: ''
+  date_start: '',
+  date_end:Date.now,
+
 
 });
 const managerList = computed(() => booking.managers || []);
@@ -45,9 +42,8 @@ const filteredOrders = computed(() => {
       order.bookings?.some(booking => booking.manager === filters.manager);
 
     // Фильтр по периоду создания тура
-    const matchesCreationPeriod = !filters.creationPeriodStart || !filters.creationPeriodEnd ||
-      (order.created_at && isDateInRange(order.created_at, filters.creationPeriodStart, filters.creationPeriodEnd));
-
+    const mathesCreationPeriod = !filters.date_start || !filters.date_end ||
+      (order.created_at && isDateInRange(order.created_at, filters.date_start, filters.date_end));
     // Фильтр по датам тура
     const matchesTourDates = !filters.tourDatesStart || !filters.tourDatesEnd ||
       (order.date_start && order.date_end && 
@@ -71,24 +67,17 @@ function resetFilters() {
   filters.searchText = '';
   filters.status = '';
   filters.manager = '';
-  filters.creationPeriodStart = '';
-  filters.creationPeriodEnd = '';
-  filters.tourDatesStart = '';
-  filters.tourDatesEnd = '';
+  filters.date_start= '';
+  filters.date_end = '';
 }
 
 // Обработчики для выбора дат
 function handleCreationPeriodChange(event) {
   const [start, end] = event.target.value.split(' to ');
-  filters.creationPeriodStart = start || '';
-  filters.creationPeriodEnd = end || '';
+  filters.date_start = start || '';
+  filters.date_end = end || '';
 }
 
-function handleTourDatesChange(event) {
-  const [start, end] = event.target.value.split(' to ');
-  filters.tourDatesStart = start || '';
-  filters.tourDatesEnd = end || '';
-}
 
 async function loadAllData() {
   try {
@@ -97,7 +86,7 @@ async function loadAllData() {
       managerApi.fetchData(),
       statuses.fetchOrderStatuses(),
     ]);
-
+    console.log(statusesResponse)
     booking.managers = managersResponse.data.map((m) => m.name);
 
     // Загружаем полные данные по каждому туру
@@ -199,10 +188,10 @@ onMounted(() => {
             <!-- Date Filters -->
             <div class="relative flex-shrink-0">
               <input 
-                type="text" 
-                placeholder="Период создания тура"
+                type="date" 
+                v-model="filters.date_start" 
+                placeholder="Дата начала"
                 class="px-3 py-2 pr-8 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[180px]"
-                readonly
               />
               <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
@@ -211,10 +200,10 @@ onMounted(() => {
 
             <div class="relative flex-shrink-0">
               <input 
-                type="text" 
-                placeholder="Даты туров"
+                type="date" 
+                v-model="filters.date_end"
+                placeholder="Дата окончания"
                 class="px-3 py-2 pr-8 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[140px]"
-                readonly
               />
               <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
@@ -230,7 +219,7 @@ onMounted(() => {
           </div>
 
           <!-- Tags -->
-          <div class="flex flex-wrap items-center gap-2">
+          <!-- <div class="flex flex-wrap items-center gap-2">
             <div class="flex flex-wrap gap-2">
               <span class="inline-flex items-center gap-1 px-3 py-1 bg-gray-900 text-white text-xs font-medium rounded-full">
                 Ter 1
@@ -250,7 +239,7 @@ onMounted(() => {
               </svg>
               Добавить тег
             </button>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -258,11 +247,11 @@ onMounted(() => {
       <div v-for="item in filteredOrders" :key="item.id" class="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <h2 class="text-lg font-medium text-gray-900">{{ item.title }}</h2>
-          <div class="flex gap-2">
+        <!--   <div class="flex gap-2">
             <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
               Ter 1
             </span>
-          </div>
+          </div>  -->
         </div>
 
         <!-- Table -->
@@ -325,7 +314,7 @@ onMounted(() => {
                 
       
                       <router-link
-                        :to="{ name: 'order-edit', params: { id: val.id } }"
+                        :to="{ name: 'order-edit', params: { id: booking.id } }"
                       >
                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
@@ -9,6 +9,8 @@ import BookingForm from '@/components/dashboard/bookings/BookingForm.vue';
 import { bookingApi } from '@/api/bookings';
 import { useCrudActions } from '@/composables/useCrudActions';
 import Pagination from '@/components/app/Pagination.vue';
+import type { Booking } from '@/types/booking';
+import type { Customer } from '@/types/customer';
 
 const {
   isLoading,
@@ -25,8 +27,8 @@ const {
   onDeleteConfirm,
   onCancel,
 } = useCrudActions(bookingApi, {
-  successMessage: 'Данные сохранены',
-  deleteMessage: 'Данные удалены',
+  successMessage: 'Заявка успешно сохранена!',
+  deleteMessage: 'Заявка успешно удалена!',
 });
 
 // Load API data
@@ -51,6 +53,39 @@ const applyFilters = () => {
     page: 1,
     ...filters.value,
   });
+};
+
+// Map Booking to BookingForm
+const mappedCurrentItem = computed(() => {
+  if (!currentItem.value) return null;
+  
+  const booking = currentItem.value as unknown as Booking;
+  
+  // Ensure customer is in an array for the form
+  const customersarr = booking.customers ? [booking.customers] : [];
+  
+  return {
+    id: typeof booking.id === 'string' ? parseInt(booking.id) : booking.id,
+    status: booking.status,
+    description: booking.description,
+    customers: customersarr,
+    tour_id: typeof booking.tour?.id === 'string' ? parseInt(booking.tour.id) : booking.tour?.id || null,
+  };
+});
+
+// Handle form submission with proper type conversion
+const handleSubmitForm = (formData: any) => {
+  // Convert form data to match API expectations
+  const submitData = {
+    ...formData,
+    tour_id: formData.tour_id,
+    customer: formData.customers[0] || null,
+  };
+  
+  // Remove customers array as it's not expected by the API
+  delete submitData.customers;
+  
+  return handleSubmit(submitData);
 };
 </script>
 
@@ -85,9 +120,9 @@ const applyFilters = () => {
       <CardFooter class="muted border-t" v-if="pagination.currentPage && pagination.lastPage > 1">
         <Pagination
           :current-page="pagination.currentPage"
-          :per-page="pagination.perPage"
-          :total="pagination.total"
-          :last-page="pagination.lastPage"
+          :per-page="pagination.perPage ? pagination.perPage : 1"
+          :total="pagination.total ? pagination.total : 0"
+          :lastPage="pagination?.lastPage ? pagination.lastPage : 1"
           @update:current-page="handlePageChange"
         />
       </CardFooter>

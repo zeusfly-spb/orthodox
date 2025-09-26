@@ -56,7 +56,7 @@ const routes = [
     path: '/email/verify/:id/:hash',
     name: 'email-verify',
     component: () => import('@/views/auth/EmailVerification.vue'),
-    props: (route) => ({
+    props: (route:any) => ({
       id: route.params.id,
       hash: route.params.hash,
       signature: route.query.signature,
@@ -131,6 +131,12 @@ const routes = [
         component: () => import('@/views/dashboard/views/orders/EditOrder.vue'),
         meta: { requiresAuth: true },
       },
+      {
+      path: 'orders/:id',
+      name:'order-info',
+      component:()=> import ('@/views/dashboard/views/orders/BookingsByOrder.vue'),
+      meta:{requiresAuth:true}
+    },
       {
         path: 'entities',
         name: 'entities-view',

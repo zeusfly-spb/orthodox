@@ -1,13 +1,16 @@
 <script setup>
 import { catalog, paragraph } from '@/composables/sidebar.js'
-import { onMounted, ref, inject } from 'vue'
+import { onMounted, ref, inject, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const selectedItem = ref(5)
+const selectedItem = ref(0)
 const { isSidebarExpanded, toggleSidebar } = inject('sidebarExpanded')
 
-const logo = ref("/logo.png")
+// Упрощаем логику логотипа через computed
+const logo = computed(() => {
+  return isSidebarExpanded.value ? "/logo.png" : "/logo-icon.png"
+})
 
 function matchRouteName() {
   selectedItem.value =
@@ -16,7 +19,7 @@ function matchRouteName() {
 
 const handleToggle = () => {
   toggleSidebar()
-  logo.value = isSidebarExpanded.value ? "/logo.png" : "/logo-icon.png"
+  // Убираем изменение logo.value здесь - это делается автоматически в computed
 }
 
 onMounted(() => matchRouteName())
@@ -35,14 +38,14 @@ onMounted(() => matchRouteName())
     <div class="flex justify-center items-center py-6">
       <router-link to="/" class="block">
         <img 
-          :src="isSidebarExpanded ? '/logo.png' : '/logo-icon.png'" 
+          :src="logo" 
           alt="Logo"
           class="h-12 w-auto transition-all duration-300"
         />
       </router-link>
     </div>
 
-    <!-- Menu Content -->
+    <!-- Остальной код без изменений -->
     <div class="px-4 pb-4">
       <!-- Toggle Button -->
       <button 
