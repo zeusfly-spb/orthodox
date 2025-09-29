@@ -1,3 +1,6 @@
+<!-- Создание заявки расширенный функционал 
+Путь к странице : orders/new 
+-->
 <script setup>
 import { reactive, ref, onMounted, nextTick, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -141,7 +144,7 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs text-slate-500 mb-1">Кол-во ночей</label>
                   <div class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50">
@@ -160,7 +163,7 @@ onUnmounted(() => {
                     {{ bookingStore.booking.counts.people }}
                   </div>
                 </div>
-              </div>
+              </div> -->
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

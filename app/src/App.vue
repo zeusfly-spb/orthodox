@@ -1,25 +1,43 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 import { RouterView } from 'vue-router';
 import { Toaster } from 'vue-sonner';
-import Sidebar from './components/Sidebar.vue'
-import { provide, ref } from 'vue';
+import Sidebar from './views/dashboard/Sidebar.vue'
+import { provide, ref, computed } from 'vue';
 
-const isSidebarExpanded = ref(localStorage.getItem("is_expanded") !== "true")
+const isSidebarExpanded = ref(localStorage.getItem("is_expanded") !== "false")
 
 provide('sidebarExpanded', {
   isSidebarExpanded,
   toggleSidebar: () => {
     isSidebarExpanded.value = !isSidebarExpanded.value
-    localStorage.setItem("is_expanded", (!isSidebarExpanded.value).toString())
+    localStorage.setItem("is_expanded", isSidebarExpanded.value.toString())
   }
+})
+
+// Computed для адаптивного отступа контента
+const contentMargin = computed(() => {
+  return isSidebarExpanded.value ? 'ml-64' : 'ml-16'
 })
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen app">
-    <main class="flex flex-col min-h-screen">
-      <RouterView />
+  <div class="flex min-h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <Sidebar />
+    
+    <!-- Main Content Area -->
+    <main 
+      class="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-16"
+      :class="[
+        'ml-0',
+        { 'lg:ml-64': isSidebarExpanded }
+      ]"
+    >
+      <div class="p-4 sm:p-6 lg:p-8 w-full max-w-full">
+        <RouterView />
+      </div>
     </main>
+    
     <Toaster position="top-right" richColors />
   </div>
 </template>
@@ -37,68 +55,3 @@ provide('sidebarExpanded', {
   cursor: pointer;
 }
 </style>
-
-<style lang="scss">
-.main-content {
-  flex: 1;
-  margin-left: 250px;
-  transition: all 0.3s;
-  min-width: 0;
-}
-.content {
-  padding: 30px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-</style> -->
-
-
-<script setup>
-import { ref, provide } from 'vue'
-import Sidebar from '@/views/dashboard/Sidebar.vue'
-import Topbar from '@/views/dashboard/Topbar.vue'
-import { RouterView } from 'vue-router';
-import { Toaster } from 'vue-sonner';
-
-const isSidebarExpanded = ref(localStorage.getItem("is_expanded") !== "true")
-
-provide('sidebarExpanded', {
-  isSidebarExpanded,
-  toggleSidebar: () => {
-    isSidebarExpanded.value = !isSidebarExpanded.value
-    localStorage.setItem("is_expanded", (!isSidebarExpanded.value).toString())
-  }
-})
-</script>
-
-<template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Sidebar -->
-    
-    <!-- Main Content Area -->
-    <div 
-      class="transition-all duration-300 ease-in-out"
-      :class="[
-        'min-h-screen',
-        isSidebarExpanded 
-          ? 'ml-0 lg:ml-64' 
-          : 'ml-0 lg:ml-16'
-      ]"
-    >
-      <!-- Topbar -->
-      
-      <!-- Page Content -->
-      <main class="p-4 lg:p-6">
-        <RouterView />
-      </main>
-    </div>
-    <Toaster  position="top-right" richColor/>
-    <!-- Mobile Overlay -->
-    <div 
-      v-if="isSidebarExpanded"
-    @click="isSidebarExpanded = false"
-    ></div>
-  </div>
-</template>
-

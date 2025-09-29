@@ -10,7 +10,7 @@
 
 
 
-        <script setup>
+<script setup>
 import { ref, inject } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -58,12 +58,15 @@ function handleLogout() {
       <div class="flex items-center gap-4">
         <!-- Notifications -->
        <div class="relative">
-          <button class="p-2 text-gray-600 hover:text-gray-800 transition-colors duration-200">
+          <!-- <button class="p-2 text-gray-600 hover:text-gray-800 transition-colors duration-200">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84L3.93 8.96M2 12h4M5.84 16.95l3.12-3.12M12 22v-4M16.95 18.16l3.12 3.12M22 12h-4M18.16 7.05l-3.12 3.12"></path>
             </svg>
-          </button>
-          <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+          </button> -->
+        <img src="/svg/Bell.svg" alt="" />
+        <span class="notification-badge"></span>
+          <!-- <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span> -->
+        <!-- Что бы добавить логику уведомления работайте с span сверху  -->
         </div>
 
         <!-- User Dropdown -->
