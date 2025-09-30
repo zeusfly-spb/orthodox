@@ -41,6 +41,7 @@ const requestBody = computed(() => {
     'seats',
     'description',
     'notes',
+    'conditions',
     'is_active',
     'ownerable_id',
     'ownerable_type',

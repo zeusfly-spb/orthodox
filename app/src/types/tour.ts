@@ -81,7 +81,13 @@ export interface Tour {
     slug: string;
     title: string;
   };
-  conditions?: string;
+  conditions?: Array<{
+    id?: number;
+    content: string;
+    title: string;
+    type: 'included' | 'excluded';
+    metadata?: any;
+  }>;
   requirements?: string;
   included_in_price?: string;
   not_included_in_price?: string;

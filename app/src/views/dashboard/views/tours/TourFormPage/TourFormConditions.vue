@@ -19,116 +19,82 @@
       </button>
     </div>
 
-    <div class="space-y-6">
-      <!-- Условия участия -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Условия участия
-        </label>
-        <textarea
-          v-model="currentItem.conditions"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Опишите условия участия в туре..."
-        />
+    <!-- Режим просмотра -->
+    <div v-if="!editMode" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Включено в стоимость -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Включено в стоимость</h3>
+        </div>
+        
+        <div v-if="includedConditions" class="space-y-3">
+          <div v-for="(line, index) in includedConditions.split('\n').filter(line => line.trim())" :key="index" class="flex items-start gap-3">
+            <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+              <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span class="text-gray-700">{{ line.trim() }}</span>
+          </div>
+        </div>
+        <div v-else class="text-gray-500 text-sm italic">Нет данных о включенных услугах</div>
       </div>
 
-      <!-- Требования к участникам -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Требования к участникам
-        </label>
-        <textarea
-          v-model="currentItem.requirements"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Укажите требования к участникам тура..."
-        />
+      <!-- Оплачивается отдельно -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Оплачивается отдельно</h3>
+        </div>
+        
+        <div v-if="excludedConditions" class="space-y-3">
+          <div v-for="(line, index) in excludedConditions.split('\n').filter(line => line.trim())" :key="index" class="flex items-start gap-3">
+            <div class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+              <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span class="text-gray-700">{{ line.trim() }}</span>
+          </div>
+        </div>
+        <div v-else class="text-gray-500 text-sm italic">Нет данных об оплачиваемых отдельно услугах</div>
       </div>
+    </div>
 
-      <!-- Что включено в стоимость -->
+    <!-- Режим редактирования -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Включено в стоимость -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Что включено в стоимость
+          Включено в стоимость
         </label>
         <textarea
-          v-model="currentItem.included_in_price"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
+          v-model="includedConditions"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="6"
           placeholder="Опишите, что включено в стоимость тура..."
         />
       </div>
 
-      <!-- Что не включено в стоимость -->
+      <!-- Оплачивается отдельно -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Что не включено в стоимость
+          Оплачивается отдельно
         </label>
         <textarea
-          v-model="currentItem.not_included_in_price"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Опишите, что не включено в стоимость тура..."
-        />
-      </div>
-
-      <!-- Дополнительные услуги -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Дополнительные услуги
-        </label>
-        <textarea
-          v-model="currentItem.additional_services"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Опишите дополнительные услуги..."
-        />
-      </div>
-
-      <!-- Правила отмены -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Правила отмены и возврата
-        </label>
-        <textarea
-          v-model="currentItem.cancellation_policy"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Опишите правила отмены и возврата средств..."
-        />
-      </div>
-
-      <!-- Медицинские требования -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Медицинские требования
-        </label>
-        <textarea
-          v-model="currentItem.medical_requirements"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Укажите медицинские требования для участия в туре..."
-        />
-      </div>
-
-      <!-- Документы -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Необходимые документы
-        </label>
-        <textarea
-          v-model="currentItem.required_documents"
-          :disabled="!editMode"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          rows="4"
-          placeholder="Перечислите необходимые документы..."
+          v-model="excludedConditions"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="6"
+          placeholder="Опишите, что оплачивается отдельно..."
         />
       </div>
     </div>
@@ -150,7 +116,7 @@ const emit = defineEmits<{
   (e: 'update:editMode', value: boolean): void;
 }>();
 
-const currentItem = computed({
+const tour = computed({
   get() {
     return props.currentItem;
   },
@@ -166,6 +132,81 @@ const editMode = computed({
   set(value: boolean) {
     emit('update:editMode', value);
   },
+});
+
+// Computed свойства для работы с conditions
+const includedConditions = computed({
+  get() {
+    if (!tour.value?.conditions || !Array.isArray(tour.value.conditions)) {
+      return '';
+    }
+    const includedCondition = tour.value.conditions.find(c => c.type === 'included');
+    return includedCondition?.content || '';
+  },
+  set(value: string) {
+    if (!tour.value) return;
+    
+    const conditions = [...(tour.value.conditions || [])];
+    const includedIndex = conditions.findIndex(c => c.type === 'included');
+    
+    if (value) {
+      const includedCondition = {
+        content: value,
+        title: 'Включено в стоимость',
+        type: 'included' as const
+      };
+      
+      if (includedIndex >= 0) {
+        conditions[includedIndex] = includedCondition;
+      } else {
+        conditions.push(includedCondition);
+      }
+    } else if (includedIndex >= 0) {
+      conditions.splice(includedIndex, 1);
+    }
+    
+    tour.value = {
+      ...tour.value,
+      conditions
+    };
+  }
+});
+
+const excludedConditions = computed({
+  get() {
+    if (!tour.value?.conditions || !Array.isArray(tour.value.conditions)) {
+      return '';
+    }
+    const excludedCondition = tour.value.conditions.find(c => c.type === 'excluded');
+    return excludedCondition?.content || '';
+  },
+  set(value: string) {
+    if (!tour.value) return;
+    
+    const conditions = [...(tour.value.conditions || [])];
+    const excludedIndex = conditions.findIndex(c => c.type === 'excluded');
+    
+    if (value) {
+      const excludedCondition = {
+        content: value,
+        title: 'Оплачивается отдельно',
+        type: 'excluded' as const
+      };
+      
+      if (excludedIndex >= 0) {
+        conditions[excludedIndex] = excludedCondition;
+      } else {
+        conditions.push(excludedCondition);
+      }
+    } else if (excludedIndex >= 0) {
+      conditions.splice(excludedIndex, 1);
+    }
+    
+    tour.value = {
+      ...tour.value,
+      conditions
+    };
+  }
 });
 
 const handleEdit = () => {
