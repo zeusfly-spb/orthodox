@@ -45,8 +45,26 @@
         <div 
           v-for="(point, index) in routePoints" 
           :key="point.id"
-          class="flex items-start space-x-3 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+          :draggable="true"
+          @dragstart="handleDragStart($event, index)"
+          @dragover="handleDragOver($event, index)"
+          @dragleave="handleDragLeave"
+          @drop="handleDrop($event, index)"
+          @dragend="handleDragEnd"
+          :class="[
+            'flex items-start space-x-3 p-4 bg-white rounded-lg border transition-all duration-200 cursor-move',
+            draggedIndex === index 
+              ? 'border-blue-500 shadow-lg transform scale-105 bg-blue-50' 
+              : draggedOverIndex === index 
+                ? 'border-green-500 bg-green-50' 
+                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+          ]"
         >
+          <div class="flex-shrink-0 flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 cursor-move">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h8v2H8v-2z"/>
+            </svg>
+          </div>
           <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
             {{ index + 1 }}
           </div>
@@ -76,13 +94,22 @@
           </div>
         </div>
       </div>
+      
+      <div v-if="routePoints.length > 1" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center text-sm text-blue-700">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Перетащите объекты для изменения порядка маршрута
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Tour } from '@/types/tour';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import RouteMap from '@/components/maps/RouteMap.vue';
 
 const emit = defineEmits<{
@@ -102,31 +129,90 @@ const tour = computed({
   },
 });
 
+const draggedIndex = ref<number | null>(null);
+const draggedOverIndex = ref<number | null>(null);
+const isDragging = ref(false);
+
 const routePoints = computed(() => {
   if (!tour.value.entities || !Array.isArray(tour.value.entities)) {
     return [];
   }
 
-  return tour.value.entities
-    .filter(entity => entity && entity.entity && entity.entity.location && entity.entity.location.coordinates)
-    .map((entity, index) => ({
-      id: entity.id,
-      entity: {
-        id: entity.entity.id,
-        title: entity.entity.title || `Объект ${index + 1}`,
-        description: entity.entity.description || '',
-        location: {
-          type: 'Point' as const,
-          coordinates: entity.entity.location.coordinates as [number, number]
-        }
-      }
-    }));
+  const filtered = tour.value.entities.filter(entity => 
+    entity && entity.entity && entity.entity.location && entity.entity.location.coordinates
+  );
+
+  return filtered.map((entity, index) => ({
+    id: entity.entity.id,
+    title: entity.entity.title || `Объект ${index + 1}`,
+    description: entity.entity.description || '',
+    location: {
+      type: 'Point' as const,
+      coordinates: entity.entity.location.coordinates as [number, number]
+    },
+    entity: entity.entity
+  }));
 });
 
 const handleMarkerClick = (id: string | number | undefined) => {
-  if (id !== undefined) {
-    console.log('Клик по маркеру:', id);
+};
+
+const handleDragStart = (event: DragEvent, index: number) => {
+  draggedIndex.value = index;
+  isDragging.value = true;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/html', '');
   }
+};
+
+const handleDragOver = (event: DragEvent, index: number) => {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move';
+  }
+  draggedOverIndex.value = index;
+};
+
+const handleDragLeave = () => {
+  draggedOverIndex.value = null;
+};
+
+const handleDrop = (event: DragEvent, dropIndex: number) => {
+  event.preventDefault();
+  
+  if (draggedIndex.value === null || draggedIndex.value === dropIndex) {
+    resetDragState();
+    return;
+  }
+
+  reorderEntities(draggedIndex.value, dropIndex);
+  resetDragState();
+};
+
+const handleDragEnd = () => {
+  resetDragState();
+};
+
+const resetDragState = () => {
+  draggedIndex.value = null;
+  draggedOverIndex.value = null;
+  isDragging.value = false;
+};
+
+const reorderEntities = (fromIndex: number, toIndex: number) => {
+  if (!tour.value.entities || !Array.isArray(tour.value.entities)) {
+    return;
+  }
+
+  const newEntities = [...tour.value.entities];
+  const [movedEntity] = newEntities.splice(fromIndex, 1);
+  newEntities.splice(toIndex, 0, movedEntity);
+
+  tour.value = {
+    ...tour.value,
+    entities: newEntities
+  };
 };
 
 </script>

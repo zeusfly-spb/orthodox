@@ -1,0 +1,3922 @@
+{
+	"info": {
+		"_postman_id": "28a73334-6e94-44c6-9141-068fa7915fee",
+		"name": "OrthodoxTours",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21770908"
+	},
+	"item": [
+		{
+			"name": "Manage",
+			"item": [
+				{
+					"name": "TourTemplates",
+					"item": [
+						{
+							"name": "Get Tour Templates",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/templates",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"templates"
+									],
+									"query": [
+										{
+											"key": "filter[tourTransport.id]",
+											"value": "38",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourTransport.title]",
+											"value": "пеший",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "-id",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.title]",
+											"value": "Под запрос,Сборный",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.slug]",
+											"value": "periodiceski",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.id]",
+											"value": "11",
+											"disabled": true
+										},
+										{
+											"key": "filter[title]",
+											"value": "Гастроном",
+											"disabled": true
+										},
+										{
+											"key": "filter[id]",
+											"value": "2",
+											"disabled": true
+										},
+										{
+											"key": "filter[tags.slug]",
+											"value": "featured,sale",
+											"disabled": true
+										},
+										{
+											"key": "filter[price][min]",
+											"value": "6000",
+											"disabled": true
+										},
+										{
+											"key": "filter[price][max]",
+											"value": "4000",
+											"disabled": true
+										},
+										{
+											"key": "filter[customers][min]",
+											"value": "3",
+											"disabled": true
+										},
+										{
+											"key": "filter[customers][max]",
+											"value": "10",
+											"disabled": true
+										},
+										{
+											"key": "filter[dates][min]",
+											"value": "2025-09-15",
+											"disabled": true
+										},
+										{
+											"key": "filter[dates][max]",
+											"value": "2025-12-20",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tour Template children",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/templates/{{id}}/children",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"templates",
+										"{{id}}",
+										"children"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tour Template by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/templates/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"templates",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Tour From Template",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"template_id\": 3,\r\n    \"date\": \"2025-10-06\",\r\n    \"time\": \"14:10\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Tour Template",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Вот новый шаблон\",\r\n    \"route\": \"Troyport - Winnifredmouth\",\r\n    \"price\": 7990,\r\n    \"duration\": 3,\r\n    \"description\": \"Tempore qui delectus dolores sint ut sit rem. Minus laborum voluptatibus fugit eum ut et sequi. Laborum est dolores nam quo sunt rerum.\",\r\n    \"is_active\": true,\r\n    \"dates\": [\r\n        \"2025-08-07\",\r\n        \"2025-08-14\",\r\n        \"2025-08-18\"\r\n    ],\r\n    \"days\": [\r\n        {\r\n            \"title\": \"День 1: Основная программа\",\r\n            \"description\": \"Основная экскурсионная программа\"\r\n        },\r\n        {\r\n            \"title\": \"День 2: Дополнительная программа\",\r\n            \"description\": \"Дополнительные экскурсии и мероприятия\"\r\n        }\r\n    ],\r\n    \"points\": [\r\n        {\r\n            \"title\": \"Point one\",\r\n            \"time\": \"12:00:00\",\r\n            \"latitude\": \"64.54566\",\r\n            \"longitude\": \"40.542587\",\r\n            \"order_column\": 1\r\n        },\r\n        {\r\n            \"title\": \"Point two\",\r\n            \"time\": \"12:00:00\",\r\n            \"latitude\": \"53.198581\",\r\n            \"longitude\": \"50.103131\",\r\n            \"order_column\": 2\r\n        },\r\n        {\r\n            \"entity_id\": 1,\r\n            \"time\": \"12:00:00\",\r\n            \"order_column\": 3\r\n        },\r\n        {\r\n            \"entity_id\": 4,\r\n            \"time\": \"14:00:00\",\r\n            \"order_column\": 4\r\n        }\r\n    ],\r\n    \"parameters\": {\r\n        \"tourType\": 17,\r\n        \"tourCategory\": 20,\r\n        \"tourTransport\": 26,\r\n        \"tourStatus\": 35\r\n    },\r\n    \"tags\": []\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours/templates",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"templates"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tours",
+					"item": [
+						{
+							"name": "Get Tours",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours"
+									],
+									"query": [
+										{
+											"key": "filter[tourTransport.id]",
+											"value": "38",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourTransport.title]",
+											"value": "пеший",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "-id",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.title]",
+											"value": "Под запрос,Сборный",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.slug]",
+											"value": "periodiceski",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.id]",
+											"value": "11",
+											"disabled": true
+										},
+										{
+											"key": "filter[title]",
+											"value": "Гастроном",
+											"disabled": true
+										},
+										{
+											"key": "filter[id]",
+											"value": "2",
+											"disabled": true
+										},
+										{
+											"key": "filter[tags.slug]",
+											"value": "featured,sale",
+											"disabled": true
+										},
+										{
+											"key": "filter[price][min]",
+											"value": "6000",
+											"disabled": true
+										},
+										{
+											"key": "filter[price][max]",
+											"value": "4000",
+											"disabled": true
+										},
+										{
+											"key": "filter[customers][min]",
+											"value": "3",
+											"disabled": true
+										},
+										{
+											"key": "filter[customers][max]",
+											"value": "10",
+											"disabled": true
+										},
+										{
+											"key": "filter[dates][min]",
+											"value": "2025-09-15",
+											"disabled": true
+										},
+										{
+											"key": "filter[dates][max]",
+											"value": "2025-12-20",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tours Parameters",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/parameters",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"parameters"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tour by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Tour",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Вот вам новый тур\",\r\n    \"route\": \"Troyport - Winnifredmouth\",\r\n    \"price\": 15000000,\r\n    \"duration\": 3,\r\n    \"difficulty\": \"\",\r\n    \"comfort\": \"\",\r\n    \"description\": \"Tempore qui delectus dolores sint ut sit rem. Minus laborum voluptatibus fugit eum ut et sequi. Laborum est dolores nam quo sunt rerum.\",\r\n    \"is_active\": true,\r\n    \"parameters\": {\r\n        \"tourType\": 17,\r\n        \"tourCategory\": 20,\r\n        \"tourTransport\": 26,\r\n        \"tourStatus\": 35\r\n    },\r\n    \"dates\": [\r\n        \"2025-08-07\",\r\n        \"2025-08-14\",\r\n        \"2025-08-18 11:30:00\"\r\n    ],\r\n    \"days\": [\r\n        {\r\n            \"title\": \"День 1: Основная программа\",\r\n            \"description\": \"Основная экскурсионная программа\"\r\n        },\r\n        {\r\n            \"title\": \"День 2: Дополнительная программа\",\r\n            \"description\": \"Дополнительные экскурсии и мероприятия\"\r\n        }\r\n    ],\r\n    \"points\": [\r\n        {\r\n            \"title\": \"Point one\",\r\n            \"time\": \"12:00:00\",\r\n            \"latitude\": \"64.54566\",\r\n            \"longitude\": \"40.542587\",\r\n            \"order_column\": 1\r\n        },\r\n        {\r\n            \"title\": \"Point two\",\r\n            \"time\": \"12:00:00\",\r\n            \"latitude\": \"53.198581\",\r\n            \"longitude\": \"50.103131\",\r\n            \"order_column\": 2\r\n        },\r\n        {\r\n            \"entity_id\": 1,\r\n            \"time\": \"12:00:00\",\r\n            \"order_column\": 3\r\n        },\r\n        {\r\n            \"entity_id\": 4,\r\n            \"time\": \"14:00:00\",\r\n            \"order_column\": 4\r\n        }\r\n    ],\r\n    \"notes\": [\r\n        {\r\n            \"title\": \"Особенности погоды и климата\",\r\n            \"content\": \"Тур продолжительный и охватывает несколько регионов России, поэтому рекомендуем взять теплую одежду, дождевик, так как прогноз погоды не всегда точен.\",\r\n            \"type\": \"weather_info\",\r\n            \"metadata\": {\r\n                \"category\": \"tour_info\"\r\n            }\r\n        },\r\n        {\r\n            \"title\": \"Особенности объекта\",\r\n            \"content\": \"Дополнительная информация об особенностях посещаемых объектов и мест.\",\r\n            \"type\": \"object_features\",\r\n            \"metadata\": {\r\n                \"category\": \"tour_info\"\r\n            }\r\n        },\r\n        {\r\n            \"title\": \"Особые обычаи и традиции региона\",\r\n            \"content\": \"Информация о местных обычаях, традициях и правилах поведения.\",\r\n            \"type\": \"cultural_info\",\r\n            \"metadata\": {\r\n                \"category\": \"tour_info\"\r\n            }\r\n        },\r\n        {\r\n            \"title\": \"Физическая нагрузка\",\r\n            \"content\": \"Информация об уровне физической нагрузки во время тура.\",\r\n            \"type\": \"physical_activity\",\r\n            \"metadata\": {\r\n                \"category\": \"tour_info\"\r\n            }\r\n        }\r\n    ],\r\n    \"services\": [\r\n        {\r\n            \"title\": \"Гид\",\r\n            \"description\": \"Гид тура\",\r\n            \"type\": \"extra\",\r\n            \"price\": 1500,\r\n            \"entity_id\": 3\r\n        },\r\n        {\r\n            \"title\": \"Размещение\",\r\n            \"description\": \"Размещение в гостинице\",\r\n            \"type\": \"extra\",\r\n            \"price\": 3500,\r\n            \"entity_id\": 1\r\n        }\r\n    ],\r\n    \"entities\": [\r\n        {\r\n            \"order_column\": 1,\r\n            \"entity_id\": 4\r\n        }\r\n    ],\r\n    \"tags\": []\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateTour by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Иной тур.\",\r\n    \"route\": \"Troyport - Winnifredmouth\",\r\n    \"price\": 7990,\r\n    \"duration\": 3,\r\n    \"description\": \"Tempore qui delectus dolores sint ut sit rem. Minus laborum voluptatibus fugit eum ut et sequi. Laborum est dolores nam quo sunt rerum.\",\r\n    \"is_active\": false,\r\n    \"dates\": [\r\n        \"2025-08-10\",\r\n        \"2025-08-15\",\r\n        \"2025-08-18 11:30:00\"\r\n    ],\r\n    \"days\": [\r\n        {\r\n            \"title\": \"День 1: Основная программа\",\r\n            \"description\": \"Основная экскурсионная программа\"\r\n        },\r\n        {\r\n            \"title\": \"День 2: Дополнительная программа\",\r\n            \"description\": \"Дополнительные экскурсии и мероприятия\"\r\n        }\r\n    ],\r\n    \"points\": [\r\n        {\r\n            \"entity_id\": 4,\r\n            \"time\": \"12:00:00\",\r\n            \"order_column\": 1\r\n        },\r\n        {\r\n            \"entity_id\": 3,\r\n            \"time\": \"14:00:00\",\r\n            \"order_column\": 2\r\n        },\r\n        {\r\n            \"entity_id\": 2,\r\n            \"time\": \"16:00:00\",\r\n            \"order_column\": 3\r\n        }\r\n    ],\r\n    \"parameters\": {\r\n        \"tourType\": 17,\r\n        \"tourCategory\": 20,\r\n        \"tourTransport\": 26,\r\n        \"tourStatus\": 35\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tour Images",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}",
+										"images"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get TourDay Images",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/4/days/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"4",
+										"days",
+										"{{id}}",
+										"images"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Add Image",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Image To TourDay",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/tours/4/days/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"4",
+										"days",
+										"{{id}}",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tour Uploads",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}",
+										"uploads"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Add Upload",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/tours/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"tours",
+										"{{id}}",
+										"uploads"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Entities",
+					"item": [
+						{
+							"name": "Get Entities",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities"
+									],
+									"query": [
+										{
+											"key": "filter[entityType.id]",
+											"value": "11",
+											"disabled": true
+										},
+										{
+											"key": "filter[entityType.title]",
+											"value": "питания",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "-id",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Entity Parameters",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/parameters",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"parameters"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Entity by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Entity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Церковь Сретения Господня\",\r\n    \"description\": null,\r\n    \"phone\": null,\r\n    \"email\": null,\r\n    \"latitude\": 60.024752,\r\n    \"longitude\": 30.411045,\r\n    \"parameters\": {\r\n        \"entityType\": 39\r\n    },\r\n    \"requisite\": {\r\n        \"legal_name\": null,\r\n        \"real_address\": \"г Санкт-Петербург, Гражданский пр-кт, д 101\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/entities",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Entity By ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Церковь Сретения Господня\",\r\n    \"description\": null,\r\n    \"phone\": null,\r\n    \"email\": null,\r\n    \"latitude\": 60.024752,\r\n    \"longitude\": 30.411045,\r\n    \"parameters\": {\r\n        \"entityType\": 39\r\n    },\r\n    \"requisite\": {\r\n        \"legal_name\": null,\r\n        \"real_address\": \"г Санкт-Петербург, Гражданский пр-кт, д 101\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Entity Images",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}",
+										"images"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Add Image",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Entity Files",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}",
+										"uploads"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Add Upload",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}",
+										"uploads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Entity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "Отель Атлантик",
+											"type": "text"
+										},
+										{
+											"key": "real_address",
+											"value": "Где-то там далеко",
+											"type": "text"
+										},
+										{
+											"key": "inn",
+											"value": "458",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/entities?tourType=6",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities"
+									],
+									"query": [
+										{
+											"key": "tourType",
+											"value": "6"
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Entity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Отель Атлантик\",\r\n    \"real_address\": \"Где-то там далеко\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/entities/19",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"19"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Entity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/entities/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"entities",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Customers",
+					"item": [
+						{
+							"name": "Get Customers",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/customers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"customers"
+									],
+									"query": [
+										{
+											"key": "per_page",
+											"value": "2000",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[firstname]",
+											"value": "Алексей",
+											"disabled": true
+										},
+										{
+											"key": "filter[lastname]",
+											"value": "Смирнов",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Customer by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/customers/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"customers",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "firstname",
+											"value": "Федор",
+											"type": "text"
+										},
+										{
+											"key": "lastname",
+											"value": "Михайлов",
+											"type": "text"
+										},
+										{
+											"key": "patronymic",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "phone",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "passport_series",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "passport_number",
+											"value": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/customers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"customers"
+									],
+									"query": [
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[firstname]",
+											"value": "darrick",
+											"disabled": true
+										},
+										{
+											"key": "per_page",
+											"value": "2000",
+											"disabled": true
+										},
+										{
+											"key": "filter[lastname]",
+											"value": "beat",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firstname\": \"Вася\",\r\n    \"lastname\": \"Петров\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/customers/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"customers",
+										"{{id}}"
+									],
+									"query": [
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[firstname]",
+											"value": "darrick",
+											"disabled": true
+										},
+										{
+											"key": "per_page",
+											"value": "2000",
+											"disabled": true
+										},
+										{
+											"key": "filter[lastname]",
+											"value": "beat",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/customers/27",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"customers",
+										"27"
+									],
+									"query": [
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[firstname]",
+											"value": "darrick",
+											"disabled": true
+										},
+										{
+											"key": "per_page",
+											"value": "2000",
+											"disabled": true
+										},
+										{
+											"key": "filter[lastname]",
+											"value": "beat",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Bookings",
+					"item": [
+						{
+							"name": "Get Bookings",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/bookings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"bookings"
+									],
+									"query": [
+										{
+											"key": "filter[tour.id]",
+											"value": "1",
+											"disabled": true
+										},
+										{
+											"key": "filter[customers.id]",
+											"value": "2",
+											"disabled": true
+										},
+										{
+											"key": "filter[status]",
+											"value": "confirmed",
+											"disabled": true
+										},
+										{
+											"key": "filter[payment_status]",
+											"value": "paid",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Bookings Parameters",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/bookings/parameters",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"bookings",
+										"parameters"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Booking by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/bookings/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"bookings",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Booking",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"tour_id\": 2,\r\n    \"tour_date_id\": \"4\",\r\n    \"time\": \"12:00\",\r\n    \"datetime\": \"2025-09-24 00:00:00\",\r\n    \"status\": \"confirmed\",\r\n    \"description\": null,\r\n    \"customers\": [\r\n        {\r\n            \"firstname\": \"Эрих-Мария\",\r\n            \"lastname\": \"Ремарк\",\r\n            \"patronymic\": \"\",\r\n            \"email\": \"erick.sidorova@example.com\",\r\n            \"phone\": \"+79994445566\",\r\n            \"passport_series\": \"2276\",\r\n            \"passport_number\": \"573210\",\r\n            \"passport_issue_date\": null,\r\n            \"passport_unit_name\": null,\r\n            \"passport_unit_code\": null,\r\n            \"passport_birth_date\": null,\r\n            \"passport_birth_place\": null,\r\n            \"passport_address\": null\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/bookings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"bookings"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Booking By ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"tour_id\": 1,\r\n    \"status\": \"confirmed\",\r\n    \"payment_status\": \"paid\",\r\n    \"description\": \"Some description\",\r\n    \"customers\": [\r\n        {\r\n            \"firstname\": \"Мария\",\r\n            \"lastname\": \"Сидорова\",\r\n            \"patronymic\": \"Ивановна\",\r\n            \"email\": \"maria.sidorova@example.com\",\r\n            \"phone\": \"+79994445566\",\r\n            \"passport_series\": \"9876\",\r\n            \"passport_number\": \"543210\",\r\n            \"passport_issue_date\": null,\r\n            \"passport_unit_name\": null,\r\n            \"passport_unit_code\": null,\r\n            \"passport_birth_date\": null,\r\n            \"passport_birth_place\": null,\r\n            \"passport_address\": null\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/bookings/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"bookings",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "CounterParties",
+					"item": [
+						{
+							"name": "Get CounterParties",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/partners",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get CounterParty by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/partners/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get CounterParty Images",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/partners/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners",
+										"{{id}}",
+										"images"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Counter Party Uploads",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/partners/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners",
+										"{{id}}",
+										"uploads"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Add Image Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/partners/{{id}}/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners",
+										"{{id}}",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Upload Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/partners/{{id}}/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"partners",
+										"{{id}}",
+										"uploads"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Dictionaries",
+					"item": [
+						{
+							"name": "Get Dictionaries",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "2",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Dictionary by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Dictionary",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "New tag",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "tag",
+											"type": "text"
+										},
+										{
+											"key": "slug",
+											"value": "new-tag-22",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Dictionary",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Групповой\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get DictionaryTags",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/tags",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"tags"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Dictionary Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Discount\",\r\n    \"slug\": \"sale\",\r\n    \"type\": \"tag\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Dictionary Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Sale\",\r\n    \"slug\": \"sale\",\r\n    \"type\": \"tag\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Dictionary Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Tag updated\",\r\n    \"type\": \"tag\",\r\n    \"parent_id\": 47\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Restore Dictionary Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}/restore",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}",
+										"restore"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Force Delete Dictionary",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/taxonomies/{{id}}/force",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"taxonomies",
+										"{{id}}",
+										"force"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Operator LK",
+					"item": [
+						{
+							"name": "Index",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operator",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Managers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operator/managers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"managers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Manager by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operator/managers/3",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"managers",
+										"3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Uploads",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operator/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"uploads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Upload",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "files[]",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "files[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/operator/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"uploads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Images",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operator/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Image",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "images[]",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/operator/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operator",
+										"images"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Suggestions",
+					"item": [
+						{
+							"name": "Get Adress",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"address\": \"Москва, Тверская 6\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/suggestions/address",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"suggestions",
+										"address"
+									],
+									"query": [
+										{
+											"key": "filter[tourTransport.id]",
+											"value": "38",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourTransport.title]",
+											"value": "пеший",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "-id",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.title]",
+											"value": "Под запрос",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.slug]",
+											"value": "periodiceski",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.id]",
+											"value": "11",
+											"disabled": true
+										},
+										{
+											"key": "filter[title]",
+											"value": "Гастроном",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Adress From Coordinates",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"lat\": \"60.024752\",\r\n    \"lng\": \"30.411045\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/manage/suggestions/geo/reverse",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"suggestions",
+										"geo",
+										"reverse"
+									],
+									"query": [
+										{
+											"key": "filter[tourTransport.id]",
+											"value": "38",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourTransport.title]",
+											"value": "пеший",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "-id",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.title]",
+											"value": "Под запрос",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.slug]",
+											"value": "periodiceski",
+											"disabled": true
+										},
+										{
+											"key": "filter[tourType.id]",
+											"value": "11",
+											"disabled": true
+										},
+										{
+											"key": "filter[title]",
+											"value": "Гастроном",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Проверяем успешность ответа",
+									"if (pm.response.code === 200) {",
+									"    // Парсим JSON ответ",
+									"    const responseJson = pm.response.json();",
+									"    ",
+									"    // Сохраняем токен в переменную коллекции",
+									"    if (responseJson.access_token) {",
+									"        pm.collectionVariables.set('auth-token', responseJson.access_token);",
+									"        console.log('Токен успешно сохранен:', responseJson.access_token);",
+									"    } else if (responseJson.token) {",
+									"        pm.collectionVariables.set('auth-token', responseJson.token);",
+									"        console.log('Токен успешно сохранен:', responseJson.token);",
+									"    } else {",
+									"        console.log('Токен не найден в ответе');",
+									"    }",
+									"} else {",
+									"    console.log('Ошибка авторизации:', pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"email\": \"tour-admin@example.com\",\r\n\t\"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Slavmin\",\r\n    \"email\": \"example1@example.com\",\r\n    \"password\": \"passWord236\",\r\n    \"password_confirmation\": \"passWord236\",\r\n    \"tour_operator_id\": \"1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Очищаем токен при выходе",
+									"pm.collectionVariables.set('auth-token', '');",
+									"console.log('Токен очищен');",
+									"",
+									"// Проверяем успешность выхода",
+									"if (pm.response.code === 200) {",
+									"    console.log('Выход выполнен успешно');",
+									"} else {",
+									"    console.log('Ошибка при выходе:', pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@example.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"password\",\r\n    \"password_confirmation\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/reset-password?token=987e86f0bb7b51aee48b7fcb0679f154522df548bbc66f0846e9593e2624dbfb&email=admin@example.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "987e86f0bb7b51aee48b7fcb0679f154522df548bbc66f0846e9593e2624dbfb"
+								},
+								{
+									"key": "email",
+									"value": "admin@example.com"
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Email Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"169997\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/email/verify/code",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"email",
+								"verify",
+								"code"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Email Verification Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/email/resend",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"email",
+								"resend"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"password\",\r\n    \"password_confirmation\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"user"
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Get Operators List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/operators",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"operators"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "id",
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Countries  List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/countries",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"countries"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "-name",
+									"disabled": true
+								},
+								{
+									"key": "filter[code]",
+									"value": "RU",
+									"disabled": true
+								},
+								{
+									"key": "filter[name]",
+									"value": "Россия,Болгария",
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities List By Country ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/countries/163/cities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"countries",
+								"163",
+								"cities"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "-name",
+									"disabled": true
+								},
+								{
+									"key": "filter[name]",
+									"value": "Петербург,Москва",
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities List By Country Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/countries/ru/cities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"countries",
+								"ru",
+								"cities"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "-name",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "id",
+									"disabled": true
+								},
+								{
+									"key": "filter[name]",
+									"value": "Петербург,москва",
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "Get Users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"packages": {},
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/users",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"users"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get User by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/users/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"users",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tour Operators",
+					"item": [
+						{
+							"name": "Get Operators",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operators",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operators"
+									],
+									"query": [
+										{
+											"key": "sort",
+											"value": "id",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Operator by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/manage/operators/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"manage",
+										"operators",
+										"{{id}}"
+									]
+								},
+								"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "Bearer {{auth-token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api"
+		},
+		{
+			"key": "auth-token",
+			"value": ""
+		}
+	]
+}
