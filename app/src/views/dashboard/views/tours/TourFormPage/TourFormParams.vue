@@ -198,6 +198,11 @@
     <TourFormCalculations
       v-model:currentItem="tour"
     />
+
+    <TourFormCost
+      v-model:currentItem="tour"
+      :editMode="editMode"
+    />
   </div>
 </template>
 
@@ -213,6 +218,7 @@ import CitySelector from '@/components/dashboard/tours/CitySelector.vue';
 import { usePlacesStore } from '@/stores/places';
 import type { City } from '@/types/city';
 import TourFormCalculations from './TourFormCalculations.vue';
+import TourFormCost from './TourFormCost.vue';
 
 
 const props = defineProps<{

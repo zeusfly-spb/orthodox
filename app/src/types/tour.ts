@@ -61,6 +61,7 @@ export interface TourCalculations {
   totalCost: number;
 }
 
+
 export interface Tour {
   id: number | string;
   title: string;
