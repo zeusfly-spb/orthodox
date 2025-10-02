@@ -12,6 +12,7 @@ import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormNotes from './TourFormNotes.vue';
+import TourFormConditions from './TourFormConditions.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
 
@@ -40,6 +41,7 @@ const requestBody = computed(() => {
     'seats',
     'description',
     'notes',
+    'conditions',
     'is_active',
     'ownerable_id',
     'ownerable_type',
@@ -92,7 +94,7 @@ const loadTabFromUrl = () => {
   const tabFromUrl = route.query.tab as string;
   if (
     tabFromUrl &&
-    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
+    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'Conditions', 'TreeView'].includes(tabFromUrl)
   ) {
     activeTab.value = tabFromUrl;
   }
@@ -274,6 +276,11 @@ onUnmounted(() => {
       />
       <TourFormNotes 
         v-else-if="activeTab === 'Notes'" 
+        v-model:currentItem="currentItem" 
+        v-model:editMode="editMode" 
+      />
+      <TourFormConditions 
+        v-else-if="activeTab === 'Conditions'" 
         v-model:currentItem="currentItem" 
         v-model:editMode="editMode" 
       />

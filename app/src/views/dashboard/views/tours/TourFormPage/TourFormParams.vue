@@ -5,8 +5,8 @@
       <button
         :class="[
           'p-2 rounded-lg transition-colors touchable',
-          editMode 
-            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300' 
+          editMode
+            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300'
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200'
         ]"
         @click="handleEdit"
@@ -19,9 +19,9 @@
       <div class="params-column">
         <div class="param-item">
           <span class="param-label">Название паломнического тура</span>
-          <Input 
-            v-if="editMode" 
-            v-model="tourTitle" 
+          <Input
+            v-if="editMode"
+            v-model="tourTitle"
             class="param-input"
             placeholder="Введите название тура"
           />
@@ -32,15 +32,15 @@
 
         <div class="param-item">
           <span class="param-label">Тип тура</span>
-          <select 
-            v-if="editMode && tourTypes.length > 0" 
-            v-model="selectedTourTypeId" 
+          <select
+            v-if="editMode && tourTypes.length > 0"
+            v-model="selectedTourTypeId"
             class="param-select"
           >
             <option value="" disabled>Выберите тип тура</option>
-            <option 
-              v-for="type in tourTypes" 
-              :key="type.id" 
+            <option
+              v-for="type in tourTypes"
+              :key="type.id"
               :value="type.id"
             >
               {{ type.title }}
@@ -53,15 +53,15 @@
 
         <div class="param-item">
           <span class="param-label">Логистика тура</span>
-          <select 
-            v-if="editMode && tourTransports.length > 0" 
-            v-model="selectedTourTransportId" 
+          <select
+            v-if="editMode && tourTransports.length > 0"
+            v-model="selectedTourTransportId"
             class="param-select"
           >
             <option value="" disabled>Выберите логистику</option>
-            <option 
-              v-for="transport in tourTransports" 
-              :key="transport.id" 
+            <option
+              v-for="transport in tourTransports"
+              :key="transport.id"
               :value="transport.id"
             >
               {{ transport.title }}
@@ -74,15 +74,15 @@
 
         <div class="param-item">
           <span class="param-label">Категория тура</span>
-          <select 
-            v-if="editMode && tourCategories.length > 0" 
-            v-model="selectedTourCategoryId" 
+          <select
+            v-if="editMode && tourCategories.length > 0"
+            v-model="selectedTourCategoryId"
             class="param-select"
           >
             <option value="" disabled>Выберите категорию</option>
-            <option 
-              v-for="category in tourCategories" 
-              :key="category.id" 
+            <option
+              v-for="category in tourCategories"
+              :key="category.id"
               :value="category.id"
             >
               {{ category.title }}
@@ -95,8 +95,8 @@
 
         <div class="param-item">
           <span class="param-label">Страны</span>
-          <CountrySelector 
-            v-if="editMode" 
+          <CountrySelector
+            v-if="editMode"
             v-model="countries"
             :all-countries="allCountries"
             class="param-input"
@@ -123,8 +123,8 @@
       <div class="params-column">
         <div class="param-item">
           <span class="param-label">Города</span>
-          <CitySelector 
-            v-if="editMode" 
+          <CitySelector
+            v-if="editMode"
             v-model="cities"
             :selected-country-ids="selectedCountryIds"
             class="param-input"
@@ -136,9 +136,9 @@
 
         <div class="param-item">
           <span class="param-label">Количество дней</span>
-          <Input 
-            v-if="editMode" 
-            v-model="tourDuration" 
+          <Input
+            v-if="editMode"
+            v-model="tourDuration"
             type="number"
             class="param-input"
             placeholder="Введите количество дней"
@@ -150,8 +150,8 @@
         <div class="param-item">
           <span class="param-label">Время начала</span>
           <div v-if="editMode" class="time-input-container">
-            <Input 
-              v-model="tourStartTime" 
+            <Input
+              v-model="tourStartTime"
               type="time"
               class="param-input"
             />
@@ -164,8 +164,8 @@
         <div class="param-item">
           <span class="param-label">Дата начала</span>
           <div v-if="editMode" class="date-input-container">
-            <Input 
-              v-model="tourStartDate" 
+            <Input
+              v-model="tourStartDate"
               type="date"
               class="param-input"
             />
@@ -177,23 +177,32 @@
 
         <div class="param-item">
           <span class="param-label">Сложность</span>
-          <DotControl 
+          <DotControl
               v-model:currentItem="tour"
               fieldName="difficulty"
-              :editMode="editMode"                                           
+              :editMode="editMode"
             />
         </div>
 
         <div class="param-item">
           <span class="param-label">Комфорт</span>
-            <DotControl 
+            <DotControl
               v-model:currentItem="tour"
               fieldName="comfort"
-              :editMode="editMode"                                           
+              :editMode="editMode"
             />
         </div>
       </div>
     </div>
+
+    <TourFormCalculations
+      v-model:currentItem="tour"
+    />
+
+    <TourFormCost
+      v-model:currentItem="tour"
+      :editMode="editMode"
+    />
   </div>
 </template>
 
@@ -208,6 +217,8 @@ import CountrySelector from '@/components/dashboard/tours/CountrySelector.vue';
 import CitySelector from '@/components/dashboard/tours/CitySelector.vue';
 import { usePlacesStore } from '@/stores/places';
 import type { City } from '@/types/city';
+import TourFormCalculations from './TourFormCalculations.vue';
+import TourFormCost from './TourFormCost.vue';
 
 
 const props = defineProps<{
@@ -257,9 +268,9 @@ const tourTitle = computed({
 
 const focusFirstInput = async () => {
   await nextTick();
-  
+
   const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
-  
+
   if (firstInput) {
     firstInput.focus();
   }
@@ -356,7 +367,7 @@ const tourStartDate = computed({
       tour.value = { ...tour.value, date: '' };
       return;
     }
-    
+
     tour.value = { ...tour.value, date: value };
   },
 });

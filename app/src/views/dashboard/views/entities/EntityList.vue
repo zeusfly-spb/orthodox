@@ -1,56 +1,51 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ConfirmDialog from '@/components/app/ConfirmDialog.vue';
 
 import DataTable from '@/components/dashboard/entities/DataTable.vue';
 import EntityForm from '@/components/dashboard/entities/EntityForm.vue';
-import { entityApi } from '@/api/entities.ts';
-import { useCrudActions } from '@/composables/useCrudActions';
 import Pagination from '@/components/app/Pagination.vue';
+import EntityListFilters from '@/components/dashboard/entities/EntityListFilters.vue';
 
+import { useEntitiesStore } from '@/stores/entities';
+import { storeToRefs } from 'pinia';
+
+const entitiesStore = useEntitiesStore();
+
+// Берем ВСЕ необходимые данные из store
 const {
   isLoading,
   showConfirm,
-  showForm,
-  handledItemId,
   items,
-  currentItem,
   pagination,
-  loadCollection,
-  handleSubmit,
-  handleEdit,
+  currentPage,
+  showForm,
+  currentItem
+} = storeToRefs(entitiesStore);
+
+// Берем ВСЕ необходимые методы из store
+const {
   handleDelete,
   onDeleteConfirm,
   onCancel,
-} = useCrudActions(entityApi, {
-  successMessage: 'Данные сохранены',
-  deleteMessage: 'Данные удалены',
-});
+  handlePageChange,
+  handleSubmit,
+  handleEdit
+} = entitiesStore;
 
-// Load API data
-loadCollection();
-
-// Filters
-const filters = ref({
-  search: '',
-  status: '',
-});
-
-const handlePageChange = (page: number) => {
-  loadCollection({
-    page,
-    ...filters.value,
-  });
+// Для открытия формы добавления
+const openAddForm = () => {
+  entitiesStore.showForm = true;
 };
 
-const applyFilters = () => {
-  // Сбрасываем на первую страницу при применении фильтров
-  loadCollection({
-    page: 1,
-    ...filters.value,
-  });
+// Обработчики (просто передаем вызовы в store)
+const handleEditWrapper = (id: string | number) => {
+  handleEdit(id);
+};
+
+const handleSubmitWrapper = (formData: any) => {
+  handleSubmit(formData);
 };
 </script>
 
@@ -58,40 +53,58 @@ const applyFilters = () => {
   <div class="ml-70">
     <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
       <div class="flex shrink-0 items-center justify-between gap-2">
-        <!-- Левая часть -->
         <div class="flex items-center gap-4 pl-4">
           <h1 class="text-lg font-bold text-muted-foreground">Объекты</h1>
         </div>
-        <!-- Правая часть -->
         <div class="flex items-center gap-4 pr-4">
           <Button
             class="bg-emerald-500 text-white shadow hover:bg-emerald-500/90 px-8 py-6"
-            @click="showForm = true"
+            @click="openAddForm"
           >
             Добавить объект
           </Button>
         </div>
       </div>
     </div>
+
     <Card class="mb-8 gap-0">
       <CardContent>
+        <div class="flex flex-col gap-6 rounded-xl py-6 mb-8">
+          <EntityListFilters />
+        </div>
+
+        <div v-if="isLoading" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p class="text-gray-500 mt-2">Загрузка объектов...</p>
+        </div>
+
+        <div v-else-if="items.length === 0" class="text-center py-8">
+          <p class="text-gray-500">Объекты не найдены</p>
+        </div>
+
         <DataTable
+          v-else
           :isLoading="isLoading"
           :collection="items"
-          @edit="handleEdit"
+          @edit="handleEditWrapper"
           @delete="handleDelete"
         />
       </CardContent>
-      <CardFooter class="muted border-t" v-if="pagination.currentPage && pagination.lastPage > 1">
+
+      <CardFooter
+        class="muted border-t"
+        v-if="!isLoading && pagination && pagination.lastPage > 1"
+      >
         <Pagination
-          :current-page="pagination.currentPage"
-          :per-page="pagination.perPage"
-          :total="pagination.total"
-          :last-page="pagination.lastPage"
+          :current-page="currentPage || 1"
+          :per-page="pagination.perPage || 10"
+          :total="pagination.total || 0"
+          :last-page="pagination.lastPage || 1"
           @update:current-page="handlePageChange"
         />
       </CardFooter>
     </Card>
+
     <EntityForm
       v-model:open="showForm"
       createTitle="Добавить объект"
@@ -101,8 +114,9 @@ const applyFilters = () => {
       cancel-text="Отмена"
       :item="currentItem"
       @dismiss="onCancel"
-      @submit="handleSubmit"
+      @submit="handleSubmitWrapper"
     />
+
     <ConfirmDialog
       v-model:show="showConfirm"
       title="Удалить запись?"
