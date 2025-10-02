@@ -129,6 +129,11 @@
                 НА ОДНОГО
               </div>
             </th>
+            <th v-if="editMode">
+              <div class="th-content">
+                УДАЛИТЬ
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -208,6 +213,16 @@
             <td>
               <span>{{ formatCurrency(calculatePerPersonAmount(expense)) }}</span>
             </td>
+            <td v-if="editMode">
+              <button
+                type="button"
+                class="delete-btn"
+                @click="deleteExpenseRow(index)"
+                title="Удалить строку"
+              >
+                <Trash2 class="w-4 h-4 text-red-500 hover:text-red-700" />
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -268,7 +283,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import type { Tour, TourCalculations, CalculationExpense } from '@/types/tour';
 import IconPlus from '@/components/icons/IconPlus.vue';
@@ -465,6 +480,14 @@ function updateExpenseField(index: number, field: keyof CalculationExpense, valu
 
 function handleEdit() {
   editMode.value = !editMode.value;
+}
+
+function deleteExpenseRow(index: number) {
+  const updatedExpenses = calculations.value.expenses.filter((_, i) => i !== index);
+  calculations.value = {
+    ...calculations.value,
+    expenses: updatedExpenses
+  };
 }
 
 </script>
