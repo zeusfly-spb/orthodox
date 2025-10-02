@@ -26,15 +26,15 @@ const filteredOrders = computed(() => {
 
   return booking.orders.filter(order => {
     // Поиск по названию тура
-    const matchesSearch = !filters.searchText ||
+    const matchesSearch = !filters.searchText || 
       order.title?.toLowerCase().includes(filters.searchText.toLowerCase());
 
     // Фильтр по статусу (ищем в bookings)
-    const matchesStatus = !filters.status ||
+    const matchesStatus = !filters.status || 
       order.bookings?.some(booking => booking.status === filters.status);
 
     // Фильтр по менеджеру
-    const matchesManager = !filters.manager ||
+    const matchesManager = !filters.manager || 
       order.bookings?.some(booking => booking.manager === filters.manager);
 
     return matchesSearch && matchesStatus && matchesManager;
@@ -262,7 +262,7 @@ onMounted(() => {
             />
             </div>
           </div>
-
+        
           <!-- Теги -->
           <div class="tags-container">
             <div class="tags-list">
@@ -366,7 +366,7 @@ onMounted(() => {
         </table>
       </div>
       </div>
-
+    
         <div v-if="filteredOrders.length === 0" class="no-results">
       <p>По вашему запросу ничего не найдено</p>
     </div>
