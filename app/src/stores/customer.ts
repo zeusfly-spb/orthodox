@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, reactive } from 'vue';
 import { partnerApi } from '@/api/partners';
-import type { Tourist } from '@/types';
+import type { Tourist } from '@/types/booking';
+
 
 export const useCustomerStore = defineStore('customer', () => {
   const clientNames = ref<string[]>([]);
@@ -16,20 +17,7 @@ export const useCustomerStore = defineStore('customer', () => {
     email: '',
     phone: '',
     payment_status: '',
-    description: '',
-    json_attributes: null,
-    passport_series: '',
-    passport_number: '',
-    passport_issue_date: '',
-    passport_unit_name: '',
-    passport_unit_code: '',
-    passport_birth_date: '',
-    passport_birth_place: '',
-    passport_address: '',
-    gender: '',
-    snils: '',
-    created_at: '',
-    updated_at: '',
+  
   });
 
   const fetchClientNames = async () => {
