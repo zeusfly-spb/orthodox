@@ -18,6 +18,7 @@ const {
   items,
   currentItem,
   pagination,
+  pagination,
   loadCollection,
   handleSubmit,
   handleEdit,
@@ -30,12 +31,21 @@ const {
 });
 
 // Load API data
+// Load API data
 loadCollection();
 
+// Filters
 // Filters
 const filters = ref({
   search: '',
   status: '',
+});
+
+const handlePageChange = (page: number) => {
+  loadCollection({
+    page,
+    ...filters.value,
+  });
 });
 
 const handlePageChange = (page: number) => {
@@ -78,6 +88,7 @@ const applyFilters = () => {
         <DataTable
           :isLoading="isLoading"
           :collection="items"
+          :collection="items"
           @edit="handleEdit"
           @delete="handleDelete"
         />
@@ -113,3 +124,4 @@ const applyFilters = () => {
     />
   </div>
 </template>
+
