@@ -116,7 +116,7 @@
             </th>
             <th>
               <div class="th-content">
-                КОЛ-ВО платильщикОВ (ЧЕЛ)
+                КОЛ-ВО плательщикОВ (ЧЕЛ)
               </div>
             </th>
             <th>
@@ -127,6 +127,11 @@
             <th>
               <div class="th-content">
                 НА ОДНОГО
+              </div>
+            </th>
+            <th v-if="editMode">
+              <div class="th-content">
+                УДАЛИТЬ
               </div>
             </th>
           </tr>
@@ -208,6 +213,16 @@
             <td>
               <span>{{ formatCurrency(calculatePerPersonAmount(expense)) }}</span>
             </td>
+            <td v-if="editMode">
+              <button
+                type="button"
+                class="delete-btn"
+                @click="deleteExpenseRow(index)"
+                title="Удалить строку"
+              >
+                <Trash2 class="w-4 h-4 text-red-500 hover:text-red-700" />
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -268,7 +283,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import type { Tour, TourCalculations, CalculationExpense } from '@/types/tour';
 import IconPlus from '@/components/icons/IconPlus.vue';
@@ -440,7 +455,7 @@ const totalCost = computed(() => {
 });
 
 const summaryItems = computed(() => [
-  { label: 'Себестоимость на 1 платильщика:', value: formatCurrency(costPerPayer.value), currency: true },
+  { label: 'Себестоимость на 1 плательщика:', value: formatCurrency(costPerPayer.value), currency: true },
   { label: 'Вид начисления НДС:', value: calculations.value.vatType, currency: false },
   { label: 'Наценка (руб,% выбрать):', value: markupPercent.value, currency: false, editable: true },
   { label: 'НДС в том числе:', value: formatCurrency(vatInPrice.value), currency: true, indent: true },
@@ -449,7 +464,7 @@ const summaryItems = computed(() => [
   { label: 'Наценка в руб:', value: formatCurrency(markupInRub.value), currency: true },
   { label: 'Итого с НДС:', value: formatCurrency(totalWithVat.value), currency: true },
   { label: 'Итого с наценкой:', value: formatCurrency(totalWithMarkup.value), currency: true },
-  { label: 'Итого цена на 1 платильщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
+  { label: 'Итого цена на 1 плательщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
   { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate, currency: false },
   { label: null },
 ]);
@@ -465,6 +480,14 @@ function updateExpenseField(index: number, field: keyof CalculationExpense, valu
 
 function handleEdit() {
   editMode.value = !editMode.value;
+}
+
+function deleteExpenseRow(index: number) {
+  const updatedExpenses = calculations.value.expenses.filter((_, i) => i !== index);
+  calculations.value = {
+    ...calculations.value,
+    expenses: updatedExpenses
+  };
 }
 
 </script>
