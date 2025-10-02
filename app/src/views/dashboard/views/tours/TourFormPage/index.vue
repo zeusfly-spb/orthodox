@@ -268,6 +268,7 @@ onUnmounted(() => {
       <TourFormMap 
         v-else-if="activeTab === 'Map'" 
         v-model:currentItem="currentItem" 
+        v-model:editMode="editMode"
       />
       <TourFormDesc 
         v-else-if="activeTab === 'Desc'" 
