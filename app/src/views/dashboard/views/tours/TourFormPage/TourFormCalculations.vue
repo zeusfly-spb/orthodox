@@ -116,7 +116,7 @@
             </th>
             <th>
               <div class="th-content">
-                КОЛ-ВО платильщикОВ (ЧЕЛ)
+                КОЛ-ВО плательщикОВ (ЧЕЛ)
               </div>
             </th>
             <th>
@@ -455,7 +455,7 @@ const totalCost = computed(() => {
 });
 
 const summaryItems = computed(() => [
-  { label: 'Себестоимость на 1 платильщика:', value: formatCurrency(costPerPayer.value), currency: true },
+  { label: 'Себестоимость на 1 плательщика:', value: formatCurrency(costPerPayer.value), currency: true },
   { label: 'Вид начисления НДС:', value: calculations.value.vatType, currency: false },
   { label: 'Наценка (руб,% выбрать):', value: markupPercent.value, currency: false, editable: true },
   { label: 'НДС в том числе:', value: formatCurrency(vatInPrice.value), currency: true, indent: true },
@@ -464,7 +464,7 @@ const summaryItems = computed(() => [
   { label: 'Наценка в руб:', value: formatCurrency(markupInRub.value), currency: true },
   { label: 'Итого с НДС:', value: formatCurrency(totalWithVat.value), currency: true },
   { label: 'Итого с наценкой:', value: formatCurrency(totalWithMarkup.value), currency: true },
-  { label: 'Итого цена на 1 платильщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
+  { label: 'Итого цена на 1 плательщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
   { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate, currency: false },
   { label: null },
 ]);
