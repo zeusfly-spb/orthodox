@@ -25,12 +25,12 @@ const props = defineProps<{
 }>();
 const translateStatus = (status: BookingStatuses): string => {
   const statusMap: Record<BookingStatuses, string> = {
-    pending: 'Ожидание',
-    confirmed: 'Подтверждено',
-    cancelled: 'Отменено',
+    pending: 'В ожидании',
+    confirmed: 'В работе',
+    cancelled: 'Аннулированно',
     completed: 'Завершено'
   };
-  
+
   return statusMap[status] || status;
 };
 </script>
