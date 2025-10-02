@@ -24,7 +24,6 @@ export const useCrudActions = <T>(
     try {
       isLoading.value = true;
       await getAll(params);
-      console.log(items.value);
       isLoading.value = false;
     } catch (error) {
       await handleError(error);

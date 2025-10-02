@@ -10,13 +10,6 @@ const app = createApp(App);
 
 
 app.use(createPinia());
-
-
-
-app.config.errorHandler = (err, instance, info) => {
-  console.error('Global error handler:', err)
-  console.error('Vue instance:', instance)
-  console.error('Error info:', info)
-}
 app.use(router);
+
 app.mount('#app');

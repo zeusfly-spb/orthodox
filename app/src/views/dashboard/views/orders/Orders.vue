@@ -7,32 +7,17 @@ import { ref, onMounted, reactive,computed } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
-import StatusSelector from '@/components/selectors/statuses/StatusSelector.vue';
+
 const booking = useBookingStore();
 
 const filters = reactive({
   searchText: '',
   status: '',
   manager: '',
-  payment_status: '',
-  order: {
-    start: '',
-    end: ''
-  },
-  tour_period: {
-    start: '',
-    end: ''
-  }
-})
+  days: 1
+});
 
-
-const statusOptions = [
-  { value: '', label: 'Все', color: 'bg-gray-400' },
-  { value: '', label: 'Опубликованно', color: 'bg-green-400' },
-  { value: '', label: 'По заявке', color: 'bg-yellow-400' },
-  { value: '', label: 'Базовый', color: 'bg-blue-400'},
-  { value: '', label: 'Не опубликованно', color: 'bg-red-400' }
-]
+const statusList = ['confirmed', 'pending'];
 const managerList = computed(() => booking.managers || []);
 
 // Фильтрация заказов
@@ -57,7 +42,12 @@ const filteredOrders = computed(() => {
 });
 
 // Сброс фильтров
-
+function resetFilters() {
+  filters.searchText = '';
+  filters.status = '';
+  filters.manager = '';
+  filters.days = 1;
+}
 
 async function loadAllData() {
   try {
@@ -66,14 +56,13 @@ async function loadAllData() {
       managerApi.fetchData(),
     ]);
 
-    
     booking.managers = managersResponse.data.map((m) => m.name);
 
     // Загружаем полные данные по каждому туру
     const toursWithDetails = await Promise.all(
       toursResponse.data.map((tour) => tourApi.getData(tour.id).then((res) => res.data)),
     );
-    console.log("Tours",toursResponse)
+
     // Объединяем базовую информацию с bookings
     booking.orders = toursResponse.data.map((tour, index) => ({
       ...tour,
@@ -82,105 +71,6 @@ async function loadAllData() {
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
   }
-}
-// const filteredOrders = computed(() => {
-//   return orders.value.filter(order => {
-//     const matchesSearch = !filters.searchText || 
-//       order.tour?.title?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-//       order.customers?.[0]?.email?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-//       order.id.toString().includes(filters.searchText)
-
-//     const matchesStatus = !filters.status || order.status === filters.status
-//     const matchesPaymentStatus = !filters.payment_status || order.payment_status === filters.payment_status
-
-//     const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
-//       (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end))
-
-//     const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
-//       (order.tour?.date_start && isDateInRange(order.tour.date_start, filters.tour_period.start, filters.tour_period.end))
-
-//     return matchesSearch && matchesStatus && matchesPaymentStatus && matchesOrderDateRange && matchesTourPeriod
-//   })
-// })
-
-const activeFiltersCount = computed(() => {
-  let count = 0
-  if (filters.searchText) count++
-  if (filters.status) count++
-  if (filters.payment_status) count++
-  if (filters.manager) count++
-  if (filters.order.start && filters.order.end) count++
-  if (filters.tour_period.start && filters.tour_period.end) count++
-  return count
-})
-
-// Methods
-function resetFilters() {
-  filters.searchText = ''
-  filters.status = ''
-  filters.manager = ''
-  filters.payment_status = ''
-  filters.order = { start: '', end: '' }
-  filters.tour_period = { start: '', end: '' }
-}
-
-function isDateInRange(date, start, end) {
-  const checkDate = new Date(date)
-  const startDate = new Date(start)
-  const endDate = new Date(end)
-  return checkDate >= startDate && checkDate <= endDate
-}
-
-function formatDate(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  })
-}
-
-function getStatusClass(status) {
-  const statusClasses = {
-    'confirmed': 'bg-emerald-100 text-emerald-800',
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'completed': 'bg-blue-100 text-blue-800',
-    'cancelled': 'bg-red-100 text-red-800'
-  }
-  return statusClasses[status] || 'bg-gray-100 text-gray-800'
-}
-
-function getStatusLabel(status) {
-  const statusLabels = {
-    'confirmed': 'Подтверждена',
-    'pending': 'Новая',
-    'completed': 'Завершена',
-    'cancelled': 'Отменена'
-  }
-  return statusLabels[status] || status
-}
-
-function getPaymentStatusClass(status) {
-  const statusClasses = {
-    'paid': 'bg-emerald-100 text-emerald-800',
-    'paid_partially': 'bg-yellow-100 text-yellow-800',
-    'pending': 'bg-orange-100 text-orange-800',
-    'cancelled': 'bg-red-100 text-red-800',
-    'refunded': 'bg-gray-100 text-gray-800'
-  }
-  return statusClasses[status] || 'bg-gray-100 text-gray-800'
-}
-
-function getPaymentStatusLabel(status) {
-  const statusLabels = {
-    'paid': 'Оплачено',
-    'paid_partially': 'Частично оплачено',
-    'pending': 'Не оплачено',
-    'cancelled': 'Отменено',
-    'refunded': 'Возврат'
-  }
-  return statusLabels[status] || status
 }
 
 onMounted(() => {
@@ -225,12 +115,8 @@ onMounted(() => {
 
           <div class="filters-scroll-container">
             <div class="filters-grid">
-  <StatusSelector
-              v-model="filters.status"
-              :options="statusOptions"
-              mode="dropdown"
-              placeholder="Статус"
-            />              <UDropdown :list="booking.managers" v-model="filters.manager" />
+              <UDropdown :list="statusList" v-model="filters.status" />
+              <UDropdown :list="booking.managers" v-model="filters.manager" />
 
               <!-- Фильтр по периоду создания -->
               <div class="filter-item">
@@ -452,15 +338,9 @@ onMounted(() => {
                 {{ item.bookings.length }}
               </td>
               <td>
-      
-                        <span 
-                          :class="[
-                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                            getStatusClass(booking.status)
-                          ]"
-                        >
-                          {{ getStatusLabel(booking.status) }}
-                        </span>
+                <div class="status-item">
+                  <span class="status-name" v-show="val.status">{{ val.status }}</span>
+                </div>
               </td>
               <td>
                 <div class="actions-container">
