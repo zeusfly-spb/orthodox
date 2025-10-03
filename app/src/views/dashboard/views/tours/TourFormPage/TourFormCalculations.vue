@@ -257,13 +257,43 @@
             class="summary-item"
             :class="{ 'summary-highlight': item.highlight, 'summary-indent': item.indent }"
           >
-            <span class="summary-label">{{ item.label }}</span>
-            <input
-              v-if="item.editable && editMode"
-              v-model.number="markupPercent"
-              type="number"
-              class="summary-input"
-            />
+            <div class="summary-label-container">
+              <span class="summary-label">{{ item.label }}</span>
+              <div v-if="item.editable && editMode" class="markup-toggle">
+                <button
+                  type="button"
+                  class="markup-toggle-btn"
+                  :class="{ active: markupMode === 'percent' }"
+                  @click="markupMode = 'percent'"
+                >
+                  проценты %
+                </button>
+                <button
+                  type="button"
+                  class="markup-toggle-btn"
+                  :class="{ active: markupMode === 'rubles' }"
+                  @click="markupMode = 'rubles'"
+                >
+                  рубли
+                </button>
+              </div>
+            </div>
+            <div v-if="item.editable && editMode" class="markup-input-container">
+              <input
+                v-if="markupMode === 'percent'"
+                v-model.number="markupPercent"
+                type="number"
+                class="summary-input"
+                placeholder="%"
+              />
+              <input
+                v-else
+                v-model.number="markupInRoubles"
+                type="number"
+                class="summary-input"
+                placeholder="₽"
+              />
+            </div>
             <span v-else class="summary-value">
               {{ item.value }}{{ item.currency ? ' ₽' : '' }}
             </span>
@@ -397,6 +427,7 @@ function formatCurrency(value: number): string {
 }
 
 const editMode = ref(false);
+const markupMode = ref('percent'); // 'percent' or 'rubles'
 
 function calculatePerPersonAmount(expense: CalculationExpense): number {
   if (!expense.payers || expense.payers === 0) {
@@ -405,6 +436,7 @@ function calculatePerPersonAmount(expense: CalculationExpense): number {
   return expense.totalAmount / expense.payers;
 }
 
+//Себестоимость на 1 плательщика
 const costPerPayer = computed(() => {
   return calculations.value.expenses.reduce(
     (sum, expense) => sum + calculatePerPersonAmount(expense),
@@ -412,6 +444,7 @@ const costPerPayer = computed(() => {
   );
 });
 
+//Наценка в процентах
 const markupPercent = computed({
   get: () => calculations.value.markup,
   set: (value: number) => {
@@ -419,34 +452,56 @@ const markupPercent = computed({
   }
 });
 
+//Наценка в рублях (редактируемое поле)
+const markupInRoubles = computed({
+  get: () => {
+    return (costPerPayer.value * markupPercent.value) / 100;
+  },
+  set: (value: number) => {
+    if (costPerPayer.value > 0) {
+      const newMarkupPercent = (value * 100) / costPerPayer.value;
+      calculations.value = { ...calculations.value, markup: newMarkupPercent };
+    }
+  }
+});
+
+
+//Итого с наценкой
 const totalWithMarkup = computed(() => {
   return costPerPayer.value * (markupPercent.value / 100) + costPerPayer.value;
 });
 
+//Размер наценки
 const markupAmount = computed(() => {
   return totalWithMarkup.value - costPerPayer.value;
 });
 
+//Наценка в рублях
 const markupInRub = computed(() => {
   return markupAmount.value;
 });
 
+//НДС в том числе
 const vatInPrice = computed(() => {
   return (totalWithMarkup.value * calculations.value.vatRate) / (100 + calculations.value.vatRate);
 });
 
+//НДС начислить сверху
 const vatOnTop = computed(() => {
   return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
 });
 
+//Итого с НДС
 const totalWithVat = computed(() => {
   return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
 });
 
+//Итого цена на 1 плательщика
 const pricePerPayer = computed(() => {
   return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
 });
 
+//Итого стоимость
 const totalCost = computed(() => {
   return calculations.value.expenses.reduce(
     (sum, expense) => sum + (expense.totalAmount || 0),
@@ -457,7 +512,7 @@ const totalCost = computed(() => {
 const summaryItems = computed(() => [
   { label: 'Себестоимость на 1 плательщика:', value: formatCurrency(costPerPayer.value), currency: true },
   { label: 'Вид начисления НДС:', value: calculations.value.vatType, currency: false },
-  { label: 'Наценка (руб,% выбрать):', value: markupPercent.value, currency: false, editable: true },
+  { label: 'Наценка:', value: markupMode.value === 'percent' ? markupPercent.value + '%' : formatCurrency(markupInRoubles.value) + ' ₽', currency: false, editable: true },
   { label: 'НДС в том числе:', value: formatCurrency(vatInPrice.value), currency: true, indent: true },
   { label: 'Размер наценки:', value: formatCurrency(markupAmount.value), currency: true },
   { label: 'НДС начислить сверху:', value: formatCurrency(vatOnTop.value), currency: true, indent: true },
@@ -489,6 +544,7 @@ function deleteExpenseRow(index: number) {
     expenses: updatedExpenses
   };
 }
+
 
 </script>
 
@@ -831,6 +887,54 @@ function deleteExpenseRow(index: number) {
 .summary-highlight .summary-value {
   font-weight: 600;
   color: #1e293b;
+}
+
+.summary-label-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.markup-input-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.markup-toggle {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.markup-toggle-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  color: #6b7280;
+  border-right: 1px solid #e2e8f0;
+}
+
+.markup-toggle-btn:last-child {
+  border-right: none;
+}
+
+.markup-toggle-btn:hover {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.markup-toggle-btn.active {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.markup-toggle-btn.active:hover {
+  background-color: #059669;
 }
 
 .total-cost {
