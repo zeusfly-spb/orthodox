@@ -3,7 +3,7 @@ import { managerApi } from '@/api/managers';
 import UButton from '@/components/ui/UButton.vue';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import { ref, onMounted, reactive,computed } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
@@ -15,6 +15,10 @@ const filters = reactive({
   status: '',
   manager: '',
   payment_status: '',
+  city: '',
+  country: '',
+  difficulty: '',
+  comfort: '',
   order: {
     start: '',
     end: ''
@@ -25,83 +29,90 @@ const filters = reactive({
   }
 })
 
-
 const statusOptions = [
   { value: '', label: 'Все', color: 'bg-gray-400' },
-  { value: '', label: 'Опубликованно', color: 'bg-green-400' },
-  { value: '', label: 'По заявке', color: 'bg-yellow-400' },
-  { value: '', label: 'Базовый', color: 'bg-blue-400'},
-  { value: '', label: 'Не опубликованно', color: 'bg-red-400' }
+  { value: 'published', label: 'Опубликованно', color: 'bg-green-400' },
+  { value: 'on_request', label: 'По заявке', color: 'bg-yellow-400' },
+  { value: 'basic', label: 'Базовый', color: 'bg-blue-400'},
+  { value: 'unpublished', label: 'Не опубликованно', color: 'bg-red-400' }
 ]
+
 const managerList = computed(() => booking.managers || []);
 
-// Фильтрация заказов
+// Compute options for new filters from data
+const cityOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const cities = [...new Set(booking.orders.map(order => order.city?.title || order.city).filter(Boolean))];
+  return [{ value: '', label: 'Все города' }, ...cities.map(city => ({ value: city, label: city }))];
+});
+
+const countryOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const countries = [...new Set(booking.orders.map(order => order.country?.title || order.country).filter(Boolean))];
+  return [{ value: '', label: 'Все страны' }, ...countries.map(country => ({ value: country, label: country }))];
+});
+
+const difficultyOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const difficulties = [...new Set(booking.orders.map(order => order.difficulty).filter(Boolean))];
+  return [{ value: '', label: 'Все уровни сложности' }, ...difficulties.map(diff => ({ value: diff, label: diff }))];
+});
+
+const comfortOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const comforts = [...new Set(booking.orders.map(order => order.comfort).filter(Boolean))];
+  return [{ value: '', label: 'Все уровни комфорта' }, ...comforts.map(comfort => ({ value: comfort, label: comfort }))];
+});
+
+// Фильтрация заказов (adapted from commented version, added new filters)
 const filteredOrders = computed(() => {
   if (!booking.orders || !Array.isArray(booking.orders)) return [];
 
   return booking.orders.filter(order => {
-    // Поиск по названию тура
+    // Поиск по названию тура, маршруту, описанию
     const matchesSearch = !filters.searchText || 
-      order.title?.toLowerCase().includes(filters.searchText.toLowerCase());
+      order.title?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
+      order.route?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
+      order.description?.toLowerCase().includes(filters.searchText.toLowerCase());
 
-    // Фильтр по статусу (ищем в bookings)
-    const matchesStatus = !filters.status || 
+    // Фильтр по статусу (assume order has status or from bookings)
+    const matchesStatus = !filters.status || order.status === filters.status || 
       order.bookings?.some(booking => booking.status === filters.status);
 
-    // Фильтр по менеджеру
+    // Фильтр по менеджеру (from bookings)
     const matchesManager = !filters.manager || 
       order.bookings?.some(booking => booking.manager === filters.manager);
 
-    return matchesSearch && matchesStatus && matchesManager;
+    // Фильтр по статусу оплаты (assume from bookings or order)
+    const matchesPaymentStatus = !filters.payment_status || 
+      order.payment_status === filters.payment_status ||
+      order.bookings?.some(b => b.payment_status === filters.payment_status);
+
+    // Фильтр по городу
+    const matchesCity = !filters.city || order.city?.title === filters.city || order.city === filters.city;
+
+    // Фильтр по стране
+    const matchesCountry = !filters.country || order.country?.title === filters.country || order.country === filters.country;
+
+    // Фильтр по сложности
+    const matchesDifficulty = !filters.difficulty || order.difficulty === filters.difficulty;
+
+    // Фильтр по комфорту
+    const matchesComfort = !filters.comfort || order.comfort === filters.comfort;
+
+    // Фильтр по периоду создания
+    const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
+      (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end));
+
+    // Фильтр по периоду тура
+    const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
+      (order.date_start && isDateInRange(order.date_start, filters.tour_period.start, filters.tour_period.end));
+
+    return matchesSearch && matchesStatus && matchesManager && matchesPaymentStatus && 
+           matchesCity && matchesCountry && matchesDifficulty && matchesComfort && 
+           matchesOrderDateRange && matchesTourPeriod;
   });
 });
-
-// Сброс фильтров
-
-
-async function loadAllData() {
-  try {
-    const [toursResponse, managersResponse] = await Promise.all([
-      tourApi.fetchData(),
-      managerApi.fetchData(),
-    ]);
-
-    
-    booking.managers = managersResponse.data.map((m) => m.name);
-
-    // Загружаем полные данные по каждому туру
-    const toursWithDetails = await Promise.all(
-      toursResponse.data.map((tour) => tourApi.getData(tour.id).then((res) => res.data)),
-    );
-    console.log("Tours",toursResponse)
-    // Объединяем базовую информацию с bookings
-    booking.orders = toursResponse.data.map((tour, index) => ({
-      ...tour,
-      bookings: toursWithDetails[index].bookings || [],
-    }));
-  } catch (error) {
-    console.error('Ошибка загрузки данных:', error);
-  }
-}
-// const filteredOrders = computed(() => {
-//   return orders.value.filter(order => {
-//     const matchesSearch = !filters.searchText || 
-//       order.tour?.title?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-//       order.customers?.[0]?.email?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-//       order.id.toString().includes(filters.searchText)
-
-//     const matchesStatus = !filters.status || order.status === filters.status
-//     const matchesPaymentStatus = !filters.payment_status || order.payment_status === filters.payment_status
-
-//     const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
-//       (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end))
-
-//     const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
-//       (order.tour?.date_start && isDateInRange(order.tour.date_start, filters.tour_period.start, filters.tour_period.end))
-
-//     return matchesSearch && matchesStatus && matchesPaymentStatus && matchesOrderDateRange && matchesTourPeriod
-//   })
-// })
 
 const activeFiltersCount = computed(() => {
   let count = 0
@@ -109,6 +120,10 @@ const activeFiltersCount = computed(() => {
   if (filters.status) count++
   if (filters.payment_status) count++
   if (filters.manager) count++
+  if (filters.city) count++
+  if (filters.country) count++
+  if (filters.difficulty) count++
+  if (filters.comfort) count++
   if (filters.order.start && filters.order.end) count++
   if (filters.tour_period.start && filters.tour_period.end) count++
   return count
@@ -120,6 +135,10 @@ function resetFilters() {
   filters.status = ''
   filters.manager = ''
   filters.payment_status = ''
+  filters.city = ''
+  filters.country = ''
+  filters.difficulty = ''
+  filters.comfort = ''
   filters.order = { start: '', end: '' }
   filters.tour_period = { start: '', end: '' }
 }
@@ -183,6 +202,31 @@ function getPaymentStatusLabel(status) {
   return statusLabels[status] || status
 }
 
+async function loadAllData() {
+  try {
+    const [toursResponse, managersResponse] = await Promise.all([
+      tourApi.fetchData(),
+      managerApi.fetchData(),
+    ]);
+
+    booking.managers = managersResponse.data.map((m) => m.name);
+
+    // Загружаем полные данные по каждому туру
+    const toursWithDetails = await Promise.all(
+      toursResponse.data.map((tour) => tourApi.getData(tour.id).then((res) => res.data)),
+    );
+    console.log("Tours",toursResponse)
+    // Объединяем базовую информацию с bookings (assume bookings are part of details or add if needed)
+    booking.orders = toursResponse.data.map((tour, index) => ({
+      ...tour,
+      ...toursWithDetails[index], // Merge details
+      bookings: toursWithDetails[index].bookings || [], // If bookings exist
+    }));
+  } catch (error) {
+    console.error('Ошибка загрузки данных:', error);
+  }
+}
+
 onMounted(() => {
   loadAllData();
 });
@@ -230,7 +274,8 @@ onMounted(() => {
               :options="statusOptions"
               mode="dropdown"
               placeholder="Статус"
-            />              <UDropdown :list="booking.managers" v-model="filters.manager" />
+            />  
+                        <!-- <UDropdown :list="booking.managers" v-model="filters.manager" /> -->
 
               <!-- Фильтр по периоду создания -->
               <div class="filter-item">
@@ -459,7 +504,7 @@ onMounted(() => {
                             getStatusClass(booking.status)
                           ]"
                         >
-                          {{ getStatusLabel(booking.status) }}
+                       {{ booking.status }}
                         </span>
               </td>
               <td>
