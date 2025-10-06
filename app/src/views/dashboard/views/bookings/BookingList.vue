@@ -80,7 +80,7 @@ const filteredItems = computed(() => {
     return matches;
   });
 });
-
+// пагинация не работает
 const statusOptions = [
   { value: '', label: 'Все статусы' },
   { value: 'pending', label: 'В ожидании' },
