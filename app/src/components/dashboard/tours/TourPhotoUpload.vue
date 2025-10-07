@@ -9,10 +9,11 @@
         >
           <div class="photo-wrapper">
             <img
-              :src="photo.path"
+              :src="getPhotoSrc(photo, index)"
               :alt="`Photo ${index + 1}`"
               class="photo-image"
               :class="{ 'uploading': photo.isPreview }"
+              @error="handleImageError(photo, index, $event)"
             />
             <div v-if="photo.isPreview" class="upload-overlay">
               <div class="upload-spinner"></div>
@@ -81,8 +82,11 @@ const emit = defineEmits<Emits>();
 
 const fileInput = ref<HTMLInputElement>();
 const showAll = ref(false);
+const fallbackSrcMap = ref<Record<string, string>>({});
 
 const maxVisiblePhotos = 3;
+
+const API_FALLBACK_URL = 'https://orthodox-api.zeusfly.ru';
 
 const visiblePhotos = computed(() => {
   if (props.editMode || showAll.value) {
@@ -121,6 +125,53 @@ const removePhoto = (index: number) => {
     emit('delete', photo.id);
   }
 };
+
+
+//prepend fall back url if image is not loaded using relative path
+const isAbsoluteUrl = (url: string) => /^(https?:|blob:|data:)/i.test(url);
+
+const createPhotoKey = (photo: any, index: number) => {
+  if (photo && (photo.id || photo.id === 0)) {
+    return String(photo.id);
+  }
+  if (photo?.path) {
+    return photo.path;
+  }
+  return `index-${index}`;
+};
+
+const getPhotoSrc = (photo: any, index: number) => {
+  const key = createPhotoKey(photo, index);
+  return fallbackSrcMap.value[key] || photo?.path || '';
+};
+
+const handleImageError = (photo: any, index: number, event: Event) => {
+  const target = event.target as HTMLImageElement | null;
+  if (!target) {
+    return;
+  }
+
+  const key = createPhotoKey(photo, index);
+
+  if (fallbackSrcMap.value[key]) {
+    return;
+  }
+
+  const originalPath = photo?.path || '';
+
+  if (!originalPath || isAbsoluteUrl(originalPath) || photo?.isPreview) {
+    return;
+  }
+
+  const normalizedPath = originalPath.startsWith('/') ? originalPath : `/${originalPath}`;
+  const fallbackSrc = `${API_FALLBACK_URL}${normalizedPath}`;
+
+  fallbackSrcMap.value = {
+    ...fallbackSrcMap.value,
+    [key]: fallbackSrc
+  };
+};
+
 </script>
 
 <style scoped>
