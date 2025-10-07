@@ -112,7 +112,6 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import type { Tour, DayItem } from '@/types/tour';
 import { computed, ref, nextTick, watch } from 'vue';
 import TourPhotoUpload from '@/components/dashboard/tours/TourPhotoUpload.vue';
-import PhotoUpload from '@/components/ui/photo-upload/PhotoUpload.vue';
 import { tourApi } from '@/api/tours';
 
 const props = defineProps<{
