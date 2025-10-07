@@ -1,8 +1,34 @@
 import type { Service } from './service';
 
+export interface TourDayImage {
+  id: number;
+  title: string | null;
+  description: string | null;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  path: string;
+  disk: string;
+  size: number;
+  width: number;
+  height: number;
+  imageable_type: string;
+  imageable_id: number;
+  gallery: string;
+  sort_order: number;
+  is_featured: boolean;
+  metadata: {
+    exif: any[];
+  };
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DayItem {
   title: string;
   description: string;
+  photos?: string[];
+  images?: TourDayImage[];
 }
 
 export interface TourNote {
