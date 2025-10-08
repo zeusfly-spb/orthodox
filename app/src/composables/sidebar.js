@@ -29,12 +29,6 @@ export const paragraph = [
     linkName: 'dashboard-home',
     name: 'Профиль ПС',
   },
-  {
-    id: 6,
-    image: '/svg/data.svg',
-    linkName: 'tours-bookings-list',
-    name: 'Заявки',
-  },
 ];
 
 export const catalog = [

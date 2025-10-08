@@ -8,10 +8,10 @@ export function useApiClient<T>(apiClient: ReturnType<typeof createApiClient<T>>
   const currentItem = ref<T | null>(null);
   const error = ref<ApiError | null>(null);
   const pagination = ref({
-    currentPage: 1,
-    lastPage: 1,
-    perPage: 1,
-    total: 1,
+    currentPage: null,
+    lastPage: null,
+    perPage: null,
+    total: null,
   });
 
   const handleError = (err: unknown) => {

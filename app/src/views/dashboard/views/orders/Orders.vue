@@ -7,7 +7,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
-import StatusSelector from '@/components/selectors/statuses/StatusSelector.vue';
+
 const booking = useBookingStore();
 
 const filters = reactive({

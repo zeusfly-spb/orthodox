@@ -17,22 +17,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import type { BookingStatuses } from '@/types/statuses/statuses';
 
 const props = defineProps<{
   isLoading: boolean;
   collection?: any[] | undefined;
 }>();
-const translateStatus = (status: BookingStatuses): string => {
-  const statusMap: Record<BookingStatuses, string> = {
-    pending: 'В ожидании',
-    confirmed: 'В работе',
-    cancelled: 'Аннулированно',
-    completed: 'Завершено'
-  };
-
-  return statusMap[status] || status;
-};
 </script>
 
 <template>
@@ -61,7 +50,7 @@ const translateStatus = (status: BookingStatuses): string => {
         </TableCell>
         <TableCell>{{ item?.customers[0].firstname }}</TableCell>
         <TableCell>{{ item?.customers[0].lastname }}</TableCell>
-        <TableCell>{{ translateStatus(item.status) }}</TableCell>
+        <TableCell>{{ item.status }}</TableCell>
         <TableCell>
           {{ item.created_at }}
         </TableCell>
