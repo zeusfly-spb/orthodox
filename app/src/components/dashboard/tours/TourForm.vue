@@ -37,8 +37,8 @@ const parametersData = ref<any>([]);
 
 const fetchParameters = async () => {
   try {
-    const response = await tourApi.getData('parameters');
-    parametersData.value = response.data;
+    const response = await tourApi.getParameters();
+    parametersData.value = response;
   } catch (error) {
     toast.error('Ошибка при загрузке параметров');
     console.error(error);

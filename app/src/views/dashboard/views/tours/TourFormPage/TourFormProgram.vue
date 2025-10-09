@@ -5,8 +5,8 @@
       <button
         :class="[
           'p-2 rounded-lg transition-colors touchable',
-          editMode 
-            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300' 
+          editMode
+            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300'
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200'
         ]"
         @click="handleEdit"
@@ -55,8 +55,8 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Название дня:</label>
-                <input 
-                  v-model="currentDayTitle" 
+                <input
+                  v-model="currentDayTitle"
                   class="form-input"
                   placeholder="Введите название дня"
                 />
@@ -67,13 +67,30 @@
                   v-model="currentDayDescription" 
                   class="form-textarea"
                   placeholder="Введите описание программы дня"
-                  rows="4"
-                ></textarea>
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Фотографии:</label>
+                <TourPhotoUpload
+                  :photos="currentDayPhotos"
+                  :edit-mode="editMode"
+                  @update:photos="updateCurrentDayPhotos"
+                  @upload="handlePhotoUpload"
+                  @delete="handlePhotoDelete"
+                />
               </div>
             </div>
             <div v-else>
               <h3 class="day-title">{{ currentDay.title }}</h3>
-              <p class="day-description">{{ currentDay.description }}</p>
+              <div class="day-description" v-html="currentDay.description || 'Описание не указано'"></div>
+              <TourPhotoUpload
+                v-if="currentDayPhotos.length > 0"
+                :photos="currentDayPhotos"
+                :edit-mode="false"
+                @update:photos="updateCurrentDayPhotos"
+                @upload="handlePhotoUpload"
+                @delete="handlePhotoDelete"
+              />
             </div>
           </div>
           <div v-else class="activity-item">
@@ -90,6 +107,8 @@
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import type { Tour, DayItem } from '@/types/tour';
 import { computed, ref, nextTick, watch } from 'vue';
+import TourPhotoUpload from '@/components/dashboard/tours/TourPhotoUpload.vue';
+import { tourApi } from '@/api/tours';
 
 const props = defineProps<{
   currentItem: Tour;
@@ -121,9 +140,9 @@ const editMode = computed({
 
 const focusFirstInput = async () => {
   await nextTick();
-  
+
   const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
-  
+
   if (firstInput) {
     firstInput.focus();
   }
@@ -131,7 +150,7 @@ const focusFirstInput = async () => {
 
 const handleEdit = () => {
   editMode.value = !editMode.value;
-  
+
   if (editMode.value) {
     focusFirstInput();
   }
@@ -152,18 +171,18 @@ const currentDayTitle = computed({
   },
   set(value: string) {
     if (!currentDay.value) return;
-    
+
     const days = [...tour.value.days];
     days[selectedDay.value] = {
       ...days[selectedDay.value],
       title: value
     };
-    
+
     const updatedTour = {
       ...tour.value,
       days: days
     };
-    
+
     emit('update:currentItem', updatedTour);
   }
 });
@@ -174,18 +193,18 @@ const currentDayDescription = computed({
   },
   set(value: string) {
     if (!currentDay.value) return;
-    
+
     const days = [...tour.value.days];
     days[selectedDay.value] = {
       ...days[selectedDay.value],
       description: value
     };
-    
+
     const updatedTour = {
       ...tour.value,
       days: days
     };
-    
+
     emit('update:currentItem', updatedTour);
   }
 });
@@ -203,22 +222,22 @@ const canDeleteDay = computed(() => {
 
 const addNewDay = () => {
   if (!canAddDay.value) return;
-  
+
   const newDay: DayItem = {
     title: `День ${(tour.value.days?.length || 0) + 1}`,
     description: ''
   };
-  
+
   const days = [...(tour.value.days || []), newDay];
   const updatedTour = {
     ...tour.value,
     days: days
   };
-  
+
   emit('update:currentItem', updatedTour);
-  
+
   selectedDay.value = days.length - 1;
-  
+
   nextTick(() => {
     const titleInput = document.querySelector('.form-input') as HTMLInputElement;
     if (titleInput) {
@@ -230,19 +249,110 @@ const addNewDay = () => {
 
 const deleteCurrentDay = () => {
   if (!canDeleteDay.value || !currentDay.value) return;
-  
+
   const days = [...(tour.value.days || [])];
   days.splice(selectedDay.value, 1);
-  
+
   const updatedTour = {
     ...tour.value,
     days: days
   };
-  
+
   emit('update:currentItem', updatedTour);
-  
+
   if (selectedDay.value >= days.length) {
     selectedDay.value = Math.max(0, days.length - 1);
+  }
+};
+
+const currentDayPhotos = computed(() => {
+  return currentDay.value?.images || [];
+});
+
+const updateCurrentDayPhotos = (images: any[]) => {
+  if (!currentDay.value) return;
+
+  const days = [...tour.value.days];
+  days[selectedDay.value] = {
+    ...days[selectedDay.value],
+    images: images
+  };
+
+  const updatedTour = {
+    ...tour.value,
+    days: days
+  };
+
+  emit('update:currentItem', updatedTour);
+};
+
+const handlePhotoUpload = async (files: FileList) => {
+  if (!tour.value.id) {
+    console.error('Tour ID is required for upload');
+    return;
+  }
+
+  const fileArray: File[] = [];
+  for (let i = 0; i < files.length; i++) {
+    fileArray.push(files[i]);
+  }
+
+  const previewImages = fileArray.map((file, index) => ({
+    id: `preview_${Date.now()}_${index}`,
+    path: URL.createObjectURL(file),
+    original_name: file.name,
+    filename: file.name,
+    mime_type: file.type,
+    isPreview: true // Mark as preview
+  }));
+
+
+  const currentPhotos = currentDayPhotos.value;
+  const photosWithPreviews = [...currentPhotos, ...previewImages];
+  updateCurrentDayPhotos(photosWithPreviews);
+
+  try {
+    const uploadedImagesResponse = await tourApi.photos.upload(
+      tour.value.id,
+      currentDay.value.id,
+      fileArray
+    );
+
+    const imagesArray = Array.isArray(uploadedImagesResponse.data.data) ? uploadedImagesResponse.data.data : [];
+
+    setTimeout(() => {
+      const currentPhotosAfterUpload = currentDayPhotos.value;
+      const existingPhotos = currentPhotosAfterUpload.filter(photo => !photo.isPreview);
+      const updatedPhotos = [...existingPhotos, ...imagesArray];
+      updateCurrentDayPhotos(updatedPhotos);
+    }, 500);
+
+  } catch (error) {
+    console.error('Failed to upload images:', error);
+    const currentPhotosOnError = currentDayPhotos.value;
+    const photosWithoutFailedPreviews = currentPhotosOnError.filter(photo => !photo.isPreview);
+    updateCurrentDayPhotos(photosWithoutFailedPreviews);
+  }
+};
+
+const handlePhotoDelete = async (imageId: number | string) => {
+  if (!tour.value.id || !currentDay.value?.id) {
+    console.error('Tour ID and Day ID are required for delete');
+    return;
+  }
+
+  try {
+    await tourApi.photos.delete(
+      tour.value.id,
+      currentDay.value.id,
+      imageId
+    );
+    const currentPhotos = currentDayPhotos.value;
+    const updatedPhotos = currentPhotos.filter(photo => photo.id !== imageId);
+    updateCurrentDayPhotos(updatedPhotos);
+
+  } catch (error) {
+    console.error('Failed to delete image:', error);
   }
 };
 </script>
