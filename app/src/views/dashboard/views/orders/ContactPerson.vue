@@ -1,208 +1,96 @@
 <script setup>
-import { defineProps, defineEmits, reactive } from 'vue';
-import UInput from '@/components/ui/UInput.vue';
+import { ref, watch } from 'vue';
+import { Plus, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
-  countContacts: {
-    type: Number,
-    default: 1,
-  },
-  showAddButton: {
-    type: Boolean,
-    default: true,
-  },
-  index: {
-    type: Number,
-    required: true,
-  },
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
 });
 
-const emit = defineEmits(['add-item', 'remove-item']);
+const emit = defineEmits(['update:modelValue']);
 
-const form = reactive({
-  fullname: '',
-  email: '',
-  phone: '',
-  comment: '',
-});
+const contactPersons = ref([
+  {
+    id: Date.now(),
+    fio: '',
+    phone: ''
+  }
+]);
 
-function pushForm() {
-  emit('add-item', { ...form });
-}
+// Sync with parent
+watch(contactPersons, (newVal) => {
+  emit('update:modelValue', newVal.map(({ fio, phone }) => ({ fio, phone })));
+}, { deep: true });
 
-function removeContact() {
-  emit('remove-item', props.index);
-}
+const addContactPerson = () => {
+  contactPersons.value.push({
+    id: Date.now(),
+    fio: '',
+    phone: ''
+  });
+};
+
+const removeContactPerson = (index) => {
+  if (contactPersons.value.length > 1) {
+    contactPersons.value.splice(index, 1);
+  }
+};
 </script>
+
 <template>
-  <div class="section filters">
-    <div class="contact-person">
-      <div class="contact-title">
-        Контактное лицо {{ props.countContacts }}
-        <div
-          class="contact-person__remove-block"
-          title="Удалить контактное лицо"
-          @click="removeContact"
-        >
-          <div v-if="props.countContacts !== 1" class="contact-person__remove" />
+  <div class="bg-white rounded-2xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-6">Контактные лица</h2>
+    
+    <div class="space-y-4">
+      <div
+        v-for="(contact, index) in contactPersons"
+        :key="contact.id"
+        class="p-4 border border-gray-200 rounded-xl"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-700">Контактное лицо {{ index + 1 }}</span>
+          <button
+            v-if="contactPersons.length > 1"
+            @click="removeContactPerson(index)"
+            type="button"
+            class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 class="w-4 h-4" />
+          </button>
         </div>
-      </div>
-      <div class="info-grid">
-        <div class="info-item">
-          <label class="info-label">ФИО</label>
-          <UInput inputType="text" v-model="form.fullname" :inputHeightPx="43" />
-        </div>
-        <div class="info-item">
-          <label class="info-label">Email</label>
-          <UInput inputType="text" v-model="form.email" :inputHeightPx="43" />
-        </div>
-        <div class="info-item">
-          <label class="info-label">Телефон</label>
-          <UInput inputType="tel" v-model="form.phone" :inputHeightPx="43" />
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-600 mb-2">ФИО</label>
+            <input
+              v-model="contact.fio"
+              type="text"
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Введите ФИО"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-2">Телефон</label>
+            <input
+              v-model="contact.phone"
+              type="tel"
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="+7 (999) 999-99-99"
+            />
+          </div>
         </div>
       </div>
 
-      <div class="info-item">
-        <label class="info-label">Комментарий</label>
-        <textarea class="input-field" rows="3" v-model="form.comment"></textarea>
-      </div>
-    </div>
-    <button v-if="showAddButton" class="add-contact-btn" @click="pushForm">
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <button
+        @click="addContactPerson"
+        type="button"
+        class="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl font-medium hover:border-emerald-500 hover:text-emerald-500 transition-colors flex items-center justify-center gap-2"
       >
-        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="rgba(16, 185, 129, 1)" />
-      </svg>
-      Добавить контактное лицо
-    </button>
+        <Plus class="w-5 h-5" />
+        Добавить контактное лицо
+      </button>
+    </div>
   </div>
 </template>
-<style scoped lang="scss">
-.section {
-  margin-bottom: 30px;
-}
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #353535;
-  padding-bottom: 8px;
-  margin-bottom: 20px;
-}
-.filters {
-  background: #fff;
-  padding: 20px;
-  border-radius: 24px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-.contact-person {
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-
-  &__remove {
-    width: 15px;
-    height: 2px;
-    background-color: red;
-
-    &-block {
-      width: 24px;
-      height: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-  }
-}
-.contact-title {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-weight: 500;
-  margin-bottom: 16px;
-}
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6a6e75;
-  font-size: 14px;
-  padding-left: 25px;
-  position: relative;
-  margin-bottom: 0;
-}
-.contact-item a {
-  color: #6a6e75;
-  text-decoration: none;
-}
-.contact-item a:hover {
-  text-decoration: underline;
-}
-.contact-item svg {
-  flex-shrink: 0;
-}
-.contact-item::before {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: -3px;
-  margin-left: 0;
-  display: inline-block;
-  vertical-align: middle;
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  background-repeat: no-repeat;
-}
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-  margin-top: 10px;
-}
-.info-item {
-  margin-bottom: 12px;
-}
-.info-label {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 4px;
-  display: block;
-}
-.info-value {
-  font-size: 14px;
-  color: #353535;
-  font-weight: 500;
-}
-.input-field {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: #f8fafc;
-}
-.add-contact-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(16, 185, 129, 1);
-  background: 0 0;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 0;
-}
-</style>

@@ -47,12 +47,35 @@ const handlePageChange = (page: number) => {
     ...filters.value,
   });
 });
+// пагинация не работает
+const statusOptions = [
+  { value: '', label: 'Все статусы' },
+  { value: 'pending', label: 'В ожидании' },
+  { value: 'confirmed', label: 'В работе' },
+  { value: 'cancelled', label: 'Аннулированно' },
+  { value: 'completed', label: 'Завершено' },
+];
 
-const handlePageChange = (page: number) => {
-  loadCollection({
-    page,
-    ...filters.value,
-  });
+const resetFilters = () => {
+  filters.value = {
+    search: '',
+    status: '',
+    date: '',
+  };
+  // Reload full data (optional, since filters are client-side, but clears any state)
+  loadCollection();
+};
+
+// Получить статус на русском
+const getStatusLabel = (status: string) => {
+  const option = statusOptions.find((opt) => opt.value === status);
+  return option ? option.label : status;
+};
+
+// Форматирование даты
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU');
 };
 
 const applyFilters = () => {
