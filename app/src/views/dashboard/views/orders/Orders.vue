@@ -33,10 +33,10 @@ const filters = reactive({
 
 const statusOptions = [
   { value: '', label: 'Все', color: 'bg-gray-400' },
-  { value: 'published', label: 'Опубликованно', color: 'bg-green-400' },
-  { value: 'on_request', label: 'По заявке', color: 'bg-yellow-400' },
-  { value: 'basic', label: 'Базовый', color: 'bg-blue-400'},
-  { value: 'unpublished', label: 'Не опубликованно', color: 'bg-red-400' }
+  { value: 'confirmed', label: 'В работе', color: 'bg-green-400' },
+  { value: 'pending', label: 'Новая', color: 'bg-yellow-400' },
+  { value: 'completed', label: 'Завершено', color: 'bg-blue-400'},
+  { value: 'cancelled', label: 'Аннулировано', color: 'bg-red-400' }
 ]
 
 const managerList = computed(() => booking.manager || []);
@@ -273,12 +273,7 @@ onMounted(() => {
 
           <div class="filters-scroll-container">
             <div class="filters-grid">
-  <StatusSelector
-              v-model="filters.status"
-              :options="statusOptions"
-              mode="dropdown"
-              placeholder="Статус"
-            />  
+
             <PickList v-model="filters.status" :items="statusOptions"
             placeholder="Статус" searchable="false" />
                         <!-- <UDropdown :list="booking.managers" v-model="filters.manager" /> -->

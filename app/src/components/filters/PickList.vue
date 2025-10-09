@@ -2,7 +2,7 @@
   <div class="relative w-full">
     <button
       @click="toggleDropdown"
-      class="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+      class="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
     >
       <div class="flex items-center justify-between">
         <span class="text-gray-700">{{ displayText }}</span>
@@ -36,7 +36,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Поиск..."
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
 
@@ -51,7 +51,7 @@
             <div
               v-if="multiple"
               class="flex items-center justify-center w-5 h-5 border-2 rounded transition-colors"
-              :class="isSelected(item) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'"
+              :class="isSelected(item) ? 'bg-primary  border-primary' : 'border-gray-300'"
             >
               <svg
                 v-if="isSelected(item)"
