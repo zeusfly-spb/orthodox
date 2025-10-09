@@ -3,7 +3,7 @@ import { managerApi } from '@/api/managers';
 import UButton from '@/components/ui/UButton.vue';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive, computed,watch } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
@@ -34,7 +34,7 @@ const filters = reactive({
 const statusOptions = [
   { value: '', label: 'Все', color: 'bg-gray-400' },
   { value: 'confirmed', label: 'В работе', color: 'bg-green-400' },
-  { value: 'pending', label: 'Новая', color: 'bg-yellow-400' },
+  { value: 'pending', label: 'Новая', color: 'bg-yellow-400 text-black ' },
   { value: 'completed', label: 'Завершено', color: 'bg-blue-400'},
   { value: 'cancelled', label: 'Аннулировано', color: 'bg-red-400' }
 ]
@@ -69,53 +69,65 @@ const comfortOptions = computed(() => {
 // Фильтрация заказов (adapted from commented version, added new filters)
 const filteredOrders = computed(() => {
   if (!booking.orders || !Array.isArray(booking.orders)) return [];
-
-  return booking.orders.filter(order => {
-    // Поиск по названию тура, маршруту, описанию
-    const matchesSearch = !filters.searchText || 
-      order.title?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-      order.route?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
-      order.description?.toLowerCase().includes(filters.searchText.toLowerCase());
-
-    // Фильтр по статусу (assume order has status or from bookings)
-    const matchesStatus = !filters.status || order.status === filters.status || 
-      order.bookings?.some(booking => booking.status === filters.status);
-
-    // Фильтр по менеджеру (from bookings)
-    const matchesManager = !filters.manager || 
-      order.bookings?.some(booking => booking.manager === filters.manager);
-
-    // Фильтр по статусу оплаты (assume from bookings or order)
-    const matchesPaymentStatus = !filters.payment_status || 
-      order.payment_status === filters.payment_status ||
-      order.bookings?.some(b => b.payment_status === filters.payment_status);
-
-    // Фильтр по городу
-    const matchesCity = !filters.city || order.city?.title === filters.city || order.city === filters.city;
-
-    // Фильтр по стране
-    const matchesCountry = !filters.country || order.country?.title === filters.country || order.country === filters.country;
-
-    // Фильтр по сложности
-    const matchesDifficulty = !filters.difficulty || order.difficulty === filters.difficulty;
-
-    // Фильтр по комфорту
-    const matchesComfort = !filters.comfort || order.comfort === filters.comfort;
-
-    // Фильтр по периоду создания
-    const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
-      (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end));
-
-    // Фильтр по периоду тура
-    const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
-      (order.date_start && isDateInRange(order.date_start, filters.tour_period.start, filters.tour_period.end));
-console.log(filteredOrders.value)
-    return matchesSearch && matchesStatus && matchesManager && matchesPaymentStatus && 
-           matchesCity && matchesCountry && matchesDifficulty && matchesComfort && 
-           matchesOrderDateRange && matchesTourPeriod;
-  });
   
+  return booking.orders
+    .map(order => {
+      // Order-level filters
+      const matchesSearch = !filters.searchText || 
+        [order.title, order.route, order.description].some(field => 
+          field?.toLowerCase().includes(filters.searchText.toLowerCase())
+        );
+      
+      const orderCity = order.city?.title || order.city;
+      const matchesCity = !filters.city || orderCity === filters.city;
+      
+      const orderCountry = order.country?.title || order.country;
+      const matchesCountry = !filters.country || orderCountry === filters.country;
+      
+      const matchesDifficulty = !filters.difficulty || order.difficulty === filters.difficulty;
+      
+      const matchesComfort = !filters.comfort || order.comfort === filters.comfort;
+      
+      const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
+        (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end));
+      
+      const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
+        (order.date_start && isDateInRange(order.date_start, filters.tour_period.start, filters.tour_period.end));
+      
+      // Check if order passes order-level filters
+      const orderMatches = matchesSearch && matchesCity && matchesCountry && 
+                           matchesDifficulty && matchesComfort && 
+                           matchesOrderDateRange && matchesTourPeriod;
+      
+      if (!orderMatches) return null;
+      
+      // Booking-level filters: filter the bookings array instead of just checking .some()
+      const filteredBookings = order.bookings?.filter(b => {
+        const matchesStatus = !filters.status || b.status === filters.status;
+        const matchesManager = !filters.manager || b.manager === filters.manager;
+        const matchesPaymentStatus = !filters.payment_status || b.payment_status === filters.payment_status;
+        
+        return matchesStatus && matchesManager && matchesPaymentStatus;
+      }) || [];
+      
+      // Only include the order if there are matching bookings
+      if (filteredBookings.length === 0) return null;
+      
+      // Return a copy of the order with filtered bookings
+      return {
+        ...order,
+        bookings: filteredBookings
+      };
+    })
+    .filter(order => order !== null); // Remove null entries (orders that didn't match)
 });
+
+
+     watch(filters, () => {
+       console.log('Filters changed:', filters);
+       console.log('Filtered count:', filteredOrders.value.length);
+     }, { deep: true });
+     
 
 const activeFiltersCount = computed(() => {
   let count = 0
@@ -163,25 +175,16 @@ function formatDate(dateString) {
   })
 }
 
-function getStatusClass(status) {
-  const statusClasses = {
-    'confirmed': 'bg-emerald-100 text-emerald-800',
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'completed': 'bg-blue-100 text-blue-800',
-    'cancelled': 'bg-red-100 text-red-800'
-  }
-  return statusClasses[status] || 'bg-gray-100 text-gray-800'
-}
+ function getStatusClass(status) {
+       const option = statusOptions.find(o => o.value === status);
+       return option ? option.color : 'bg-gray-400';
+     }
+     function getStatusLabel(status) {
+       const option = statusOptions.find(o => o.value === status);
+       return option ? option.label : status;
+     }
+     
 
-function getStatusLabel(status) {
-  const statusLabels = {
-    'confirmed': 'В работе',
-    'pending': 'Новая',
-    'completed': 'Завершено',
-    'cancelled': 'Аннулировано'
-  }
-  return statusLabels[status] || status
-}
 
 function getPaymentStatusClass(status) {
   const statusClasses = {
@@ -267,6 +270,8 @@ onMounted(() => {
                 svgPath="/svg/search.svg"
                 placeholder="Поиск по названию тура, заказчику, номеру заявки..."
                 inputHeightPx="36"
+                v-model="filters.searchText"
+                
               />
             </div>
           </div>
@@ -366,7 +371,7 @@ onMounted(() => {
                 {{ item.bookings.length }}
               </td>
 
-               <td class="px-6 py-4 whitespace-nowrap">
+               <td class="px-8 py-4 whitespace-nowrap text-center ">
                     <span :class="['inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border', getStatusClass(val.status)]">
                       {{ getStatusLabel(val.status) }}
                     </span>
