@@ -1,6 +1,7 @@
 <template>
   <div class="tab-container">
     <button
+      v-if="!isNewTour"
       :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Data' }"
@@ -64,6 +65,30 @@
     >
       Условия тура
     </button>
+    <button
+      :disabled="hasChanges"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Calculations' }"
+      @click="activeTab = 'Calculations'"
+    >
+      Расчеты
+    </button>
+    <button
+      :disabled="hasChanges"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Cost' }"
+      @click="activeTab = 'Cost'"
+    >
+      Стоимость
+    </button>
+    <button
+      :disabled="hasChanges"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'CostTotal' }"
+      @click="activeTab = 'CostTotal'"
+    >
+      Общая стоимость
+    </button>
     <!-- <button
       :disabled="hasChanges"
       class="tab-button"
@@ -81,6 +106,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   modelValue: string;
   hasChanges: boolean;
+  isNewTour: boolean;
 }>();
 
 const emit = defineEmits<{

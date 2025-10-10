@@ -157,7 +157,7 @@
             />
           </div>
           <span v-else class="param-value">
-            {{ tour.time }}
+            {{ tour.time || '00:00' }}
           </span>
         </div>
 
@@ -195,14 +195,7 @@
       </div>
     </div>
 
-    <TourFormCalculations
-      v-model:currentItem="tour"
-    />
 
-    <TourFormCost
-      v-model:currentItem="tour"
-      :editMode="editMode"
-    />
   </div>
 </template>
 
@@ -217,8 +210,6 @@ import CountrySelector from '@/components/dashboard/tours/CountrySelector.vue';
 import CitySelector from '@/components/dashboard/tours/CitySelector.vue';
 import { usePlacesStore } from '@/stores/places';
 import type { City } from '@/types/city';
-import TourFormCalculations from './TourFormCalculations.vue';
-import TourFormCost from './TourFormCost.vue';
 
 
 const props = defineProps<{

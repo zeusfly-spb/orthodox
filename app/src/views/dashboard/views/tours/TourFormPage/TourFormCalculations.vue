@@ -63,10 +63,10 @@
             min="1"
           />
           <div class="number-controls">
-            <button type="button" class="number-btn" @click="decrementLimit">
+            <button type="button" class="number-btn" @click="decrementdaysCount">
               <IconMinus />
             </button>
-            <button type="button" class="number-btn" @click="incrementLimit">
+            <button type="button" class="number-btn" @click="incrementdaysCount">
               <IconPlus />
             </button>
           </div>
@@ -322,10 +322,12 @@ import IconQuestionMark from '@/components/icons/IconQuestionMark.vue';
 
 const props = defineProps<{
   currentItem: Tour;
+  editMode: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:editMode', value: boolean): void;
 }>();
 
 const tour = computed({
@@ -397,6 +399,15 @@ function decrementLimit() {
     calculations.value = { ...calculations.value, limit: calculations.value.limit - 1 };
   }
 }
+function incrementdaysCount() {
+  calculations.value = { ...calculations.value, daysCount: calculations.value.daysCount + 1 };
+}
+
+function decrementdaysCount() {
+  if (calculations.value.daysCount > 1) {
+    calculations.value = { ...calculations.value, daysCount: calculations.value.daysCount - 1 };
+  }
+}
 
 
 function addExpenseRow(type: string) {
@@ -420,13 +431,23 @@ function addExpenseRow(type: string) {
 
 
 function formatCurrency(value: number): string {
+  if (!isFinite(value) || isNaN(value)) {
+    return '0,00';
+  }
   return new Intl.NumberFormat('ru-RU', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
 
-const editMode = ref(false);
+const editMode = computed({
+  get() {
+    return props.editMode;
+  },
+  set(value) {
+    emit('update:editMode', value);
+  },
+});
 const markupMode = ref('percent'); // 'percent' or 'rubles'
 
 function calculatePerPersonAmount(expense: CalculationExpense): number {
@@ -446,7 +467,7 @@ const costPerPayer = computed(() => {
 
 //Наценка в процентах
 const markupPercent = computed({
-  get: () => calculations.value.markup,
+  get: () => calculations.value.markup || 0,
   set: (value: number) => {
     calculations.value = { ...calculations.value, markup: value };
   }
@@ -483,22 +504,27 @@ const markupInRub = computed(() => {
 
 //НДС в том числе
 const vatInPrice = computed(() => {
-  return (totalWithMarkup.value * calculations.value.vatRate) / (100 + calculations.value.vatRate);
+  const vatRate = calculations.value.vatRate || 0;
+  if (vatRate === 0) return 0;
+  return (totalWithMarkup.value * vatRate) / (100 + vatRate);
 });
 
 //НДС начислить сверху
 const vatOnTop = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого с НДС
 const totalWithVat = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого цена на 1 плательщика
 const pricePerPayer = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого стоимость
@@ -511,8 +537,8 @@ const totalCost = computed(() => {
 
 const summaryItems = computed(() => [
   { label: 'Себестоимость на 1 плательщика:', value: formatCurrency(costPerPayer.value), currency: true },
-  { label: 'Вид начисления НДС:', value: calculations.value.vatType, currency: false },
-  { label: 'Наценка:', value: markupMode.value === 'percent' ? markupPercent.value + '%' : formatCurrency(markupInRoubles.value) + ' ₽', currency: false, editable: true },
+  { label: 'Вид начисления НДС:', value: calculations.value.vatType || '-', currency: false },
+  { label: 'Наценка:', value: markupMode.value === 'percent' ? (markupPercent.value || 0) + '%' : formatCurrency(markupInRoubles.value) + ' ₽', currency: false, editable: true },
   { label: 'НДС в том числе:', value: formatCurrency(vatInPrice.value), currency: true, indent: true },
   { label: 'Размер наценки:', value: formatCurrency(markupAmount.value), currency: true },
   { label: 'НДС начислить сверху:', value: formatCurrency(vatOnTop.value), currency: true, indent: true },
@@ -520,7 +546,7 @@ const summaryItems = computed(() => [
   { label: 'Итого с НДС:', value: formatCurrency(totalWithVat.value), currency: true },
   { label: 'Итого с наценкой:', value: formatCurrency(totalWithMarkup.value), currency: true },
   { label: 'Итого цена на 1 плательщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
-  { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate, currency: false },
+  { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate || 20, currency: false },
   { label: null },
 ]);
 
@@ -533,9 +559,9 @@ function updateExpenseField(index: number, field: keyof CalculationExpense, valu
   };
 }
 
-function handleEdit() {
+const handleEdit = () => {
   editMode.value = !editMode.value;
-}
+};
 
 function deleteExpenseRow(index: number) {
   const updatedExpenses = calculations.value.expenses.filter((_, i) => i !== index);
