@@ -3,10 +3,12 @@ import { managerApi } from '@/api/managers';
 import UButton from '@/components/ui/UButton.vue';
 import UInput from '@/components/ui/UInput.vue';
 import UDropdown from '@/components/ui/UDropdown.vue';
-import { ref, onMounted, reactive,computed } from 'vue';
+import { ref, onMounted, reactive, computed,watch } from 'vue';
 import { tourApi } from '@/api/tours';
 import UBanner from '@/components/ui/UBanner.vue';
 import { useBookingStore } from '@/stores/booking';
+import PickList from '@/components/filters/PickList.vue';
+import DateRangePicker from '@/components/filters/DateRangePicker.vue';
 
 const booking = useBookingStore();
 
@@ -14,39 +16,196 @@ const filters = reactive({
   searchText: '',
   status: '',
   manager: '',
-  days: 1
+  payment_status: '',
+  city: '',
+  country: '',
+  difficulty: '',
+  comfort: '',
+  order: {
+    start: '',
+    end: ''
+  },
+  tour_period: {
+    start: '',
+    end: ''
+  }
+})
+
+const statusOptions = [
+  { value: '', label: 'Все', color: 'bg-gray-400' },
+  { value: 'confirmed', label: 'В работе', color: 'bg-green-400' },
+  { value: 'pending', label: 'Новая', color: 'bg-yellow-400 text-black ' },
+  { value: 'completed', label: 'Завершено', color: 'bg-blue-400'},
+  { value: 'cancelled', label: 'Аннулировано', color: 'bg-red-400' }
+]
+
+const managerList = computed(() => booking.manager || []);
+
+// Compute options for new filters from data
+const cityOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const cities = [...new Set(booking.orders.map(order => order.city?.title || order.city).filter(Boolean))];
+  return [{ value: '', label: 'Все города' }, ...cities.map(city => ({ value: city, label: city }))];
 });
 
-const statusList = ['confirmed', 'pending'];
-const managerList = computed(() => booking.managers || []);
+const countryOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const countries = [...new Set(booking.orders.map(order => order.country?.title || order.country).filter(Boolean))];
+  return [{ value: '', label: 'Все страны' }, ...countries.map(country => ({ value: country, label: country }))];
+});
 
-// Фильтрация заказов
+const difficultyOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const difficulties = [...new Set(booking.orders.map(order => order.difficulty).filter(Boolean))];
+  return [{ value: '', label: 'Все уровни сложности' }, ...difficulties.map(diff => ({ value: diff, label: diff }))];
+});
+
+const comfortOptions = computed(() => {
+  if (!booking.orders || !Array.isArray(booking.orders)) return [];
+  const comforts = [...new Set(booking.orders.map(order => order.comfort).filter(Boolean))];
+  return [{ value: '', label: 'Все уровни комфорта' }, ...comforts.map(comfort => ({ value: comfort, label: comfort }))];
+});
+
+// Фильтрация заказов (adapted from commented version, added new filters)
 const filteredOrders = computed(() => {
   if (!booking.orders || !Array.isArray(booking.orders)) return [];
-
-  return booking.orders.filter(order => {
-    // Поиск по названию тура
-    const matchesSearch = !filters.searchText ||
-      order.title?.toLowerCase().includes(filters.searchText.toLowerCase());
-
-    // Фильтр по статусу (ищем в bookings)
-    const matchesStatus = !filters.status ||
-      order.bookings?.some(booking => booking.status === filters.status);
-
-    // Фильтр по менеджеру
-    const matchesManager = !filters.manager ||
-      order.bookings?.some(booking => booking.manager === filters.manager);
-
-    return matchesSearch && matchesStatus && matchesManager;
-  });
+  
+  return booking.orders
+    .map(order => {
+      // Order-level filters
+      const matchesSearch = !filters.searchText || 
+        [order.title, order.route, order.description].some(field => 
+          field?.toLowerCase().includes(filters.searchText.toLowerCase())
+        );
+      
+      const orderCity = order.city?.title || order.city;
+      const matchesCity = !filters.city || orderCity === filters.city;
+      
+      const orderCountry = order.country?.title || order.country;
+      const matchesCountry = !filters.country || orderCountry === filters.country;
+      
+      const matchesDifficulty = !filters.difficulty || order.difficulty === filters.difficulty;
+      
+      const matchesComfort = !filters.comfort || order.comfort === filters.comfort;
+      
+      const matchesOrderDateRange = !filters.order.start || !filters.order.end ||
+        (order.created_at && isDateInRange(order.created_at, filters.order.start, filters.order.end));
+      
+      const matchesTourPeriod = !filters.tour_period.start || !filters.tour_period.end ||
+        (order.date_start && isDateInRange(order.date_start, filters.tour_period.start, filters.tour_period.end));
+      
+      // Check if order passes order-level filters
+      const orderMatches = matchesSearch && matchesCity && matchesCountry && 
+                           matchesDifficulty && matchesComfort && 
+                           matchesOrderDateRange && matchesTourPeriod;
+      
+      if (!orderMatches) return null;
+      
+      // Booking-level filters: filter the bookings array instead of just checking .some()
+      const filteredBookings = order.bookings?.filter(b => {
+        const matchesStatus = !filters.status || b.status === filters.status;
+        const matchesManager = !filters.manager || b.manager === filters.manager;
+        const matchesPaymentStatus = !filters.payment_status || b.payment_status === filters.payment_status;
+        
+        return matchesStatus && matchesManager && matchesPaymentStatus;
+      }) || [];
+      
+      // Only include the order if there are matching bookings
+      if (filteredBookings.length === 0) return null;
+      
+      // Return a copy of the order with filtered bookings
+      return {
+        ...order,
+        bookings: filteredBookings
+      };
+    })
+    .filter(order => order !== null); // Remove null entries (orders that didn't match)
 });
 
-// Сброс фильтров
+
+     watch(filters, () => {
+       console.log('Filters changed:', filters);
+       console.log('Filtered count:', filteredOrders.value.length);
+     }, { deep: true });
+     
+
+const activeFiltersCount = computed(() => {
+  let count = 0
+  if (filters.searchText) count++
+  if (filters.status) count++
+  if (filters.payment_status) count++
+  if (filters.manager) count++
+  if (filters.city) count++
+  if (filters.country) count++
+  if (filters.difficulty) count++
+  if (filters.comfort) count++
+  if (filters.order.start && filters.order.end) count++
+  if (filters.tour_period.start && filters.tour_period.end) count++
+  return count
+})
+
+// Methods
 function resetFilters() {
-  filters.searchText = '';
-  filters.status = '';
-  filters.manager = '';
-  filters.days = 1;
+  filters.searchText = ''
+  filters.status = ''
+  filters.manager = ''
+  filters.payment_status = ''
+  filters.city = ''
+  filters.country = ''
+  filters.difficulty = ''
+  filters.comfort = ''
+  filters.order = { start: '', end: '' }
+  filters.tour_period = { start: '', end: '' }
+}
+
+function isDateInRange(date, start, end) {
+  const checkDate = new Date(date)
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+  return checkDate >= startDate && checkDate <= endDate
+}
+
+function formatDate(dateString) {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
+ function getStatusClass(status) {
+       const option = statusOptions.find(o => o.value === status);
+       return option ? option.color : 'bg-gray-400';
+     }
+     function getStatusLabel(status) {
+       const option = statusOptions.find(o => o.value === status);
+       return option ? option.label : status;
+     }
+     
+
+
+function getPaymentStatusClass(status) {
+  const statusClasses = {
+    'paid': 'bg-emerald-100 text-emerald-800',
+    'paid_partially': 'bg-yellow-100 text-yellow-800',
+    'pending': 'bg-orange-100 text-orange-800',
+    'cancelled': 'bg-red-100 text-red-800',
+    'refunded': 'bg-gray-100 text-gray-800'
+  }
+  return statusClasses[status] || 'bg-gray-100 text-gray-800'
+}
+
+function getPaymentStatusLabel(status) {
+  const statusLabels = {
+    'paid': 'Оплачено',
+    'paid_partially': 'Частично оплачено',
+    'pending': 'Не оплачено',
+    'cancelled': 'Отменено',
+    'refunded': 'Возврат'
+  }
+  return statusLabels[status] || status
 }
 
 async function loadAllData() {
@@ -62,11 +221,12 @@ async function loadAllData() {
     const toursWithDetails = await Promise.all(
       toursResponse.data.map((tour) => tourApi.getData(tour.id).then((res) => res.data)),
     );
-
-    // Объединяем базовую информацию с bookings
+    console.log("Tours",toursResponse)
+    // Объединяем базовую информацию с bookings (assume bookings are part of details or add if needed)
     booking.orders = toursResponse.data.map((tour, index) => ({
       ...tour,
-      bookings: toursWithDetails[index].bookings || [],
+      ...toursWithDetails[index], // Merge details
+      bookings: toursWithDetails[index].bookings || [], // If bookings exist
     }));
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
@@ -75,6 +235,7 @@ async function loadAllData() {
 
 onMounted(() => {
   loadAllData();
+  console.log(managerList)
 });
 </script>
 
@@ -109,160 +270,31 @@ onMounted(() => {
                 svgPath="/svg/search.svg"
                 placeholder="Поиск по названию тура, заказчику, номеру заявки..."
                 inputHeightPx="36"
+                v-model="filters.searchText"
+                
               />
             </div>
           </div>
 
           <div class="filters-scroll-container">
             <div class="filters-grid">
-              <UDropdown :list="statusList" v-model="filters.status" />
-              <UDropdown :list="booking.managers" v-model="filters.manager" />
 
+            <PickList v-model="filters.status" :items="statusOptions"
+            placeholder="Статус" searchable="false" />
+                        <!-- <UDropdown :list="booking.managers" v-model="filters.manager" /> -->
+<DateRangePicker v-model="filters.tour_period"  placeholder="Даты туров" />
               <!-- Фильтр по периоду создания -->
-              <div class="filter-item">
-                <div class="custom-select">
-                  <div class="filter-trigger filter-trigger-period" id="periodTrigger">
-                    <span id="periodText">Период создания тура</span>
-                    <svg
-                      class="calendar-icon"
-                      width="18"
-                      height="20"
-                      viewBox="0 0 18 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.6668 0.966797C6.0534 0.966797 6.3668 1.2802 6.3668 1.6668V4.1668C6.3668 4.5534 6.0534 4.8668 5.6668 4.8668C5.2802 4.8668 4.9668 4.5534 4.9668 4.1668V1.6668C4.9668 1.2802 5.2802 0.966797 5.6668 0.966797Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M12.3328 0.966797C12.7194 0.966797 13.0328 1.2802 13.0328 1.6668V4.1668C13.0328 4.5534 12.7194 4.8668 12.3328 4.8668C11.9462 4.8668 11.6328 4.5534 11.6328 4.1668V1.6668C11.6328 1.2802 11.9462 0.966797 12.3328 0.966797Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M1.2168 7.575C1.2168 7.1884 1.5302 6.875 1.9168 6.875H16.0835C16.4701 6.875 16.7835 7.1884 16.7835 7.575C16.7835 7.9616 16.4701 8.275 16.0835 8.275H1.9168C1.5302 8.275 1.2168 7.9616 1.2168 7.575Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M3.00234 4.53895C2.48558 5.09546 2.1998 5.94077 2.1998 7.08346V14.1668C2.1998 15.3095 2.48558 16.1548 3.00234 16.7113C3.51039 17.2584 4.34156 17.6335 5.66647 17.6335H12.3331C13.6581 17.6335 14.4892 17.2584 14.9973 16.7113C15.514 16.1548 15.7998 15.3095 15.7998 14.1668V7.08346C15.7998 5.94077 15.514 5.09546 14.9973 4.53895C14.4892 3.99182 13.6581 3.6168 12.3331 3.6168H5.66647C4.34156 3.6168 3.51039 3.99182 3.00234 4.53895ZM1.97643 3.58631C2.82256 2.6751 4.07472 2.2168 5.66647 2.2168H12.3331C13.9249 2.2168 15.1771 2.6751 16.0232 3.58631C16.8606 4.48813 17.1998 5.72616 17.1998 7.08346V14.1668C17.1998 15.5241 16.8606 16.7621 16.0232 17.6639C15.1771 18.5752 13.9249 19.0335 12.3331 19.0335H5.66647C4.07472 19.0335 2.82256 18.5752 1.97643 17.6639C1.13903 16.7621 0.799805 15.5241 0.799805 14.1668V7.08346C0.799805 5.72616 1.13903 4.48813 1.97643 3.58631Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M9.12891 11.4168C9.12891 11.0302 9.44231 10.7168 9.82891 10.7168H9.83639C10.223 10.7168 10.5364 11.0302 10.5364 11.4168C10.5364 11.8034 10.223 12.1168 9.83639 12.1168H9.82891C9.44231 12.1168 9.12891 11.8034 9.12891 11.4168Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.21094 11.4168C5.21094 11.0302 5.52434 10.7168 5.91094 10.7168H5.91842C6.30502 10.7168 6.61842 11.0302 6.61842 11.4168C6.61842 11.8034 6.30502 12.1168 5.91842 12.1168H5.91094C5.52434 12.1168 5.21094 11.8034 5.21094 11.4168Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.21094 14.7498C5.21094 14.3632 5.52434 14.0498 5.91094 14.0498H5.91842C6.30502 14.0498 6.61842 14.3632 6.61842 14.7498C6.61842 15.1364 6.30502 15.4498 5.91842 15.4498H5.91094C5.52434 15.4498 5.21094 15.1364 5.21094 14.7498Z"
-                        fill="#64748B"
-                      />
-                    </svg>
-                  </div>
-                  <div class="filter-dropdown-period">
-                    <input
-                      type="text"
-                      class="date-range-input"
-                      id="dateRangeInput"
-                      placeholder="Выберите период"
-                      readonly
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="filter-item">
-                <div class="custom-select">
-                  <div class="filter-trigger filter-trigger-period" id="periodTrigger2">
-                    <span id="periodText2">Даты туров</span>
-                    <svg
-                      class="calendar-icon"
-                      width="18"
-                      height="20"
-                      viewBox="0 0 18 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.6668 0.966797C6.0534 0.966797 6.3668 1.2802 6.3668 1.6668V4.1668C6.3668 4.5534 6.0534 4.8668 5.6668 4.8668C5.2802 4.8668 4.9668 4.5534 4.9668 4.1668V1.6668C4.9668 1.2802 5.2802 0.966797 5.6668 0.966797Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M12.3328 0.966797C12.7194 0.966797 13.0328 1.2802 13.0328 1.6668V4.1668C13.0328 4.5534 12.7194 4.8668 12.3328 4.8668C11.9462 4.8668 11.6328 4.5534 11.6328 4.1668V1.6668C11.6328 1.2802 11.9462 0.966797 12.3328 0.966797Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M1.2168 7.575C1.2168 7.1884 1.5302 6.875 1.9168 6.875H16.0835C16.4701 6.875 16.7835 7.1884 16.7835 7.575C16.7835 7.9616 16.4701 8.275 16.0835 8.275H1.9168C1.5302 8.275 1.2168 7.9616 1.2168 7.575Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M3.00234 4.53895C2.48558 5.09546 2.1998 5.94077 2.1998 7.08346V14.1668C2.1998 15.3095 2.48558 16.1548 3.00234 16.7113C3.51039 17.2584 4.34156 17.6335 5.66647 17.6335H12.3331C13.6581 17.6335 14.4892 17.2584 14.9973 16.7113C15.514 16.1548 15.7998 15.3095 15.7998 14.1668V7.08346C15.7998 5.94077 15.514 5.09546 14.9973 4.53895C14.4892 3.99182 13.6581 3.6168 12.3331 3.6168H5.66647C4.34156 3.6168 3.51039 3.99182 3.00234 4.53895ZM1.97643 3.58631C2.82256 2.6751 4.07472 2.2168 5.66647 2.2168H12.3331C13.9249 2.2168 15.1771 2.6751 16.0232 3.58631C16.8606 4.48813 17.1998 5.72616 17.1998 7.08346V14.1668C17.1998 15.5241 16.8606 16.7621 16.0232 17.6639C15.1771 18.5752 13.9249 19.0335 12.3331 19.0335H5.66647C4.07472 19.0335 2.82256 18.5752 1.97643 17.6639C1.13903 16.7621 0.799805 15.5241 0.799805 14.1668V7.08346C0.799805 5.72616 1.13903 4.48813 1.97643 3.58631Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M9.12891 11.4168C9.12891 11.0302 9.44231 10.7168 9.82891 10.7168H9.83639C10.223 10.7168 10.5364 11.0302 10.5364 11.4168C10.5364 11.8034 10.223 12.1168 9.83639 12.1168H9.82891C9.44231 12.1168 9.12891 11.8034 9.12891 11.4168Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.21094 11.4168C5.21094 11.0302 5.52434 10.7168 5.91094 10.7168H5.91842C6.30502 10.7168 6.61842 11.0302 6.61842 11.4168C6.61842 11.8034 6.30502 12.1168 5.91842 12.1168H5.91094C5.52434 12.1168 5.21094 11.8034 5.21094 11.4168Z"
-                        fill="#64748B"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M5.21094 14.7498C5.21094 14.3632 5.52434 14.0498 5.91094 14.0498H5.91842C6.30502 14.0498 6.61842 14.3632 6.61842 14.7498C6.61842 15.1364 6.30502 15.4498 5.91842 15.4498H5.91094C5.52434 15.4498 5.21094 15.1364 5.21094 14.7498Z"
-                        fill="#64748B"
-                      />
-                    </svg>
-                  </div>
-                  <div class="filter-dropdown-period">
-                    <input
-                      type="text"
-                      class="date-range-input"
-                      id="dateRangeInput2"
-                      placeholder="Выберите период"
-                      readonly
-                    />
-                  </div>
-                </div>
-              </div>
-                 <UButton
-              text="Сбросить фильтры"
-              size="medium"
-              variant="primary"
-              @click="resetFilters()"
-            />
+      <UButton 
+        text="Сбросить фильтры"
+        size="medium"
+            @click="resetFilters"
+            class="px-12 py-12 text-sm   bg-primary rounded-lg text-primary-foreground  transition-colors"
+          >
+           
+          </UButton>
             </div>
           </div>
-
+        
           <!-- Теги -->
           <div class="tags-container">
             <div class="tags-list">
@@ -327,6 +359,7 @@ onMounted(() => {
             <tr v-for="(val, index) in item.bookings" :key="index">
               <td>
                 {{ item.date_start }}
+                
               </td>
               <td>
                 {{ item.date_end }}
@@ -337,11 +370,12 @@ onMounted(() => {
               <td>
                 {{ item.bookings.length }}
               </td>
-              <td>
-                <div class="status-item">
-                  <span class="status-name" v-show="val.status">{{ val.status }}</span>
-                </div>
-              </td>
+
+               <td class="px-8 py-4 whitespace-nowrap text-center ">
+                    <span :class="['inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border', getStatusClass(val.status)]">
+                      {{ getStatusLabel(val.status) }}
+                    </span>
+                  </td>
               <td>
                 <div class="actions-container">
                   <div class="user-actions">
@@ -366,7 +400,7 @@ onMounted(() => {
         </table>
       </div>
       </div>
-
+    
         <div v-if="filteredOrders.length === 0" class="no-results">
       <p>По вашему запросу ничего не найдено</p>
     </div>

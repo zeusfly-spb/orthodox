@@ -43,9 +43,9 @@
               </div>
               <div 
                 v-if="expandedNotes.includes(index)"
-                class="mt-3 text-sm text-gray-700 leading-relaxed html-content"
-                v-html="note.content"
+                class="mt-3 text-sm text-gray-700 leading-relaxed"
               >
+                {{ note.content }}
               </div>
             </div>
           </div>
@@ -83,13 +83,12 @@
                   <label class="block text-xs font-medium text-gray-600 mb-1">
                     Содержание
                   </label>
-                  <QuillEditor
-                    v-model:content="note.content"
-                    content-type="html"
-                    :options="editorOptions"
-                    class="html-editor"
+                  <textarea
+                    v-model="note.content"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
                     placeholder="Введите содержание заметки"
-                  />
+                  ></textarea>
                 </div>
                 <button
                   @click="removeNote(index)"
@@ -117,8 +116,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { Pencil } from 'lucide-vue-next';
-import { QuillEditor } from '@vueup/vue-quill';
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import type { Tour, TourNote } from '@/types/tour';
 
 const props = defineProps<{
@@ -172,22 +169,6 @@ watch(() => tour.value?.notes, (newNotes) => {
     expandedNotes.value = [];
   }
 }, { immediate: true });
-
-const editorOptions = {
-  theme: 'snow',
-  modules: {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'indent': '-1'}, { 'indent': '+1' }],
-      ['link'],
-      ['clean']
-    ]
-  },
-  placeholder: 'Введите содержание заметки...',
-};
 
 const handleEdit = () => {
   editMode.value = !editMode.value;
@@ -257,90 +238,5 @@ const removeNote = (index: number) => {
 .prose em {
   font-style: italic;
   color: #374151;
-}
-
-.html-editor {
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background-color: #ffffff;
-  transition: all 0.2s ease-in-out;
-  min-height: 120px;
-}
-
-.html-editor:focus-within {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.html-content {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: #374151;
-  margin: 0;
-  text-align: justify;
-}
-
-.html-content :deep(h1),
-.html-content :deep(h2),
-.html-content :deep(h3) {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.html-content :deep(h1) {
-  font-size: 1.25rem;
-}
-
-.html-content :deep(h2) {
-  font-size: 1.125rem;
-}
-
-.html-content :deep(h3) {
-  font-size: 1rem;
-}
-
-.html-content :deep(p) {
-  margin-bottom: 0.5rem;
-}
-
-.html-content :deep(ul),
-.html-content :deep(ol) {
-  margin-bottom: 0.5rem;
-  padding-left: 1.25rem;
-}
-
-.html-content :deep(li) {
-  margin-bottom: 0.125rem;
-}
-
-.html-content :deep(a) {
-  color: #3b82f6;
-  text-decoration: underline;
-}
-
-.html-content :deep(a:hover) {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.html-content :deep(strong) {
-  font-weight: 600;
-}
-
-.html-content :deep(em) {
-  font-style: italic;
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-  .html-editor {
-    min-height: 100px;
-  }
-  
-  .html-content {
-    font-size: 0.75rem;
-  }
 }
 </style>

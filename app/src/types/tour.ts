@@ -58,36 +58,6 @@ export interface TourPoint {
   };
 }
 
-export interface CalculationExpense {
-  id?: string;
-  expenseType: string;
-  serviceName: string;
-  serviceDetails: string;
-  tourDays: string;
-  quantity: number;
-  payers: number;
-  totalAmount: number;
-  perPersonAmount: number;
-}
-
-export interface TourCalculations {
-  limit: number;
-  daysCount: number;
-  expenses: CalculationExpense[];
-  costPerPayer: number;
-  markup: number;
-  markupAmount: number;
-  markupInRub: number;
-  totalWithMarkup: number;
-  vatRate: number;
-  vatType: string;
-  vatAmount: number;
-  totalWithVat: number;
-  pricePerPayer: number;
-  totalCost: number;
-}
-
-
 export interface Tour {
   id: number | string;
   title: string;
@@ -114,10 +84,6 @@ export interface Tour {
   difficulty: number | null;
   countries: any[];
   cities: any[];
-  calculations?: TourCalculations;
-  parameters: {
-    tourStatus: number | null | string;
-  };
   tourStatus?: {
     id: number;
     slug: string;
@@ -138,18 +104,4 @@ export interface Tour {
     slug: string;
     title: string;
   };
-  conditions?: Array<{
-    id?: number;
-    content: string;
-    title: string;
-    type: 'included' | 'excluded';
-    metadata?: any;
-  }>;
-  requirements?: string;
-  included_in_price?: string;
-  not_included_in_price?: string;
-  additional_services?: string;
-  cancellation_policy?: string;
-  medical_requirements?: string;
-  required_documents?: string;
 }
