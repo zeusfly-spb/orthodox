@@ -26,7 +26,7 @@
             placeholder="Введите название тура"
           />
           <span v-else class="param-value">
-            {{ tour.title.length > 0 ? tour.title : 'Не указано' }}
+            {{ tour.title }}
           </span>
         </div>
 
@@ -157,7 +157,7 @@
             />
           </div>
           <span v-else class="param-value">
-            {{ tour.time || '00:00' }}
+            {{ tour.time }}
           </span>
         </div>
 

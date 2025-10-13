@@ -1,18 +1,18 @@
 <template>
   <div>
-    <TourFormHeader
-      :currentItem="tour"
-      v-model:editMode="editing"
+    <TourFormHeader 
+      :currentItem="tour" 
+      v-model:editMode="editing" 
     />
 
-    <TourFormOverview
-      v-model:currentItem="tour"
-      :editMode="editing"
+    <TourFormOverview 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
     />
 
-    <TourFormCards
-      v-model:currentItem="tour"
-      :editMode="editing"
+    <TourFormCards 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
       v-model:guide="selectedGuide"
     />
 
@@ -22,28 +22,28 @@
       v-model:currentItem="tour"
       v-model:restaurant="selectedRestaurant"
       v-model:transportation="selectedTransportation"
-      :editMode="editing"
+      :editMode="editing" 
     />
 
-    <TourFormObjects
-      v-model:currentItem="tour"
-      :editMode="editing"
+    <TourFormObjects 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
     />
 
-    <TourFormRatings
-      v-model:currentItem="tour"
-      :editMode="editing"
+    <TourFormRatings 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
     />
 
-    <!-- <TourFormExtras
-      v-model:currentItem="tour"
-      :editMode="editing"
-    /> -->
+    <TourFormExtras 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
+    />
 
-    <!-- <TourFormSummary
-      v-model:currentItem="tour"
-      :editMode="editing"
-    /> -->
+    <TourFormSummary 
+      v-model:currentItem="tour" 
+      :editMode="editing" 
+    />
   </div>
 </template>
 
@@ -89,9 +89,9 @@ const editing = computed({
 
 const focusFirstInput = async () => {
   await nextTick();
-
+  
   const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
-
+  
   if (firstInput) {
     firstInput.focus();
   }
@@ -127,16 +127,16 @@ const createService = (entity: Entity) => {
 };
 
 const setDefaultServices = () => {
-  const existingGuideService = tour.value.services.find(service =>
+  const existingGuideService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'guide'
     );
-    const existingHotelService = tour.value.services.find(service =>
+    const existingHotelService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'accommodation'
     );
-    const existingRestaurantService = tour.value.services.find(service =>
+    const existingRestaurantService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'meal'
     );
-    const existingTransportationService = tour.value.services.find(service =>
+    const existingTransportationService = tour.value.services.find(service => 
       service.entity && service.entity.entityType && service.entity.entityType.slug === 'transport'
     );
 
@@ -166,7 +166,7 @@ const setDefaultServices = () => {
 };
 
 const stripService = (service: Service) => {
-  delete service.id;
+  delete service.id;  
   service.entity_id = service.entity?.id;
   delete service.entity;
   return service;
@@ -174,7 +174,7 @@ const stripService = (service: Service) => {
 
 const filterServices = (slug: string) => {
   return tour.value.services
-    .filter(service =>
+    .filter(service => 
       !(service.entity && service.entity.entityType && service.entity.entityType.slug === slug)
     ).map(service => stripService(service));
 };
@@ -198,7 +198,7 @@ onMounted(async () => {
     await fetchEntities();
 
     setDefaultServices();
-
+    
     watch(selectedGuide, (newVal) => {
       applyService(newVal, 'guide');
     });

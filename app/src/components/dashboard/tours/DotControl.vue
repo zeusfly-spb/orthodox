@@ -3,9 +3,9 @@
     <span class="param-value">{{ ratingTitle(rating) }}</span>
     <div class="rating-dots">
       <template v-if="editMode">
-        <span
-          v-for="i in Array(max).fill(0).map((_, index) => index + 1)"
-          :key="i"
+        <span 
+          v-for="i in Array(max).fill(0).map((_, index) => index + 1)" 
+          :key="i" 
           class="dot"
           :class="{ 'dot-filled': i <= rating, 'dot-input': i > rating, 'touchable': editMode }"
           @click="rating = i"
@@ -13,9 +13,9 @@
         />
       </template>
       <template v-else-if="rating">
-        <span
-          v-for="i in Array(max).fill(0).map((_, index) => index + 1)"
-          :key="i"
+        <span 
+          v-for="i in Array(max).fill(0).map((_, index) => index + 1)" 
+          :key="i" 
           class="dot"
           :class="{ 'dot-filled': i <= rating, 'dot-empty': i > rating }"
         />
