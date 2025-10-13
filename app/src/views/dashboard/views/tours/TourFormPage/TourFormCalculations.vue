@@ -229,6 +229,9 @@
     </div>
 
     <div v-if="editMode" class="add-expense-buttons">
+      <button type="button" class="add-expense-btn" @click="addExpenseRow('')">
+        + Новый тип затрат
+      </button>
       <button type="button" class="add-expense-btn" @click="addExpenseRow('Билеты в музей')">
         + БИЛЕТЫ В МУЗЕЙ
       </button>
@@ -312,7 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import type { Tour, TourCalculations, CalculationExpense } from '@/types/tour';
@@ -350,43 +353,20 @@ const calculations = computed({
 
 function getDefaultCalculations(): TourCalculations {
   return {
-    limit: 50,
-    daysCount: 4,
-    expenses: [
-      {
-        id: '1',
-        expenseType: 'Транспорт',
-        serviceName: 'Автобус неоплан 50 мест',
-        serviceDetails: '',
-        tourDays: '1,2,3,4',
-        quantity: 48,
-        payers: 44,
-        totalAmount: 200000,
-        perPersonAmount: 4545.45,
-      },
-      {
-        id: '2',
-        expenseType: 'Гостиница',
-        serviceName: 'Университетская 2*',
-        serviceDetails: 'Проживание и завтрак',
-        tourDays: '1,2,3',
-        quantity: 50,
-        payers: 44,
-        totalAmount: 200000,
-        perPersonAmount: 4545.45,
-      },
-    ],
-    costPerPayer: 56830,
-    markup: 10,
-    markupAmount: 5683.1,
-    markupInRub: 2600.1,
-    totalWithMarkup: 55683.1,
-    vatRate: 20,
-    vatType: '',
-    vatAmount: 124.78,
-    totalWithVat: 74545.45,
-    pricePerPayer: 74545.45,
-    totalCost: 2500555,
+      limit: 1,
+        daysCount: 1,
+        expenses: [],
+        costPerPayer: 0,
+        markup: 0,
+        vatRate: 0,
+        vatType: '',
+        markupAmount: 0,
+        markupInRub: 0,
+        totalWithMarkup: 0,
+        vatAmount: 0,
+        totalWithVat: 0,
+        pricePerPayer: 0,
+        totalCost: 0,
   };
 }
 
@@ -412,7 +392,6 @@ function decrementdaysCount() {
 
 function addExpenseRow(type: string) {
   const newExpense: CalculationExpense = {
-    id: Date.now().toString(),
     expenseType: type,
     serviceName: '',
     serviceDetails: '',
@@ -448,7 +427,8 @@ const editMode = computed({
     emit('update:editMode', value);
   },
 });
-const markupMode = ref('percent'); // 'percent' or 'rubles'
+const markupMode = ref('percent');
+const markupRublesInput = ref(0);
 
 function calculatePerPersonAmount(expense: CalculationExpense): number {
   if (!expense.payers || expense.payers === 0) {
@@ -470,19 +450,31 @@ const markupPercent = computed({
   get: () => calculations.value.markup || 0,
   set: (value: number) => {
     calculations.value = { ...calculations.value, markup: value };
+    markupRublesInput.value = (costPerPayer.value * value) / 100;
   }
 });
 
 //Наценка в рублях (редактируемое поле)
 const markupInRoubles = computed({
   get: () => {
+    if (markupMode.value === 'rubles') {
+      return markupRublesInput.value;
+    }
     return (costPerPayer.value * markupPercent.value) / 100;
   },
   set: (value: number) => {
+    markupRublesInput.value = value;
     if (costPerPayer.value > 0) {
       const newMarkupPercent = (value * 100) / costPerPayer.value;
       calculations.value = { ...calculations.value, markup: newMarkupPercent };
     }
+  }
+});
+
+
+watch(markupMode, (newMode) => {
+  if (newMode === 'rubles') {
+    markupRublesInput.value = (costPerPayer.value * markupPercent.value) / 100;
   }
 });
 

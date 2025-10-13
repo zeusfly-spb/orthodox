@@ -21,6 +21,16 @@
             <span class="service-price">{{ formatCurrency(service.price) }} ₽</span>
           </div>
         </div>
+        
+        <div class="view-header" style="margin-top: 1.5rem;">
+          <h2 class="section-title">Дополнительные услуги в туре</h2>
+        </div>
+        <div class="view-content" v-if="extraServices.length > 0 && extraServices[0].title.length > 0">
+          <div v-for="service in extraServices" :key="service.id" class="view-service-row">
+            <span class="service-name">{{ service.title }}</span>
+            <span class="service-price">{{ formatCurrency(service.price) }} ₽</span>
+          </div>
+        </div>
       </div>
 
       <div v-else class="edit-mode">
@@ -76,16 +86,78 @@
             <button
               type="button"
               class="delete-service-button"
-              @click="removeService(index)"
+              @click="removeBasicService(index)"
               title="Удалить услугу"
             >
               <Trash2 class="w-4 h-4" />
             </button>
           </div>
 
-          <button class="add-service-button" @click="addService">
+          <button class="add-service-button" @click="addBasicService" v-if="basicServices.length > 1">
             <IconPlus />
             Еще основная услуга
+          </button>
+          <button class="add-service-button" @click="addBasicService" v-else>
+            <IconPlus />
+            Добавить основную услугу
+          </button>
+        </div>
+
+        <div class="section-header" style="margin-top: 2rem;">
+          <div class="section-title-wrapper">
+            <h2 class="section-title">Дополнительные услуги в туре</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button class="help-button" type="button" @click.stop>
+                    <IconQuestionMark />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Информация о стоимости дополнительных услуг в туре</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+
+        <div class="cost-content">
+          <div v-for="(service, index) in extraServices" :key="service.id" class="cost-row">
+            <div class="cost-field">
+              <label class="cost-label">Наименование доп. услуги</label>
+              <Input
+                v-model="service.title"
+                type="text"
+                class="cost-input"
+                placeholder="Введите наименование доп. услуги"
+              />
+            </div>
+            <div class="cost-field cost-field-price">
+              <label class="cost-label">Стоимость</label>
+              <Input
+                v-model.number="service.price"
+                type="number"
+                class="cost-input"
+                placeholder="Введите стоимость тура"
+              />
+            </div>
+            <button
+              type="button"
+              class="delete-service-button"
+              @click="removeExtraService(index)"
+              title="Удалить услугу"
+            >
+              <Trash2 class="w-4 h-4" />
+            </button>
+          </div>
+
+          <button class="add-service-button" @click="addExtraService" v-if="extraServices.length > 1">
+            <IconPlus />
+            Еще доп. услуга
+          </button>
+          <button class="add-service-button" @click="addExtraService" v-else>
+            <IconPlus />
+            Добавить доп. услугу
           </button>
         </div>
       </div>
@@ -135,14 +207,25 @@ const basicServices = computed({
   },
 });
 
+const extraServices = computed({
+  get(): Service[] {
+    if (!tour.value.services) {
+      return [];
+    }
+    return tour.value.services.filter(s => s.type === 'extra');
+  },
+  set(value: Service[]) {
+    const otherServices = tour.value.services?.filter(s => s.type !== 'extra') || [];
+    tour.value = { ...tour.value, services: [...otherServices, ...value] };
+  },
+});
+
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('ru-RU', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
-
-
 
 const editMode = computed({
   get() {
@@ -157,7 +240,7 @@ const handleEdit = () => {
   editMode.value = !editMode.value;
 };
 
-function addService() {
+function addBasicService() {
   const newService: Service = {
     id: Date.now().toString(),
     title: '',
@@ -171,9 +254,28 @@ function addService() {
   basicServices.value = updatedBasicServices;
 }
 
-function removeService(index: number) {
-    const updatedBasicServices = basicServices.value.filter((_, i) => i !== index);
-    basicServices.value = updatedBasicServices;
+function removeBasicService(index: number) {
+  const updatedBasicServices = basicServices.value.filter((_, i) => i !== index);
+  basicServices.value = updatedBasicServices;
+}
+
+function addExtraService() {
+  const newService: Service = {
+    id: Date.now().toString(),
+    title: '',
+    description: '',
+    price: 0,
+    type: 'extra',
+    is_active: true,
+  };
+
+  const updatedExtraServices = [...extraServices.value, newService];
+  extraServices.value = updatedExtraServices;
+}
+
+function removeExtraService(index: number) {
+  const updatedExtraServices = extraServices.value.filter((_, i) => i !== index);
+  extraServices.value = updatedExtraServices;
 }
 </script>
 

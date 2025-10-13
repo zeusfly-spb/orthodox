@@ -112,7 +112,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import type { Tour, DayItem } from '@/types/tour';
 import { computed, ref, nextTick, watch } from 'vue';
 import TourPhotoUpload from '@/components/dashboard/tours/TourPhotoUpload.vue';
-import { tourApi } from '@/api/tours';
+import { imagesApi } from '@/api/images';
 
 const props = defineProps<{
   currentItem: Tour;
@@ -307,11 +307,6 @@ const updateCurrentDayPhotos = (images: any[]) => {
 };
 
 const handlePhotoUpload = async (files: FileList) => {
-  if (!tour.value.id) {
-    console.error('Tour ID is required for upload');
-    return;
-  }
-
   const fileArray: File[] = [];
   for (let i = 0; i < files.length; i++) {
     fileArray.push(files[i]);
@@ -319,33 +314,35 @@ const handlePhotoUpload = async (files: FileList) => {
 
   const previewImages = fileArray.map((file, index) => ({
     id: `preview_${Date.now()}_${index}`,
-    path: URL.createObjectURL(file),
+    url: URL.createObjectURL(file),
     original_name: file.name,
     filename: file.name,
     mime_type: file.type,
-    isPreview: true // Mark as preview
+    isPreview: true
   }));
-
 
   const currentPhotos = currentDayPhotos.value;
   const photosWithPreviews = [...currentPhotos, ...previewImages];
   updateCurrentDayPhotos(photosWithPreviews);
 
   try {
-    const uploadedImagesResponse = await tourApi.photos.upload(
-      tour.value.id,
-      currentDay.value.id,
-      fileArray
-    );
-
+    const uploadedImagesResponse = await imagesApi.upload(fileArray);
     const imagesArray = Array.isArray(uploadedImagesResponse.data.data) ? uploadedImagesResponse.data.data : [];
 
-    setTimeout(() => {
-      const currentPhotosAfterUpload = currentDayPhotos.value;
-      const existingPhotos = currentPhotosAfterUpload.filter(photo => !photo.isPreview);
-      const updatedPhotos = [...existingPhotos, ...imagesArray];
-      updateCurrentDayPhotos(updatedPhotos);
-    }, 500);
+    const currentPhotosAfterUpload = currentDayPhotos.value;
+    const updatedPhotos = currentPhotosAfterUpload.map(photo => {
+      if (photo.isPreview) {
+        const uploadedImage = imagesArray.shift();
+        if (uploadedImage) {
+          return {
+            ...uploadedImage,
+            url: photo.url
+          };
+        }
+      }
+      return photo;
+    });
+    updateCurrentDayPhotos(updatedPhotos);
 
   } catch (error) {
     console.error('Failed to upload images:', error);
@@ -356,19 +353,13 @@ const handlePhotoUpload = async (files: FileList) => {
 };
 
 const handlePhotoDelete = async (imageId: number | string) => {
-  if (!tour.value.id || !currentDay.value?.id) {
-    console.error('Tour ID and Day ID are required for delete');
-    return;
-  }
-
   try {
-    await tourApi.photos.delete(
-      tour.value.id,
-      currentDay.value.id,
-      imageId
-    );
+    await imagesApi.delete(imageId);
     const currentPhotos = currentDayPhotos.value;
-    const updatedPhotos = currentPhotos.filter(photo => photo.id !== imageId);
+    const updatedPhotos = currentPhotos.filter(photo => {
+      const photoId = photo.file?.id || photo.id;
+      return photoId !== imageId;
+    });
     updateCurrentDayPhotos(updatedPhotos);
 
   } catch (error) {
