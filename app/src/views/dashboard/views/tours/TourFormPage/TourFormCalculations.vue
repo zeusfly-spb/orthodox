@@ -63,10 +63,10 @@
             min="1"
           />
           <div class="number-controls">
-            <button type="button" class="number-btn" @click="decrementLimit">
+            <button type="button" class="number-btn" @click="decrementdaysCount">
               <IconMinus />
             </button>
-            <button type="button" class="number-btn" @click="incrementLimit">
+            <button type="button" class="number-btn" @click="incrementdaysCount">
               <IconPlus />
             </button>
           </div>
@@ -229,6 +229,9 @@
     </div>
 
     <div v-if="editMode" class="add-expense-buttons">
+      <button type="button" class="add-expense-btn" @click="addExpenseRow('')">
+        + Новый тип затрат
+      </button>
       <button type="button" class="add-expense-btn" @click="addExpenseRow('Билеты в музей')">
         + БИЛЕТЫ В МУЗЕЙ
       </button>
@@ -312,7 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import type { Tour, TourCalculations, CalculationExpense } from '@/types/tour';
@@ -322,10 +325,12 @@ import IconQuestionMark from '@/components/icons/IconQuestionMark.vue';
 
 const props = defineProps<{
   currentItem: Tour;
+  editMode: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:currentItem', value: Tour): void;
+  (e: 'update:editMode', value: boolean): void;
 }>();
 
 const tour = computed({
@@ -348,43 +353,20 @@ const calculations = computed({
 
 function getDefaultCalculations(): TourCalculations {
   return {
-    limit: 50,
-    daysCount: 4,
-    expenses: [
-      {
-        id: '1',
-        expenseType: 'Транспорт',
-        serviceName: 'Автобус неоплан 50 мест',
-        serviceDetails: '',
-        tourDays: '1,2,3,4',
-        quantity: 48,
-        payers: 44,
-        totalAmount: 200000,
-        perPersonAmount: 4545.45,
-      },
-      {
-        id: '2',
-        expenseType: 'Гостиница',
-        serviceName: 'Университетская 2*',
-        serviceDetails: 'Проживание и завтрак',
-        tourDays: '1,2,3',
-        quantity: 50,
-        payers: 44,
-        totalAmount: 200000,
-        perPersonAmount: 4545.45,
-      },
-    ],
-    costPerPayer: 56830,
-    markup: 10,
-    markupAmount: 5683.1,
-    markupInRub: 2600.1,
-    totalWithMarkup: 55683.1,
-    vatRate: 20,
-    vatType: '',
-    vatAmount: 124.78,
-    totalWithVat: 74545.45,
-    pricePerPayer: 74545.45,
-    totalCost: 2500555,
+      limit: 1,
+        daysCount: 1,
+        expenses: [],
+        costPerPayer: 0,
+        markup: 0,
+        vatRate: 0,
+        vatType: '',
+        markupAmount: 0,
+        markupInRub: 0,
+        totalWithMarkup: 0,
+        vatAmount: 0,
+        totalWithVat: 0,
+        pricePerPayer: 0,
+        totalCost: 0,
   };
 }
 
@@ -397,11 +379,19 @@ function decrementLimit() {
     calculations.value = { ...calculations.value, limit: calculations.value.limit - 1 };
   }
 }
+function incrementdaysCount() {
+  calculations.value = { ...calculations.value, daysCount: calculations.value.daysCount + 1 };
+}
+
+function decrementdaysCount() {
+  if (calculations.value.daysCount > 1) {
+    calculations.value = { ...calculations.value, daysCount: calculations.value.daysCount - 1 };
+  }
+}
 
 
 function addExpenseRow(type: string) {
   const newExpense: CalculationExpense = {
-    id: Date.now().toString(),
     expenseType: type,
     serviceName: '',
     serviceDetails: '',
@@ -420,14 +410,25 @@ function addExpenseRow(type: string) {
 
 
 function formatCurrency(value: number): string {
+  if (!isFinite(value) || isNaN(value)) {
+    return '0,00';
+  }
   return new Intl.NumberFormat('ru-RU', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
 
-const editMode = ref(false);
-const markupMode = ref('percent'); // 'percent' or 'rubles'
+const editMode = computed({
+  get() {
+    return props.editMode;
+  },
+  set(value) {
+    emit('update:editMode', value);
+  },
+});
+const markupMode = ref('percent');
+const markupRublesInput = ref(0);
 
 function calculatePerPersonAmount(expense: CalculationExpense): number {
   if (!expense.payers || expense.payers === 0) {
@@ -446,22 +447,34 @@ const costPerPayer = computed(() => {
 
 //Наценка в процентах
 const markupPercent = computed({
-  get: () => calculations.value.markup,
+  get: () => calculations.value.markup || 0,
   set: (value: number) => {
     calculations.value = { ...calculations.value, markup: value };
+    markupRublesInput.value = (costPerPayer.value * value) / 100;
   }
 });
 
 //Наценка в рублях (редактируемое поле)
 const markupInRoubles = computed({
   get: () => {
+    if (markupMode.value === 'rubles') {
+      return markupRublesInput.value;
+    }
     return (costPerPayer.value * markupPercent.value) / 100;
   },
   set: (value: number) => {
+    markupRublesInput.value = value;
     if (costPerPayer.value > 0) {
       const newMarkupPercent = (value * 100) / costPerPayer.value;
       calculations.value = { ...calculations.value, markup: newMarkupPercent };
     }
+  }
+});
+
+
+watch(markupMode, (newMode) => {
+  if (newMode === 'rubles') {
+    markupRublesInput.value = (costPerPayer.value * markupPercent.value) / 100;
   }
 });
 
@@ -483,22 +496,27 @@ const markupInRub = computed(() => {
 
 //НДС в том числе
 const vatInPrice = computed(() => {
-  return (totalWithMarkup.value * calculations.value.vatRate) / (100 + calculations.value.vatRate);
+  const vatRate = calculations.value.vatRate || 0;
+  if (vatRate === 0) return 0;
+  return (totalWithMarkup.value * vatRate) / (100 + vatRate);
 });
 
 //НДС начислить сверху
 const vatOnTop = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого с НДС
 const totalWithVat = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого цена на 1 плательщика
 const pricePerPayer = computed(() => {
-  return totalWithMarkup.value * ((100 + calculations.value.vatRate) / 100)
+  const vatRate = calculations.value.vatRate || 0;
+  return totalWithMarkup.value * ((100 + vatRate) / 100)
 });
 
 //Итого стоимость
@@ -511,8 +529,8 @@ const totalCost = computed(() => {
 
 const summaryItems = computed(() => [
   { label: 'Себестоимость на 1 плательщика:', value: formatCurrency(costPerPayer.value), currency: true },
-  { label: 'Вид начисления НДС:', value: calculations.value.vatType, currency: false },
-  { label: 'Наценка:', value: markupMode.value === 'percent' ? markupPercent.value + '%' : formatCurrency(markupInRoubles.value) + ' ₽', currency: false, editable: true },
+  { label: 'Вид начисления НДС:', value: calculations.value.vatType || '-', currency: false },
+  { label: 'Наценка:', value: markupMode.value === 'percent' ? (markupPercent.value || 0) + '%' : formatCurrency(markupInRoubles.value) + ' ₽', currency: false, editable: true },
   { label: 'НДС в том числе:', value: formatCurrency(vatInPrice.value), currency: true, indent: true },
   { label: 'Размер наценки:', value: formatCurrency(markupAmount.value), currency: true },
   { label: 'НДС начислить сверху:', value: formatCurrency(vatOnTop.value), currency: true, indent: true },
@@ -520,7 +538,7 @@ const summaryItems = computed(() => [
   { label: 'Итого с НДС:', value: formatCurrency(totalWithVat.value), currency: true },
   { label: 'Итого с наценкой:', value: formatCurrency(totalWithMarkup.value), currency: true },
   { label: 'Итого цена на 1 плательщика:', value: formatCurrency(pricePerPayer.value), currency: true, highlight: true },
-  { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate, currency: false },
+  { label: 'НДС (выбрать ставку),%:', value: calculations.value.vatRate || 20, currency: false },
   { label: null },
 ]);
 
@@ -533,9 +551,9 @@ function updateExpenseField(index: number, field: keyof CalculationExpense, valu
   };
 }
 
-function handleEdit() {
+const handleEdit = () => {
   editMode.value = !editMode.value;
-}
+};
 
 function deleteExpenseRow(index: number) {
   const updatedExpenses = calculations.value.expenses.filter((_, i) => i !== index);

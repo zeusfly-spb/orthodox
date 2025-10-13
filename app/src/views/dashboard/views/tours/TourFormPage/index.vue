@@ -13,6 +13,10 @@ import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormNotes from './TourFormNotes.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
+import TourFormCalculations from './TourFormCalculations.vue';
+import TourFormCostTotal from './TourFormCostTotal.vue';
+import TourFormService from './TourFormService.vue';
+
 import { cloneDeep, isEqual } from 'lodash';
 
 const router = useRouter();
@@ -20,19 +24,19 @@ const route = useRoute();
 const id = ref<string | null>(null);
 const currentItem = ref<Tour | null>(null);
 const backupItem = ref<Tour | null>(null);
+const isNewTour = ref(false)
 const activeTab = ref('Data');
 const editMode = ref(false);
 
 const requestBody = computed(() => {
   if (!currentItem.value || !backupItem.value) return {};
-  
   const changedFields: Partial<Tour> = {};
-  
+
   const apiFields: (keyof Tour)[] = [
     'time',
     'date',
     'title',
-    'route', 
+    'route',
     'price',
     'duration',
     'comfort',
@@ -49,18 +53,46 @@ const requestBody = computed(() => {
     'days',
     'countries',
     'cities',
+    'calculations',
   ];
-  
+
   apiFields.forEach(key => {
     const currentValue = (currentItem.value as any)[key];
     const originalValue = (backupItem.value as any)[key];
     if (!isEqual(currentValue, originalValue)) {
       (changedFields as any)[key] = currentValue;
+      console.log(`Field "${key}" changed:`, { originalValue, currentValue });
     }
   });
 
-  
   return changedFields;
+});
+
+//TODO VALIDATION
+const isValidForSubmit = computed(() => {
+  if (!currentItem.value) return false;
+
+  const title = currentItem.value.title?.trim() || '';
+  // const price = currentItem.value.price || 0;
+  // const difficulty = currentItem.value.difficulty;
+  // const comfort = currentItem.value.comfort;
+
+
+  // Название тура
+  if (title.length <= 3) return false;
+
+  // // Цена
+  // if (price <= 0) return false;
+
+  // // Сложность
+  // const difficultyNum = Number(difficulty);
+  // if (isNaN(difficultyNum) || String(difficulty).length > 4) return false;
+
+  // // Комфорт
+  // const comfortNum = Number(comfort);
+  // if (isNaN(comfortNum) || String(comfort).length > 4) return false;
+
+  return true;
 });
 
 const hasChanges = computed(() => {
@@ -69,14 +101,14 @@ const hasChanges = computed(() => {
 
 const cleanNullParameters = (parameters: any) => {
   if (!parameters) return parameters;
-  
+
   const cleaned: any = {};
   Object.keys(parameters).forEach(key => {
     if (parameters[key] !== null) {
       cleaned[key] = parameters[key];
     }
   });
-  
+
   return cleaned;
 };
 
@@ -92,7 +124,7 @@ const loadTabFromUrl = () => {
   const tabFromUrl = route.query.tab as string;
   if (
     tabFromUrl &&
-    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'TreeView'].includes(tabFromUrl)
+    ['Data', 'Params', 'Desc', 'Notes', 'ObjectsTab', 'Program', 'Map', 'Conditions', 'TreeView', 'Calculations', 'Service', 'CostTotal'].includes(tabFromUrl)
   ) {
     activeTab.value = tabFromUrl;
   }
@@ -146,6 +178,12 @@ const prepareParams = (params: any) => {
   if (params.cities) {
     params.cities = params.cities.map((city: any) => city.id);
   }
+  if (params.days) {
+    params.days = params.days.map((day: any) => ({
+      ...day,
+      images: day.images ? day.images.map((img: any) => img.file?.id || img.id) : []
+    }));
+  }
   return params;
 };
 
@@ -158,10 +196,11 @@ const handleSubmit = async (): Promise<void> => {
       await tourApi.patchData(id.value, params);
       toast.success('Тур успешно обновлен');
     } else {
-      let body = { ...currentItem.value! };
+      let body = { ...requestBody.value! };
       const params = prepareParams(body);
       await tourApi.storeData(params);
       toast.success('Тур успешно создан');
+      router.push({ name: 'tours-list' });
     }
     backupItem.value = cloneDeep(currentItem.value);
     editMode.value = false;
@@ -183,11 +222,66 @@ const handleKeydown = (event: KeyboardEvent) => {
 };
 
 const init = () => {
-  loadTabFromUrl();
+  const routePath = route.path;
   const routeId = router.currentRoute.value.params.id;
-  if (routeId && routeId !== 'new') {
+  if (routePath.includes('new')) {
+    isNewTour.value = true;
+  }
+
+  loadTabFromUrl();
+
+  if (isNewTour.value && !route.query.tab) {
+    activeTab.value = 'Params';
+  }
+
+  if (!isNewTour.value) {
     id.value = routeId as string;
     loadItem();
+  } else{
+    currentItem.value = {
+      title: '',
+      description: '',
+      price: 0,
+      duration: 0,
+      comfort: '',
+      difficulty: '',
+      seats: 0,
+      time: null,
+      calculations: {
+        limit: 1,
+        daysCount: 1,
+        expenses: [],
+        costPerPayer: 0,
+        markup: 0,
+        vatRate: 0,
+        vatType: '',
+        markupAmount: 0,
+        markupInRub: 0,
+        totalWithMarkup: 0,
+        vatAmount: 0,
+        totalWithVat: 0,
+        pricePerPayer: 0,
+        totalCost: 0,
+      },
+      parameters: {
+        tourType: null,
+        tourCategory: null,
+        tourTransport: null,
+        tourStatus: null,
+      },
+      services: [],
+      entities: [],
+      days: [
+         {
+                "title": "",
+                "description": "",
+                "images": [],
+          },
+      ],
+      countries: [],
+      cities: [],
+    };
+    backupItem.value = cloneDeep(currentItem.value);
   }
 };
 
@@ -211,12 +305,15 @@ onUnmounted(() => {
     <div class="mb-8">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">
-          <span class="text-gray-500 text-2xl">
+          <span class="text-gray-500 text-2xl" v-if="isNewTour">
+            Материнский тур / Шаблон тура
+          </span>
+          <span class="text-gray-500 text-2xl" v-else>
             Уникальный тур
           </span>
           {{ currentItem.title }}
         </h1>
-        
+
         <div v-if="hasChanges || editMode" class="flex gap-3">
           <button
             @click="handleCancel"
@@ -233,54 +330,77 @@ onUnmounted(() => {
               'opacity-50 cursor-not-allowed': !hasChanges,
             }"
           >
-            Сохранить
+            {{ isNewTour ? 'Создать новый тур' : 'Сохранить' }}
           </button>
         </div>
       </div>
-      <TourFormTabControl 
-        v-model:modelValue="activeTab" 
-        :hasChanges="hasChanges" 
+      <TourFormTabControl
+        v-model:modelValue="activeTab"
+        :hasChanges="hasChanges"
+        :isNewTour="isNewTour"
       />
     </div>
     <div class="content">
       <TourFormData
-       v-if="activeTab === 'Data'" 
-       v-model:currentItem="currentItem" 
-       v-model:editMode="editMode" 
+       v-if="activeTab === 'Data'"
+       v-model:currentItem="currentItem"
+       v-model:editMode="editMode"
       />
-      <TourFormParams 
-        v-else-if="activeTab === 'Params'" 
-        v-model:currentItem="currentItem" 
-        v-model:editMode="editMode" 
+      <TourFormParams
+        v-else-if="activeTab === 'Params'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
       />
       <TourFormObjectsTab
         v-else-if="activeTab === 'ObjectsTab'"
         v-model:currentItem="currentItem"
         v-model:editMode="editMode"
       />
-      <TourFormProgram 
-        v-else-if="activeTab === 'Program'" 
-        v-model:currentItem="currentItem" 
+      <TourFormProgram
+        v-else-if="activeTab === 'Program'"
+        v-model:currentItem="currentItem"
         v-model:editMode="editMode"
       />
-      <TourFormMap 
-        v-else-if="activeTab === 'Map'" 
-        v-model:currentItem="currentItem" 
+      <TourFormMap
+        v-else-if="activeTab === 'Map'"
+        v-model:currentItem="currentItem"
         v-model:editMode="editMode"
       />
-      <TourFormDesc 
-        v-else-if="activeTab === 'Desc'" 
-        v-model:currentItem="currentItem" 
-        v-model:editMode="editMode" 
+      <TourFormDesc
+        v-else-if="activeTab === 'Desc'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
       />
-      <TourFormNotes 
-        v-else-if="activeTab === 'Notes'" 
-        v-model:currentItem="currentItem" 
-        v-model:editMode="editMode" 
+      <TourFormNotes
+        v-else-if="activeTab === 'Notes'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
       />
-      <!-- <TourFormTreeView 
-        v-else-if="activeTab === 'TreeView'" 
-        :currentItem="currentItem" 
+      <TourFormConditions
+        v-else-if="activeTab === 'Conditions'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
+      />
+      <TourFormCalculations
+        v-else-if="activeTab === 'Calculations'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
+      />
+
+      <TourFormService
+        v-else-if="activeTab === 'Service'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
+      />
+
+      <TourFormCostTotal
+        v-else-if="activeTab === 'CostTotal'"
+        v-model:currentItem="currentItem"
+        v-model:editMode="editMode"
+      />
+      <!-- <TourFormTreeView
+        v-else-if="activeTab === 'TreeView'"
+        :currentItem="currentItem"
       /> -->
     </div>
   </div>
