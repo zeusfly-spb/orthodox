@@ -79,10 +79,13 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
 const fileInput = ref<HTMLInputElement>();
 const showAll = ref(false);
 const fallbackSrcMap = ref<Record<string, string>>({});
+
 const maxVisiblePhotos = 3;
+
 const API_FALLBACK_URL = 'https://orthodox-api.zeusfly.ru';
 
 const visiblePhotos = computed(() => {
@@ -103,6 +106,7 @@ const showAllPhotos = () => {
   showAll.value = true;
 };
 
+
 const triggerFileInput = () => {
   fileInput.value?.click();
 };
@@ -117,35 +121,28 @@ const handleFileSelect = (event: Event) => {
 
 const removePhoto = (index: number) => {
   const photo = props.photos[index];
-
-  const photoId = photo?.file?.id || photo?.id;
-  if (photoId) {
-    emit('delete', photoId);
+  if (photo && photo.id) {
+    emit('delete', photo.id);
   }
 };
 
 
+//prepend fall back url if image is not loaded using relative path
 const isAbsoluteUrl = (url: string) => /^(https?:|blob:|data:)/i.test(url);
 
 const createPhotoKey = (photo: any, index: number) => {
-
-  if (photo?.file?.id) {
-    return String(photo.file.id);
-  }
-
   if (photo && (photo.id || photo.id === 0)) {
     return String(photo.id);
   }
-
-  if (photo?.file?.url || photo?.url || photo?.path) {
-    return photo.file?.url || photo.url || photo.path;
+  if (photo?.path) {
+    return photo.path;
   }
   return `index-${index}`;
 };
 
 const getPhotoSrc = (photo: any, index: number) => {
   const key = createPhotoKey(photo, index);
-  return fallbackSrcMap.value[key] || photo?.file?.url || photo?.url || photo?.path || '';
+  return fallbackSrcMap.value[key] || photo?.path || '';
 };
 
 const handleImageError = (photo: any, index: number, event: Event) => {
@@ -155,11 +152,12 @@ const handleImageError = (photo: any, index: number, event: Event) => {
   }
 
   const key = createPhotoKey(photo, index);
+
   if (fallbackSrcMap.value[key]) {
     return;
   }
 
-  const originalPath = photo?.file?.url || photo?.url || photo?.path || '';
+  const originalPath = photo?.path || '';
 
   if (!originalPath || isAbsoluteUrl(originalPath) || photo?.isPreview) {
     return;
