@@ -1,6 +1,7 @@
 <template>
   <div class="tab-container">
     <button
+      v-if="!isNewTour"
       :disabled="hasChanges"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Data' }"
@@ -9,7 +10,7 @@
       Данные о туре
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Params' }"
       @click="activeTab = 'Params'"
@@ -17,7 +18,7 @@
       Параметры тура
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Desc' }"
       @click="activeTab = 'Desc'"
@@ -25,7 +26,7 @@
       Описание тура
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Notes' }"
       @click="activeTab = 'Notes'"
@@ -33,7 +34,7 @@
       Важно знать
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'ObjectsTab' }"
       @click="activeTab = 'ObjectsTab'"
@@ -41,7 +42,7 @@
       Объекты в туре
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Program' }"
       @click="activeTab = 'Program'"
@@ -49,12 +50,52 @@
       Программа тура
     </button>
     <button
-      :disabled="hasChanges"
+      :disabled="hasChanges && !isNewTour"
       class="tab-button"
       :class="{ 'tab-button--active': activeTab === 'Map' }"
       @click="activeTab = 'Map'"
     >
       Карта маршрута
+    </button>
+    <button
+      :disabled="hasChanges && !isNewTour"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Conditions' }"
+      @click="activeTab = 'Conditions'"
+    >
+      Условия тура
+    </button>
+    <button
+      :disabled="hasChanges && !isNewTour"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Calculations' }"
+      @click="activeTab = 'Calculations'"
+    >
+      Расчеты
+    </button>
+    <button
+      :disabled="hasChanges && !isNewTour"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'Service' }"
+      @click="activeTab = 'Service'"
+    >
+      Стоимость
+    </button>
+    <!-- <button
+      :disabled="hasChanges && !isNewTour"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'ExtraService' }"
+      @click="activeTab = 'ExtraService'"
+    >
+      Доп. услуги
+    </button> -->
+    <button
+      :disabled="hasChanges && !isNewTour"
+      class="tab-button"
+      :class="{ 'tab-button--active': activeTab === 'CostTotal' }"
+      @click="activeTab = 'CostTotal'"
+    >
+      Общая стоимость
     </button>
     <!-- <button
       :disabled="hasChanges"
@@ -73,6 +114,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   modelValue: string;
   hasChanges: boolean;
+  isNewTour: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -93,6 +135,12 @@ const activeTab = computed({
 .tab-container {
   display: flex;
   gap: 0.25rem; /* space-x-1 */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-container::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-button {

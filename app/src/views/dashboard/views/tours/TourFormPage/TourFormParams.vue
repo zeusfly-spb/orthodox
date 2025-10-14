@@ -26,7 +26,7 @@
             placeholder="Введите название тура"
           />
           <span v-else class="param-value">
-            {{ tour.title }}
+            {{ tour.title.length > 0 ? tour.title : 'Не указано' }}
           </span>
         </div>
 
@@ -157,7 +157,7 @@
             />
           </div>
           <span v-else class="param-value">
-            {{ tour.time }}
+            {{ tour.time || '00:00' }}
           </span>
         </div>
 
@@ -194,8 +194,6 @@
         </div>
       </div>
     </div>
-
-    <TouristsList :tour="tour" />
   </div>
 </template>
 
@@ -208,7 +206,6 @@ import { useToursStore } from '@/stores/tours';
 import DotControl from '@/components/dashboard/tours/DotControl.vue';
 import CountrySelector from '@/components/dashboard/tours/CountrySelector.vue';
 import CitySelector from '@/components/dashboard/tours/CitySelector.vue';
-import TouristsList from '@/components/dashboard/tours/TouristsList.vue';
 import { usePlacesStore } from '@/stores/places';
 import type { City } from '@/types/city';
 
