@@ -111,7 +111,6 @@ const applyFilters = () => {
         <DataTable
           :isLoading="isLoading"
           :collection="items"
-          :collection="items"
           @edit="handleEdit"
           @delete="handleDelete"
         />
