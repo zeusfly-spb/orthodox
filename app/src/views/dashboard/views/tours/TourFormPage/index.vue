@@ -18,6 +18,7 @@ import TourFormCostTotal from './TourFormCostTotal.vue';
 import TourFormService from './TourFormService.vue';
 
 import { cloneDeep, isEqual } from 'lodash';
+import TourFormConditions from './TourFormConditions.vue';
 
 const router = useRouter();
 const route = useRoute();
