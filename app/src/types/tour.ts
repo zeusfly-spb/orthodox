@@ -104,4 +104,6 @@ export interface Tour {
     slug: string;
     title: string;
   };
+  parameters?: any;
+  bookings?: any[];
 }
