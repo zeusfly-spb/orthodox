@@ -14,6 +14,7 @@ import TourFormDesc from './TourFormDesc.vue';
 import TourFormNotes from './TourFormNotes.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import { cloneDeep, isEqual } from 'lodash';
+import TourFormConditions from './TourFormConditions.vue';
 
 const router = useRouter();
 const route = useRoute();
