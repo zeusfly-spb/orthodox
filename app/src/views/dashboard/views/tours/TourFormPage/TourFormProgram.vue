@@ -63,11 +63,9 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Описание программы:</label>
-                <QuillEditor
-                  v-model:content="currentDayDescription"
-                  content-type="html"
-                  :options="editorOptions"
-                  class="html-editor"
+                <textarea 
+                  v-model="currentDayDescription" 
+                  class="form-textarea"
                   placeholder="Введите описание программы дня"
                 />
               </div>
@@ -107,8 +105,6 @@
 
 <script setup lang="ts">
 import { Pencil, Trash2 } from 'lucide-vue-next';
-import { QuillEditor } from '@vueup/vue-quill';
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import type { Tour, DayItem } from '@/types/tour';
 import { computed, ref, nextTick, watch } from 'vue';
 import TourPhotoUpload from '@/components/dashboard/tours/TourPhotoUpload.vue';
@@ -223,22 +219,6 @@ const canDeleteDay = computed(() => {
   const currentDaysCount = tour.value.days?.length || 0;
   return currentDaysCount > 1;
 });
-
-const editorOptions = {
-  theme: 'snow',
-  modules: {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'indent': '-1'}, { 'indent': '+1' }],
-      ['link'],
-      ['clean']
-    ]
-  },
-  placeholder: 'Введите описание программы дня...',
-};
 
 const addNewDay = () => {
   if (!canAddDay.value) return;
@@ -482,59 +462,6 @@ const handlePhotoDelete = async (imageId: number | string) => {
   margin: 0;
 }
 
-.day-description :deep(h1),
-.day-description :deep(h2),
-.day-description :deep(h3) {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.day-description :deep(h1) {
-  font-size: 1.25rem;
-}
-
-.day-description :deep(h2) {
-  font-size: 1.125rem;
-}
-
-.day-description :deep(h3) {
-  font-size: 1rem;
-}
-
-.day-description :deep(p) {
-  margin-bottom: 0.75rem;
-}
-
-.day-description :deep(ul),
-.day-description :deep(ol) {
-  margin-bottom: 0.75rem;
-  padding-left: 1.25rem;
-}
-
-.day-description :deep(li) {
-  margin-bottom: 0.25rem;
-}
-
-.day-description :deep(a) {
-  color: #3b82f6;
-  text-decoration: underline;
-}
-
-.day-description :deep(a:hover) {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.day-description :deep(strong) {
-  font-weight: 600;
-}
-
-.day-description :deep(em) {
-  font-style: italic;
-}
-
 .edit-form {
   display: flex;
   flex-direction: column;
@@ -611,19 +538,6 @@ const handlePhotoDelete = async (imageId: number | string) => {
 .form-textarea {
   resize: vertical;
   min-height: 100px;
-}
-
-.html-editor {
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background-color: #ffffff;
-  transition: all 0.2s ease-in-out;
-  min-height: 120px;
-}
-
-.html-editor:focus-within {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .program-gallery {

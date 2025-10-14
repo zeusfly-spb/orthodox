@@ -1,266 +1,172 @@
-<script setup lang="ts">
-import { watch, reactive, nextTick } from 'vue';
-import { Calendar as CalendarIcon, Trash2 } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import AppDatePicker from '@/components/app/AppDatePicker.vue';
-import { toast } from 'vue-sonner';
-import { useCommonForm } from '@/composables/useCommonForm.ts';
+<script setup>
+import { ref, watch } from 'vue';
+import { Plus, Trash2 } from 'lucide-vue-next';
 
-interface FormFields {
-  firstname: string;
-  lastname: string;
-  patronymic?: string;
-  email: string;
-  phone: string;
-  passport_series: string;
-  passport_number: string;
-  passport_issue_date?: string;
-  passport_unit_name?: string;
-  passport_unit_code?: string;
-  passport_birth_date?: string;
-  passport_birth_place?: string;
-  passport_address?: string;
-}
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+});
 
-const formTemplate: FormFields = {
-  firstname: '',
-  lastname: '',
-  patronymic: '',
-  email: '',
-  phone: '',
-  passport_series: '',
-  passport_number: '',
-  passport_issue_date: '',
-  passport_unit_name: '',
-  passport_unit_code: '',
-  passport_birth_date: '',
-  passport_birth_place: '',
-  passport_address: '',
-};
+const emit = defineEmits(['update:modelValue']);
 
-const requiredFields: Array<keyof FormFields> = [
-  'firstname',
-  'lastname',
-  'email',
-  'phone',
-  'passport_series',
-  'passport_number',
-];
-
-const { form, resetForm, fillForm, validateForm } = useCommonForm<FormFields>(
-  formTemplate,
-  requiredFields,
-);
-
-const props = withDefaults(
-  defineProps<{
-    open: boolean;
-    createTitle?: string;
-    editTitle?: string;
-    description?: string;
-    submitText?: string;
-    cancelText?: string;
-    item?: FormFields;
-  }>(),
+const customers = ref([
   {
-    createTitle: 'Добавить данные',
-    editTitle: 'Редактировать данные',
-    description: '',
-    submitText: 'Сохранить',
-    cancelText: 'Отмена',
-  },
-);
+    id: Date.now(),
+    firstname: '',
+    lastname: '',
+    patronymic: '',
+    email: '',
+    phone: '',
+    passport_series: '',
+    passport_number: '',
+    passport_issue_date: null,
+    passport_unit_name: null,
+    passport_unit_code: null,
+    passport_birth_date: null,
+    passport_birth_place: null,
+    passport_address: null
+  }
+]);
 
-const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void;
-  (e: 'submit', item: FormFields): void;
-  (e: 'dismiss'): void;
-}>();
+// Sync with parent
+watch(customers, (newVal) => {
+  emit('update:modelValue', newVal.map(({ id, ...customer }) => customer));
+}, { deep: true });
 
-watch(() => props.item, fillForm, { immediate: true });
-
-watch(
-  () => props.open,
-  async (isOpen) => {
-    if (!isOpen) {
-      await nextTick();
-      resetForm();
-      emit('dismiss');
-    }
-  },
-);
-
-const onSubmit = () => {
-  if (!validateForm()) return;
-  emit('submit', { ...form });
-  emit('update:open', false);
+const addCustomer = () => {
+  customers.value.push({
+    id: Date.now(),
+    firstname: '',
+    lastname: '',
+    patronymic: '',
+    email: '',  
+    phone: '',
+    passport_series: '',
+    passport_number: '',
+    passport_issue_date: null,
+    passport_unit_name: null,
+    passport_unit_code: null,
+    passport_birth_date: null,
+    passport_birth_place: null,
+    passport_address: null
+  });
 };
 
-const addDate = (field: 'passport_issue_date' | 'passport_birth_date') => {
-  if (!form[field]) {
-    toast.error('Выберите дату');
-    return;
+const removeCustomer = (index) => {
+  if (customers.value.length > 1) {
+    customers.value.splice(index, 1);
   }
 };
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="(value) => emit('update:open', value)" :auto-focus="false">
-    <DialogContent class="sm:max-w-[800px]" @openAutoFocus.prevent>
-      <DialogHeader data-autofocus>
-        <DialogTitle>
-          {{ item ? props.editTitle : props.createTitle }}
-        </DialogTitle>
-        <DialogDescription>
-          {{ props.description }}
-        </DialogDescription>
-      </DialogHeader>
+  <div class="bg-white rounded-2xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-6">Заказчик</h2>
+    
+    <div class="space-y-6">
+      <div
+        v-for="(customer, index) in customers"
+        :key="customer.id"
+        class="p-4 border border-gray-200 rounded-xl"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-700">Заказчик </span>
+          <button
+            v-if="customers.length > 1"
+            @click="removeCustomer(index)"
+            type="button"
+            class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 class="w-4 h-4" />
+          </button>
+        </div>
 
-      <form @submit.prevent="onSubmit">
-        <div class="grid gap-4 py-4">
+        <div class="space-y-4">
           <div class="grid grid-cols-3 gap-4">
-            <div class="space-y-2">
-              <Label for="lastname" required>Фамилия</Label>
-              <Input id="lastname" v-model="form.lastname" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Фамилия</label>
+              <input
+                v-model="customer.lastname"
+                type="text"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Фамилия"
+              />
             </div>
-            <div class="space-y-2">
-              <Label for="firstname" required>Имя</Label>
-              <Input id="firstname" v-model="form.firstname" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Имя</label>
+              <input
+                v-model="customer.firstname"
+                type="text"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Имя"
+              />
             </div>
-            <div class="space-y-2">
-              <Label for="patronymic">Отчество</Label>
-              <Input id="patronymic" v-model="form.patronymic" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Отчество</label>
+              <input
+                v-model="customer.patronymic"
+                type="text"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Отчество"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="email" required>Email</Label>
-              <Input id="email" v-model="form.email" type="email" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Email</label>
+              <input
+                v-model="customer.email"
+                type="email"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="email@example.com"
+              />
             </div>
-            <div class="space-y-2">
-              <Label for="phone" required>Телефон</Label>
-              <Input id="phone" v-model="form.phone" placeholder="+7 (XXX) XXX-XX-XX" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Телефон</label>
+              <input
+                v-model="customer.phone"
+                type="tel"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="+7 (999) 999-99-99"
+              />
             </div>
           </div>
 
-          <div class="border-t pt-4 mt-4">
-            <h3 class="text-lg font-medium mb-4">Паспортные данные</h3>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_series" required>Серия</Label>
-                <Input id="passport_series" v-model="form.passport_series" />
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_number" required>Номер</Label>
-                <Input id="passport_number" v-model="form.passport_number" />
-              </div>
+           Passport Info 
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Серия паспорта</label>
+              <input
+                v-model="customer.passport_series"
+                type="text"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="1234"
+              />
             </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_issue_date">Дата выдачи</Label>
-                <div class="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="w-full justify-start text-left font-normal">
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.passport_issue_date || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.passport_issue_date" />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    v-if="form.passport_issue_date"
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    @click="form.passport_issue_date = ''"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_birth_date">Дата рождения</Label>
-                <div class="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="w-full justify-start text-left font-normal">
-                        <CalendarIcon class="mr-2 h-4 w-4" />
-                        <span>{{ form.passport_birth_date || 'Выберите дату' }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0">
-                      <AppDatePicker v-model="form.passport_birth_date" />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    v-if="form.passport_birth_date"
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    @click="form.passport_birth_date = ''"
-                  >
-                    <Trash2 class="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <Label for="passport_unit_name">Кем выдан</Label>
-                <Input id="passport_unit_name" v-model="form.passport_unit_name" />
-              </div>
-              <div class="space-y-2">
-                <Label for="passport_unit_code">Код подразделения</Label>
-                <Input id="passport_unit_code" v-model="form.passport_unit_code" />
-              </div>
-            </div>
-
-            <div class="space-y-2 mb-4">
-              <Label for="passport_birth_place">Место рождения</Label>
-              <Input id="passport_birth_place" v-model="form.passport_birth_place" />
-            </div>
-
-            <div class="space-y-2">
-              <Label for="passport_address">Адрес регистрации</Label>
-              <Input id="passport_address" v-model="form.passport_address" />
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Номер паспорта</label>
+              <input
+                v-model="customer.passport_number"
+                type="text"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="567890"
+              />
             </div>
           </div>
         </div>
+      </div>
 
-        <DialogFooter>
-          <Button variant="outline" type="button" @click="() => emit('update:open', false)">
-            {{ props.cancelText }}
-          </Button>
-          <Button type="submit">
-            {{ props.submitText }}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  </Dialog>
+      <button
+        @click="addCustomer"
+        type="button"
+        class="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl font-medium hover:border-emerald-500 hover:text-emerald-500 transition-colors flex items-center justify-center gap-2"
+      >
+        <Plus class="w-5 h-5" />
+        Добавить закачика
+      </button>
+    </div>
+  </div>
 </template>
-
-<style scoped>
-[required]::after {
-  content: ' *';
-  color: hsl(0, 84.2%, 60.2%);
-}
-</style>

@@ -12,7 +12,6 @@ import TourFormMap from './TourFormMap.vue';
 import TourFormTabControl from './TourFormTabControl.vue';
 import TourFormDesc from './TourFormDesc.vue';
 import TourFormNotes from './TourFormNotes.vue';
-import TourFormConditions from './TourFormConditions.vue';
 import TourFormTreeView from './TourFormTreeView.vue';
 import TourFormCalculations from './TourFormCalculations.vue';
 import TourFormCostTotal from './TourFormCostTotal.vue';
@@ -45,7 +44,6 @@ const requestBody = computed(() => {
     'seats',
     'description',
     'notes',
-    'conditions',
     'is_active',
     'ownerable_id',
     'ownerable_type',
