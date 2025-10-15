@@ -18,7 +18,6 @@ const {
   items,
   currentItem,
   pagination,
-  pagination,
   loadCollection,
   handleSubmit,
   handleEdit,
@@ -31,10 +30,8 @@ const {
 });
 
 // Load API data
-// Load API data
 loadCollection();
 
-// Filters
 // Filters
 const filters = ref({
   search: '',
@@ -46,7 +43,7 @@ const handlePageChange = (page: number) => {
     page,
     ...filters.value,
   });
-});
+};
 // пагинация не работает
 const statusOptions = [
   { value: '', label: 'Все статусы' },
