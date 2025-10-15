@@ -5,8 +5,8 @@
       <button
         :class="[
           'p-2 rounded-lg transition-colors touchable',
-          editMode 
-            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300' 
+          editMode
+            ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300'
             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200'
         ]"
         @click="handleEdit"
@@ -29,15 +29,15 @@
             <tr v-if="editMode">
               <td colspan="3" class="py-3 px-4 border-b border-gray-200">
                 <div class="flex items-center gap-2">
-                  <select 
-                    v-model="selectedEntityId" 
+                  <select
+                    v-model="selectedEntityId"
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     @change="addEntity"
                   >
                     <option value="">Выберите объект для добавления</option>
-                    <option 
-                      v-for="entity in availableEntities" 
-                      :key="entity.id" 
+                    <option
+                      v-for="entity in availableEntities"
+                      :key="entity.id"
                       :value="entity.id"
                     >
                       {{ entity.title }} ({{ entity.entityType.title }})
@@ -120,9 +120,9 @@ const availableEntities = computed(() => {
 
 const focusFirstInput = async () => {
   await nextTick();
-  
+
   const firstInput = document.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') as HTMLElement;
-  
+
   if (firstInput) {
     firstInput.focus();
   }
@@ -130,30 +130,80 @@ const focusFirstInput = async () => {
 
 const handleEdit = () => {
   editMode.value = !editMode.value;
-  
+
   if (editMode.value) {
     focusFirstInput();
   }
 };
 
 const removeEntity = (entityId: number) => {
-  tour.value = { ...tour.value, entities: tour.value.entities.filter((item: any) => item.entity.id !== entityId) };
+  const entityToRemove = tour.value.entities.find((item: any) => item.entity.id === entityId);
+  const entityTypeTitle = entityToRemove?.entity?.entityType?.title;
+
+  const updatedEntities = tour.value.entities.filter((item: any) => item.entity.id !== entityId);
+
+  if (entityTypeTitle && tour.value.calculations?.expenses) {
+    const updatedExpenses = tour.value.calculations.expenses.filter(
+      (expense: any) => expense.expenseType !== entityTypeTitle
+    );
+
+    tour.value = {
+      ...tour.value,
+      entities: updatedEntities,
+      calculations: {
+        ...tour.value.calculations,
+        expenses: updatedExpenses
+      }
+    };
+  } else {
+    tour.value = { ...tour.value, entities: updatedEntities };
+  }
 };
 
 const addEntity = () => {
   if (!selectedEntityId.value) return;
-  
+
   const entityToAdd = availableEntities.value.find((entity: any) => entity.id === selectedEntityId.value);
   if (entityToAdd) {
     const newEntityItem = {
       entity: entityToAdd
     };
-    
-    tour.value = { 
-      ...tour.value, 
-      entities: [...tour.value.entities, newEntityItem] 
-    };
-    
+
+    const updatedEntities = [...tour.value.entities, newEntityItem];
+    const entityTypeTitle = entityToAdd.entityType?.title;
+
+    if (entityTypeTitle && tour.value.calculations) {
+      const expenseExists = tour.value.calculations.expenses?.some(
+        (expense: any) => expense.expenseType === entityTypeTitle
+      );
+
+      if (!expenseExists) {
+        const newExpense = {
+          expenseType: entityTypeTitle,
+          serviceName: '',
+          serviceDetails: '',
+          tourDays: '',
+          quantity: 0,
+          payers: 0,
+          totalAmount: 0,
+          perPersonAmount: 0,
+        };
+
+        tour.value = {
+          ...tour.value,
+          entities: updatedEntities,
+          calculations: {
+            ...tour.value.calculations,
+            expenses: [...(tour.value.calculations.expenses || []), newExpense]
+          }
+        };
+      } else {
+        tour.value = { ...tour.value, entities: updatedEntities };
+      }
+    } else {
+      tour.value = { ...tour.value, entities: updatedEntities };
+    }
+
     selectedEntityId.value = '';
   }
 };
